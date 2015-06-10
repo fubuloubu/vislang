@@ -13,16 +13,17 @@
 \usepackage{listings,color} % for colored solution
 
 % for colored solution
-\lstnewenvironment{XMLlisting}[1][]
-  {\lstset{
+\lstset{
     language=XML,
     basicstyle=\footnotesize\ttfamily,
     columns=flexible,
+    tabsize=4,
     keepspaces=true,
     keywordstyle=\color{red},
     identifierstyle=\color{blue},
     commentstyle=\color{green},
-  }}{}
+}
+\newcommand{\includecode}[1]{\lstinputlisting[caption=#1]{#1}}
 
 \begin{document}
 
@@ -70,15 +71,9 @@ ability to create dynamic parts that will care about time as a measured quantity
 
 \section{Example Program}
 
-\begin{XMLlisting}[tabsize=4]
-\lstinputlisting{../example/timed-blinking-light/timed-blinking-light.vs}
-\end{XMLlisting}
-%\caption{Example Program}
+\includecode{../example/timed-blinking-light/timed-blinking-light.vs}
 
-\begin{XMLlisting}[tabsize=4]
-\lstinputlisting{../example/timed-blinking-light/timer.vs}
-\end{XMLlisting}
-%\caption{Timer part}
+\includecode{../example/timed-blinking-light/timer.vs}
 
 \iffalse
 
