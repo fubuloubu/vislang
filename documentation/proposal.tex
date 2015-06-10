@@ -1,0 +1,186 @@
+\documentclass[dvips,12pt]{article}
+\usepackage[pdftex]{graphicx}
+\usepackage{url}
+% These are additional packages for "pdflatex", graphics, and to include
+% hyperlinks inside a document.
+
+\setlength{\oddsidemargin}{0.25in}
+\setlength{\textwidth}{6.5in}
+\setlength{\topmargin}{0in}
+\setlength{\textheight}{8.5in}
+% These force using more of the margins that is the default style
+
+\usepackage{listings,color} % for colored solution
+
+% for colored solution
+\lstnewenvironment{XMLlisting}[1][]
+  {\lstset{
+    language=XML,
+    basicstyle=\footnotesize\ttfamily,
+    columns=flexible,
+    keepspaces=true,
+    keywordstyle=\color{red},
+    identifierstyle=\color{blue},
+    commentstyle=\color{green},
+  }}{}
+
+\begin{document}
+
+\title{VisLang: A graphical programming language}
+\author{Bryant Eisenbach}
+\date{\today}
+\maketitle
+% This command causes the title to be created in the document
+
+\section{Introduction}
+
+VisLang is a block diagram language designed to allow fast and
+easy prototyping of programs for embedded processors. The language is created
+with a graphical editor in mind, and the core elements of the language are
+extensible so that any graphical editor can add additional elements for
+graphical display or other features.
+
+\section{Key Language Features}
+
+The language itself is based on the idea of blocks: small parts that can be grouped
+together into ever larger blocks and re-used across a program or programs. A small
+group of fundamental (or atomic) blocks will be defined and understood by the
+compiler for this language. Other blocks will be constructed as configurations of
+these atomic blocks. A standard library of useful functions will be constructed
+from these atomic blocks containing common parts such as timers, latches, etc.
+
+Side effects in the produced code will be minimized by the combination of a strong
+type system and bounded code execution. The type system of VisLang supports common
+datatypes such as bool, single, double, signed and unsigned integers, as well as
+static arrays and structures of these simple datatypes. Bounded code execution is
+guarenteed through the restriction of for loops to a static size. This works well
+as embedded programs should only need to parse large buffers for digital busses,
+which are usually defined as being a static size. The language will contain methods
+for defining digital message structures and how to parse those structures into
+usable variables. Methods for parsing both packet-based (e.g. Ethernet) and word-
+based (e.g. RS232) will be provided by the standard library.
+
+Lastly, time variance will be something provided fundamentally by the language.
+The time-step between subsequent iterations will be maintained in every program
+and provided to the user as a fundamental part. Most of the fundamental parts
+will be time-invariant, but this language feature will provide users with the
+ability to create dynamic parts that will care about time as a measured quantity.
+
+\section{Syntax}
+
+\section{Example Program}
+
+\begin{XMLlisting}[tabsize=4]
+\lstinputlisting{../example/timed-blinking-light/timed-blinking-light.vs}
+\end{XMLlisting}
+%\caption{Example Program}
+
+\begin{XMLlisting}[tabsize=4]
+\lstinputlisting{../example/timed-blinking-light/timer.vs}
+\end{XMLlisting}
+%\caption{Timer part}
+
+\iffalse
+
+Write a brief introduction in which you  outline the scope of your proposed
+work. Use this space to explain why you are interested in this topic and what
+you hope to learn. Connect your interest with what is currently known, and
+include at least two references to related articles in the astronomical
+literature.  You can use ADS  \url{http://adswww.harvard.edu/} and other links
+on the class website \url{http://prancer.physics.louisville.edu/classes/308/} 
+to help you find out more. An example citation is this paper
+\cite{gonzalez2012}.
+
+One to two pages should suffice for this part, but use more if you want.  
+Include figures or images if needed.  Figure~\ref{m42} is an example of  how to
+do it in \LaTeX.
+
+
+\begin{figure}
+\begin{center}
+\resizebox{6in}{!}{\includegraphics*{m42.jpg}}
+\end{center}
+
+\caption{The Orion Nebula, M42, recorded with the CDK20N telescope on the night
+of November 1, 2011. This is a composite of three 100-second photometric images
+in the Sloan g' (shown as blue), r' (shown as red), and i' (shown as green)
+bands. The intensities are displayed with logarithmic compression. Click to see
+the inner regions with square root compression. Highly reddened stars are
+brighter in the infrared (i') and appear slightly green in these images.
+\label{m42}}
+
+\end{figure}
+
+
+\section{Targets}
+
+Identify the targets you want to study.  Define their observable characteristics
+by giving their identifiers (e.g. common name if any, NGC or HD or other catalog
+entry you can find with AstroCC and Simbad), celestial coordinates, optical
+magnitudes, and angular size if the object is extended, that is, non-stellar.
+Please select targets that we have a good likelihood of observing:
+\begin{itemize}
+\item Not fainter than magnitude 19 (18 is better)
+\item Not larger than $0.5^\circ$, but see below
+\item Above the horizon at either observatory for several hours this fall
+\end{itemize}
+
+A single 100 second exposure with the 0.5 meter telescopes will reach magnitude
+18 on a clear night.  Accurate quantitative measurements require a little
+brighter, or longer total accumulated exposures.  The telescopes resolve 1
+arcsecond in two pixels and have a field of view of $0.6^\circ$.  Larger fields
+must be mosaics of several exposures. These factors will affect your
+choices.  
+
+For planetary imaging the CDK20's can take exposures as short as 0.01 seconds. 
+The longest practical single exposure is about 300 seconds, but typically we
+take 100 second exposures and add them in order to make small guiding
+corrections between exposures. Use AstroCC with Stellarium to assure that the
+targets are observable this season.
+
+\section{Filters, exposures, and special requests}
+
+Assuming that the best telescope for your work is one of the two 0.5 meters
+(CDK20N at Moore Observatory, CDK20S at Mt. Kent), you will have a choice of
+filters:  Sloan filter set (g, r, i, or z),  Johnson-Cousins (U, B, V, R, or I),
+color imaging (B, G, R, or clear), and narrow band (S $[II]$, red continuum,
+H$\alpha$,  O$[III]$.  Identify which filters are of interest.
+
+A typical exposure time for a magnitude 12 star to about half saturation is 100
+seconds, but it depends on the filter choice.  Based on this, estimate how many
+exposures you will need, and what total time you require.  In some cases, for
+example studying an eclipsing or variable star, or an exoplanet transit, you
+would use only one filter and make many measurements over a night.  In others,
+you may make only a few exposures in each filter, and try many different
+filters.   Changing filter sets takes an operator and several minutes, but
+changing filters within one set (e.g. a different Sloan filter) takes only a few
+seconds.
+
+We have other telescopes that may be available at Moore Observatory this season.
+There is a wide field astrograph that has a field of view of $4^\circ$ and is a
+fast $f/4$,  especially good for large nebula, comets, or surveys.  A 14-inch
+(0.36 meter) Celestron  telescope can be equipped with a fast camera for
+planetary imaging.  A 27-inch (0.7 meter)  corrected Dall-Kirkham is scheduled
+to be be delivered to Australia this fall, although we are unsure of the actual
+date it could see light yet.  
+
+
+ 
+\begin{thebibliography}{99}
+
+\bibitem{gonzalez2012} Jonay I. Gonz\'{a}lez Hern\'{a}ndez, 
+Pilar Ruiz-Lapuente,    
+Hugo M. Tabernero,  
+David Montes,   
+Ramon Canal,    
+Javier M\'{e}ndez   
+and Luigi R. Bedin,
+{No surviving evolved companions of the progenitor of SN1006},
+Nature, {\bf 489}, 533-536 (2012).
+
+\end{thebibliography}
+
+\fi
+
+\end{document}
+
