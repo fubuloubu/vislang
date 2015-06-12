@@ -1,1 +1,44 @@
-primatives: gates, memory/unit-delay blocks, I/O addresses (physical or virtual), switches, constants, timer, clock signal, library include statement, summer block, unary gain, multiplication/division, bitwise operator?
+Below is the list of standard elements supported by the language, and their attributes:
+\begin{longtable}[c]{ |c|c|c|c| } 
+    \hline
+    element & input(s) & outputs & attributes [optional]  \\ 
+    \hline\hline
+    INPUT & none & provides 'name' & scope, size, name, type, [address] \\ 
+    OUTPUT & provides 'name' & none & scope, size, name, type, [address] \\ 
+    CONSTANT & none & provides 'name' & size, name, type, value \\ 
+    SIGNAL & provides 'name' & provides 'name' & scope, size, name, type \\ 
+    \hline
+    PROGRAM & device inputs & device, global outputs & name \\ 
+    BLOCK & as defined & as defined & name, [reference] \\ 
+    CONNECTION & none & none & to, from \\
+    \hline
+    CAST & input & output & name, type \\
+    MEM & current & stored & name, initial\_condition \\
+    DT & none & dt & name \\
+    NOT & input & output & name \\
+    AND & input\# (\# $>$ 1) & output & name \\
+    OR & input\# (\# $>$ 1) & output & name \\
+    NOR & input\# (\# $>$ 1) & output & name \\
+    NAND & input\# (\# $>$ 1) & output & name \\
+    XOR & input\# (\# $>$ 1) & output & name \\
+    BITWISE & input\# (\# $>$ 0) & output & name, operation, [mask] \\
+    IF & control, true, false & output & name \\
+    COMPARE & lhs, rhs  & output & name, operation \\
+    SUM & input\# (\# $>$ 1) & output & name \\
+    PROD & input\# (\# $>$ 1) & output & name \\
+    GAIN & input & output & name, value \\
+    INV & input & output & name \\
+    \hline
+    MUX & input\# (\# $>$ 1) & provides 'array' & name, type, [address] \\
+    DEMUX & array & output\# (\# $>$ 1) & name, type, [address] \\
+    STRUCT & none & provides 'struct' & name, member\# (\# $>$ 0) \\
+    CONSTRUCT & by definition & provides 'name' & name, definition \\
+    DESTRUCT & struct & by definition & name, definition \\
+    \hline
+    MAP & input (array) & output (array) & name, func (SISO block ref) \\
+    FILTER & input (array) & output & name, size, func (SIBO block ref) \\
+    REDUCE & input (array) & output & name, initial\_value, func (MISO block ref) \\
+    \hline
+    SIGGEN & none & output & name, type, reference \\
+    SCOPE & input\# (\# $>$ 1) & none & name, reference \\
+\end{longtable}
