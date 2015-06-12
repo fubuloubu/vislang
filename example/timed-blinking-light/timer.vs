@@ -5,11 +5,11 @@
      Outputs for utilization elsewhere in project. The
      reference will search the path for that file -->
 <!-- All Inputs do not have to be used and will be optimized out -->
-<INPUT scope=local name="start" type=boolean/>
-<INPUT scope=local name="reset" type=boolean/>
-<INPUT scope=local name="time" type=single/>
+<INPUT scope=local name="start" size="1" type=boolean/>
+<INPUT scope=local name="reset" size="1" type=boolean/>
+<INPUT scope=local name="time" size="1" type=single/>
 <!-- Constants can be defined as a seperate block as well -->
-<CONSTANT name="zero_constant" type=single value=0.000/>
+<CONSTANT name="zero_constant" size="1" type=single value="0.000"/>
 <!-- The DT block puts out the difference in time between
      successive passes of program. In a Soft RTOS, this
      would be a variable number. In a Hard RTOS, this
@@ -42,16 +42,16 @@
 <CONNECTION to="reset_switch|false" from="summer|output"/>
 <!-- Outputs of a subsystem need to have a connection specified -->
 <CONNECTION to="elapsed_time" from="reset_switch|output"/>
-<COMPARE name="is_count_expired" operator=">="/>
+<COMPARE name="is_count_expired" operation=">="/>
 <CONNECTION to="is_count_expired|lhs" from="elapsed_time"/>
 <CONNECTION to="is_count_expired|rhs" from="time"/>
 <CONNECTION to="count_expired" from="is_count_expired|output"/>
-<MEM name="elapsed_time_lp" initial_condition=0.000/>
+<MEM name="elapsed_time_lp" initial_condition="0.000"/>
 <CONNECTION to="elapsed_time_lp|current" from="elapsed_time"/>
-<MEM name="count_expired_lp" initial_condition=false/>
+<MEM name="count_expired_lp" initial_condition="false"/>
 <CONNECTION to="count_expired_lp|current" from="count_expired"/>
 <!-- All Outputs need to have a connection in the part,
      at least to a constant -->
-<OUTPUT scope=local name="count_expired" type=boolean/>
-<OUTPUT scope=local name="elapsed_time" type=single/>
+<OUTPUT scope=local name="count_expired" size="1" type=boolean/>
+<OUTPUT scope=local name="elapsed_time" size="1" type=single/>
 </BLOCK>
