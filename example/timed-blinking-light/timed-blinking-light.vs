@@ -3,14 +3,15 @@
 <!-- This block denotes the contents of a program. Everything 
      contained within (including file references would be compiled
      as a single binary. -->
-<INPUT scope=device name="digital_input_1" size="1" type=boolean address="0x0123|0"/>
+<INPUT scope="device" name="digital_input_1" size="1"
+     type="boolean" address="0x0123|0"/>
 <!-- Hardware address 123 bit 0 is DI_1 for ATMega328 -->
 <!-- TODO: Find real hardware address for this DI -->
 <!-- Literal constants for unsigned integers can be hex (0x20), binary
      (2x110101), octal (8x266), or decimal (268). Literal constants for
      signed intergers must have a sign prefixed (e.g. +0x26A8 or -268).
      Neither int nor uint can have a decimal point. -->
-<SIGNAL scope=global name="count_expired" size="1" type=boolean/>
+<SIGNAL scope="global" name="count_expired" size="1" type="boolean"/>
 <!-- It is good practice to specify Inputs, Signals, and Constants at the
      top of a document, although not strictly necessary -->
 <NOT name="not_di_1"/>
@@ -20,7 +21,7 @@
          here. Not relevant for the compiler -->
 </CONNECTION>
 <!-- literal constants for booleans are "true" and "false"-->
-<MEM name ="count_expired_lp" initial_condition=false/>
+<MEM name ="count_expired_lp" initial_condition="false"/>
 <!-- Memory block would store the state each pass of the variable
      specified by current_pass_value at the end of execution 
      such that the last_pass_value can be used in the local scope
@@ -60,7 +61,8 @@
 <CONNECTION to="digital_output_1" from="timer_instance_1|count_expired"/>
 <!-- Any un-attached outputs to a block are optimized out, e.g. 
      elapsed_time. All inputs are required -->
-<OUTPUT scope=device name="digital_output_1" size="1" type=boolean address="0x0456|0"/>
+<OUTPUT scope="device" name="digital_output_1"
+     size="1" type="boolean" address="0x0456|0"/>
 <!-- It is good practice to define outputs at the bottom of a document -->
 <!-- Hardware address 456 bit 0 is DO_1 for ATMega328 -->
 <!-- TODO: Find real hardware address for this DO -->

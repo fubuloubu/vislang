@@ -5,9 +5,9 @@
      Outputs for utilization elsewhere in project. The
      reference will search the path for that file -->
 <!-- All Inputs do not have to be used and will be optimized out -->
-<INPUT scope=local name="start" size="1" type=boolean/>
-<INPUT scope=local name="reset" size="1" type=boolean/>
-<INPUT scope=local name="time" size="1" type=single/>
+<INPUT scope="local" name="start" size="1" type="boolean"/>
+<INPUT scope="local" name="reset" size="1" type="boolean"/>
+<INPUT scope="local" name="time" size="1" type="single"/>
 <!-- Constants can be defined as a seperate block as well -->
 <CONSTANT name="zero_constant" size="1" type=single value="0.000"/>
 <!-- The DT block puts out the difference in time between
@@ -24,7 +24,8 @@
 <!-- Control flow IF switch: If Control is true, execute
      True assignment, else execute False assignment -->
 <CONNECTION to="increment_value|control" from="start_enb|output"/>
-<CONNECTION to="increment_value|true_input" from="time_since_last_pass|dt"/>
+<CONNECTION to="increment_value|true_input"
+     from="time_since_last_pass|dt"/>
 <CONNECTION to="increment_value|false_input" from="zero_constant"/>
 <SUM name="summer"/>
 <!-- The summer will add all the inputs together. If you want
@@ -52,6 +53,6 @@
 <CONNECTION to="count_expired_lp|current" from="count_expired"/>
 <!-- All Outputs need to have a connection in the part,
      at least to a constant -->
-<OUTPUT scope=local name="count_expired" size="1" type=boolean/>
-<OUTPUT scope=local name="elapsed_time" size="1" type=single/>
+<OUTPUT scope="local" name="count_expired" size="1" type="boolean"/>
+<OUTPUT scope="local" name="elapsed_time" size="1" type="single"/>
 </BLOCK>
