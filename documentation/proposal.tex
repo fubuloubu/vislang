@@ -1,28 +1,54 @@
 \documentclass[dvips,12pt]{article}
-\usepackage[pdftex]{graphicx}
-\usepackage{url}
-% These are additional packages for "pdflatex", graphics, and to include
-% hyperlinks inside a document.
 
-\setlength{\oddsidemargin}{0.25in}
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\evensidemargin}{0.1in}
 \setlength{\textwidth}{6.5in}
 \setlength{\topmargin}{0in}
 \setlength{\textheight}{8.5in}
 % These force using more of the margins that is the default style
 
-\usepackage{listingsutf8,color} % for colored solution
+\usepackage{longtable}
 
-% for colored solution
-\lstset{
+\usepackage{listings}
+\usepackage{color} % for colored solution
+\usepackage[svgnames]{xcolor}
+
+% Custom colors for XML
+\definecolor{maroon}{rgb}{0.5,0,0}
+\definecolor{darkgreen}{rgb}{0,0.5,0}
+\lstdefinelanguage{XML}
+{
+    basicstyle=\ttfamily\footnotesize,
+    morestring=[b]",
+    moredelim=[s][\bfseries\color{Maroon}]{<}{\ },
+    moredelim=[s][\bfseries\color{Maroon}]{</}{>},
+    moredelim=[l][\bfseries\color{Maroon}]{/>},
+    moredelim=[l][\bfseries\color{Maroon}]{>},
+    morecomment=[s]{<?}{?>},
+    morecomment=[s]{<!--}{-->},
+    commentstyle=\color{DarkOliveGreen},
+    stringstyle=\color{blue},
+    identifierstyle=\color{red}
+    %morekeywords={name,type,scope,address,value,to,from,
+    %              initial\_condition,reference}
+}
+\lstset
+{
     language=XML,
     basicstyle=\footnotesize\ttfamily,
-    columns=flexible,
     tabsize=4,
-    keepspaces=true,
+    keepspaces=false,
     keywordstyle=\color{red},
     identifierstyle=\color{blue},
     commentstyle=\color{green},
+    frame=single,
+    captionpos=t%, % sets the caption-position to top
+    %morestring=[s]{"}{"},
+    %morecomment=[s]{!--}{--},
+    %morekeywords={name,type,scope,address,value,to,from,
+    %              initial\_condition,reference}
 }
+
 \newcommand{\includecode}[1]{\lstinputlisting[caption=#1]{#1}}
 
 \begin{document}
@@ -37,145 +63,122 @@
 
 VisLang is a block diagram language designed to allow fast and
 easy prototyping of programs for embedded processors. The language is created
-with a graphical editor in mind, and the core elements of the language are
-extensible so that any graphical editor can add additional elements for
-graphical display or other features.
+with a graphical editor in mind, and the core language is designed to be extensible
+so that any graphical editor can add additional elements or attributes for graphical
+display or other features.
 
 \section{Key Language Features}
 
 The language itself is based on the idea of blocks: small parts that can be grouped
 together into ever larger blocks and re-used across a program or programs. A small
-group of fundamental (or atomic) blocks will be defined and understood by the
+group of fundamental (or atomic) blocks will be defined that will be understood by the
 compiler for this language. Other blocks will be constructed as configurations of
 these atomic blocks. A standard library of useful functions will be constructed
-from these atomic blocks containing common parts such as timers, latches, etc.
+from these atomic blocks containing common parts such as timers, latches, etc. However,
+this standard library is not required, and the ability to include parts libraries and
+other blocks is a standard feature of the language.
 
 Side effects in the produced code will be minimized by the combination of a strong
 type system and bounded code execution. The type system of VisLang supports common
-datatypes such as bool, single, double, signed and unsigned integers, as well as
+datatypes such as boolean, single, double, signed and unsigned integers, as well as
 static arrays and structures of these simple datatypes. Bounded code execution is
-guarenteed through the restriction of for loops to a static size. This works well
-as embedded programs should only need to parse large buffers for digital busses,
-which are usually defined as being a static size. The language will contain methods
-for defining digital message structures and how to parse those structures into
-usable variables. Methods for parsing both packet-based (e.g. Ethernet) and word-
-based (e.g. RS232) will be provided by the standard library.
+guarenteed through the restriction of array operations to use a static size. This
+works well with embedded processors as programs should only need to parse through
+large buffers such as those implemented for I/O using digital busses, whose buffers
+are typically defined as being a static size. The language will contain
+implementations of the popular methods map, filter, and reduce to enable operating
+on arrays. VisLang will also have methods for defining digital message structures
+and how to parse those structures into the signals used by the program. Methods
+for parsing both packet-based (e.g. Ethernet) and word-based (e.g. RS232)
+will be provided by the standard library.
 
 Lastly, time variance will be something provided fundamentally by the language.
-The time-step between subsequent iterations will be maintained in every program
-and provided to the user as a fundamental part. Most of the fundamental parts
-will be time-invariant, but this language feature will provide users with the
-ability to create dynamic parts that will care about time as a measured quantity.
+The time-step between subsequent iterations will be maintained in every VisLang program
+and provided to the user as needed as a atomic part. Most of the atomic parts will be
+time-invariant as they are pure functions, but this language feature will provide users
+with the ability to create dynamic parts that will care about time as a measured quantity
+to create parts such as digital filters, derivatives, integrators, etc.
 
 \section{Syntax}
 
+The syntax of VisLang leverages standard XML, giving the language a well-formed and machine
+readable backbone. As noted previously, the point of leveraging XML is so that 3rd party
+programs can manipulate the file format in an easy way, and so that those programs can add
+additional elements (e.g. visual comment blocks) and attributes (e.g. location information)
+to the existing set of elements and attributes defined by the language. Those tags (including
+XML comment tags) not included in the list of recognized elements/attributes will be 
+ignored by the compiler, however this decision should have minimal impact on ambigious
+errors when compiling programs due to the restriction that all parts requiring the necessary
+attributes, and that all connections requiring the source to exist. This creates a natural
+flow to interpreting the language, such that any errors should be raised by the compiler
+during compilation. 
+
+Below is the list of standard elements, and their required attributes:
+\begin{longtable}[c]{ |c|c|c|c| } 
+    \hline
+    element & input(s) & outputs & attributes [optional]  \\ 
+    \hline\hline
+    INPUT & none & provides 'name' & scope, name, type, [address] \\ 
+    OUTPUT & provides 'name' & none & scope, name, type, [address] \\ 
+    CONSTANT & none & provides 'name' & name, type, value \\ 
+    SIGNAL & provides 'name' & none & scope, name, type \\ 
+    \hline
+    BLOCK & as defined & as defined & name, [reference] \\ 
+    PROGRAM & device inputs & device, global outputs & name \\ 
+    CONNECTION & none & none & to, from \\
+    \hline
+    MEM & current & stored & name, initial\_condition \\
+    DT & none & dt & name \\
+    NOT & input & output & name \\
+    AND & input\# (\# $>$ 1) & output & name \\
+    OR & input\# (\# $>$ 1) & output & name \\
+    NOR & input\# (\# $>$ 1) & output & name \\
+    NAND & input\# (\# $>$ 1) & output & name \\
+    XOR & input\# (\# $>$ 1) & output & name \\
+    IF & control, true, false & output & name \\
+    COMPARE & lhs, rhs  & output & name \\
+    SUM & input\# (\# $>$ 1) & output & name \\
+    PROD & input\# (\# $>$ 1) & output & name \\
+    GAIN & input & output & name, value \\
+    INV & input & output & name \\
+    \hline
+    MUX & input\# (\# $>$ 1) & provides 'array' & scope, name, type, size, [address] \\
+    DEMUX & array & output\# (\# $>$ 1) & scope, name, type, size, [address] \\
+    STRUCT & none & provides 'struct' & name, member\# (\# $>$ 0) \\
+    CONSTRUCT & by definition & provides 'name' & scope, name, definition \\
+    DESTRUCT & struct & by definition & scope, name, definition \\
+    \hline
+    MAP & input (array) & output (array) & name, func (SISO block ref) \\
+    FILTER & input (array) & output (array) & name, func (SISO block ref)\\
+    REDUCE & input (array) & output & name, func (MISO block ref) \\
+    \hline
+\end{longtable}
+
+The first group of elements (INPUT, OUTPUT, CONSTANT, NAME) provide named
+memory locations for use in the application. All of these elements have a
+type attribute where the INPUT, OUTPUT, and SIGNAL all have a 
+
 \section{Example Program}
+
+The following program illustrates some of the major features of the language. The
+program itself takes a Digital Input on the target device, reads it, and starts a
+timer when the input is enabled. When the timer counts up to the target time, it
+will set a Digital Output true and reset the timer, creating a fast-blinking light
+with a period of 2 seconds.
 
 \includecode{../example/timed-blinking-light/timed-blinking-light.vs}
 
+As noted, the above file contained a reference to another part called timer defined
+in timer.vs in the same directory. Any references must take place on a relative path
+to that file, and that reference must contain the same number of inputs specified by
+the target file inside the file referencing that part. The number of outputs need
+not match, but any outputs specified in the file referencing that part must also
+match what is available from the target file or an exception will be thrown. All
+other unused outputs will be disregarded. The following file displays the target
+file, complete with the relevant inputs and outputs as specified/required by the
+previous file.
+
 \includecode{../example/timed-blinking-light/timer.vs}
-
-\iffalse
-
-Write a brief introduction in which you  outline the scope of your proposed
-work. Use this space to explain why you are interested in this topic and what
-you hope to learn. Connect your interest with what is currently known, and
-include at least two references to related articles in the astronomical
-literature.  You can use ADS  \url{http://adswww.harvard.edu/} and other links
-on the class website \url{http://prancer.physics.louisville.edu/classes/308/} 
-to help you find out more. An example citation is this paper
-\cite{gonzalez2012}.
-
-One to two pages should suffice for this part, but use more if you want.  
-Include figures or images if needed.  Figure~\ref{m42} is an example of  how to
-do it in \LaTeX.
-
-
-\begin{figure}
-\begin{center}
-\resizebox{6in}{!}{\includegraphics*{m42.jpg}}
-\end{center}
-
-\caption{The Orion Nebula, M42, recorded with the CDK20N telescope on the night
-of November 1, 2011. This is a composite of three 100-second photometric images
-in the Sloan g' (shown as blue), r' (shown as red), and i' (shown as green)
-bands. The intensities are displayed with logarithmic compression. Click to see
-the inner regions with square root compression. Highly reddened stars are
-brighter in the infrared (i') and appear slightly green in these images.
-\label{m42}}
-
-\end{figure}
-
-
-\section{Targets}
-
-Identify the targets you want to study.  Define their observable characteristics
-by giving their identifiers (e.g. common name if any, NGC or HD or other catalog
-entry you can find with AstroCC and Simbad), celestial coordinates, optical
-magnitudes, and angular size if the object is extended, that is, non-stellar.
-Please select targets that we have a good likelihood of observing:
-\begin{itemize}
-\item Not fainter than magnitude 19 (18 is better)
-\item Not larger than $0.5^\circ$, but see below
-\item Above the horizon at either observatory for several hours this fall
-\end{itemize}
-
-A single 100 second exposure with the 0.5 meter telescopes will reach magnitude
-18 on a clear night.  Accurate quantitative measurements require a little
-brighter, or longer total accumulated exposures.  The telescopes resolve 1
-arcsecond in two pixels and have a field of view of $0.6^\circ$.  Larger fields
-must be mosaics of several exposures. These factors will affect your
-choices.  
-
-For planetary imaging the CDK20's can take exposures as short as 0.01 seconds. 
-The longest practical single exposure is about 300 seconds, but typically we
-take 100 second exposures and add them in order to make small guiding
-corrections between exposures. Use AstroCC with Stellarium to assure that the
-targets are observable this season.
-
-\section{Filters, exposures, and special requests}
-
-Assuming that the best telescope for your work is one of the two 0.5 meters
-(CDK20N at Moore Observatory, CDK20S at Mt. Kent), you will have a choice of
-filters:  Sloan filter set (g, r, i, or z),  Johnson-Cousins (U, B, V, R, or I),
-color imaging (B, G, R, or clear), and narrow band (S $[II]$, red continuum,
-H$\alpha$,  O$[III]$.  Identify which filters are of interest.
-
-A typical exposure time for a magnitude 12 star to about half saturation is 100
-seconds, but it depends on the filter choice.  Based on this, estimate how many
-exposures you will need, and what total time you require.  In some cases, for
-example studying an eclipsing or variable star, or an exoplanet transit, you
-would use only one filter and make many measurements over a night.  In others,
-you may make only a few exposures in each filter, and try many different
-filters.   Changing filter sets takes an operator and several minutes, but
-changing filters within one set (e.g. a different Sloan filter) takes only a few
-seconds.
-
-We have other telescopes that may be available at Moore Observatory this season.
-There is a wide field astrograph that has a field of view of $4^\circ$ and is a
-fast $f/4$,  especially good for large nebula, comets, or surveys.  A 14-inch
-(0.36 meter) Celestron  telescope can be equipped with a fast camera for
-planetary imaging.  A 27-inch (0.7 meter)  corrected Dall-Kirkham is scheduled
-to be be delivered to Australia this fall, although we are unsure of the actual
-date it could see light yet.  
-
-
- 
-\begin{thebibliography}{99}
-
-\bibitem{gonzalez2012} Jonay I. Gonz\'{a}lez Hern\'{a}ndez, 
-Pilar Ruiz-Lapuente,    
-Hugo M. Tabernero,  
-David Montes,   
-Ramon Canal,    
-Javier M\'{e}ndez   
-and Luigi R. Bedin,
-{No surviving evolved companions of the progenitor of SN1006},
-Nature, {\bf 489}, 533-536 (2012).
-
-\end{thebibliography}
-
-\fi
 
 \end{document}
 
