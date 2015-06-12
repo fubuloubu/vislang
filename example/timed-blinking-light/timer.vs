@@ -38,13 +38,13 @@
 <Connection to="summer|input2" from="elapsed_time_lp|stored"/>
 <IF name="reset_switch"/>
 <CONNECTION to="reset_switch|control" from="reset"/>
-<CONNECTION to="reset_switch|true_input" from="zero_constant"/>
-<CONNECTION to="reset_switch|false_input" from="summer|output"/>
+<CONNECTION to="reset_switch|true" from="zero_constant"/>
+<CONNECTION to="reset_switch|false" from="summer|output"/>
 <!-- Outputs of a subsystem need to have a connection specified -->
 <CONNECTION to="elapsed_time" from="reset_switch|output"/>
 <COMPARE name="is_count_expired" operator=">="/>
-<CONNECTION to="is_count_expired|input1" from="elapsed_time"/>
-<CONNECTION to="is_count_expired|input2" from="time"/>
+<CONNECTION to="is_count_expired|lhs" from="elapsed_time"/>
+<CONNECTION to="is_count_expired|rhs" from="time"/>
 <CONNECTION to="count_expired" from="is_count_expired|output"/>
 <MEM name="elapsed_time_lp" initial_condition=0.000/>
 <CONNECTION to="elapsed_time_lp|current" from="elapsed_time"/>

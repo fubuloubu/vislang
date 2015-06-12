@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<PROGRAM>
+<PROGRAM name="timed-blinking-light.bin">
 <!-- This block denotes the contents of a program. Everything 
      contained within (including file references would be compiled
      as a single binary. -->
