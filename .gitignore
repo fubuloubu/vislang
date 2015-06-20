@@ -1,3 +1,5 @@
+src/scanner.ml
+*.swp
 *.log
 *.aux
 *.pdf
