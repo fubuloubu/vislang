@@ -3,3 +3,8 @@ src/scanner.ml
 *.log
 *.aux
 *.pdf
+*.cmi
+*.cmo
+*.cmx
+src/scanner_test
+src/vlcc
