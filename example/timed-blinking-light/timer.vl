@@ -9,7 +9,7 @@
 <INPUT scope="local" name="reset" size="1" type="boolean"/>
 <INPUT scope="local" name="time" size="1" type="single"/>
 <!-- Constants can be defined as a seperate block as well -->
-<CONSTANT name="zero_constant" size="1" type=single value="0.000"/>
+<CONSTANT name="zero_constant" size="1" type="single" value="0.000"/>
 <!-- The DT block puts out the difference in time between
      successive passes of program. In a Soft RTOS, this
      would be a variable number. In a Hard RTOS, this
