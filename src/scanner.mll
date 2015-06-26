@@ -11,26 +11,33 @@
                         (string_of_int !line_num) ^ "\n" ^ line ^ "\n"))
 }
 (* Main definitions for use below *)
-let digit = ['0'-'9']
+let ws = [' ' '\t']
+let nl = ("\r\n"|'\r'|'\n')
+let not_nl = [^'\n' '\r']
+(*TODO: I think name and attribute being incorrect is causing the issue *)
 let name  = ['A'-'Z' 'a'-'z']['A'-'Z' 'a'-'z' '0'-'9' '_']*
 let file  = ("../" | "./" | "/")
             (['A'-'Z' 'a'-'z' '0'-'9' '_' '.']+ ("/")?)+
             (".vl")
 let cnx = ("|" name)+
+
 let sign = ("+" | "-")
+let digit = ['0'-'9']
 let flt_pt = sign? (digit+ "." digit* | "." digit+)
-let intpfx = ("0x" | "2x" | "8x" | sign)?
-let attribute = (' ' name '=' "\""
-                (name cnx? | flt_pt | intpfx digit+)+ "\"")
+let intpfx = ("0x" | "2x" | "8x" | sign)
+let attribute = (name '=' '"'
+                (name cnx* | flt_pt | intpfx? digit+) '"')
 
 (* Main scanner step: search for blocks and comments *)
 rule token =
-    parse [' ' '\t']                { token lexbuf }
-        | ('\r'|'\n'|"\r\n")        { incr line_num; token lexbuf }
-        | ("<?"
-        | "<!--") as comment_type   { comment comment_type lexbuf }
-        | '<' (name as tag)         { block tag lexbuf }
-        | _* as line                { bad_xml_error line }
+    parse ("<?" | "<!--") as comment_type { 
+                printf "Beginning Commented Section %s" comment_type;
+                comment comment_type lexbuf
+            }
+        | '<' (name as tag) ' '     { block tag lexbuf }
+        | ws                        { token lexbuf }
+        | nl                        { incr line_num; token lexbuf }
+        | not_nl* as line           { bad_xml_error line }
         | eof                       { printf "Reached end of file\n" }
 (* Comment sub-rule: search for matching comment tag.
  * If a different comment tag type found, then continue,
@@ -42,24 +49,24 @@ and comment ctype =
         | "?>"  { if ctype = "<?"
                   then token lexbuf
                   else comment ctype lexbuf }
-        | ('\r'|'\n'|"\r\n")
-                { incr line_num;
-                  comment ctype lexbuf }
-        | _*     { comment ctype lexbuf }
+        | nl       { incr line_num; comment ctype lexbuf }
+        | not_nl*  { comment ctype lexbuf }
 (* Block sub-rule: Scan for supported blocks and link
  * to parsing stage. If an unsupported block is found, note
  * it as information for compilation *)
 and block tag =
-    parse attribute* as attributes ("/>" | ">") as blk_end
+    parse (ws attribute)* as attributes ws? ("/>" | ">") as blk_end
         (* Note: attributes are only accepted in-tag e.g.:
          * <tag attr1=blah attr2=blah ..>ignore here</tag> *)
         {
             printf "Block %s contains: %s\n" tag attributes;
-            if blk_end = ">"
+            (* Only the BLOCK tag is allowed to contain tags
+             * underneath.*)
+            if blk_end = ">" && tag != "BLOCK"
             then closing_tag tag lexbuf
             else token lexbuf
         }
-        | _* as issue { bad_xml_error issue }
+        | not_nl* as issue { bad_xml_error issue }
 (* If open tag found without closing tag, run this rule to
  * find the closing tag *)
 and closing_tag tag =
@@ -70,10 +77,10 @@ and closing_tag tag =
             if tag_to_chk = tag
             then token lexbuf 
             else closing_tag tag lexbuf }
-        | ('\r'|'\n'|"\r\n")
-                       { incr line_num; closing_tag tag lexbuf }
-        | _* as ignored { printf "Ignoring %s\n" ignored;
-                         closing_tag tag lexbuf }
+        | nl       { incr line_num; closing_tag tag lexbuf }
+        | not_nl* as ignored
+                        { printf "Ignoring %s\n" ignored;
+                          closing_tag tag lexbuf }
 {
     (* Code for test purposes *)
     let rec parse lexbuf =
