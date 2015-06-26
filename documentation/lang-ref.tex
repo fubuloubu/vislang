@@ -1,3 +1,45 @@
+\documentclass{article}
+\usepackage[a5paper,margin=0.5in]{geometry}
+
+%% Header
+\usepackage{fancyhdr,lastpage}
+\usepackage[mmddyyyy]{datetime}
+\renewcommand{\dateseparator}{/}
+\fancypagestyle{plain}{
+    \fancyhf{} %Clear Everything.
+    \lhead{ Bryant Eisenbach (bje2113) }
+    \chead{ COMS W4115 }
+    \rhead{ \jobname\ Page \thepage\ of \pageref{LastPage} }
+    \setlength{\headheight}{24pt}
+    \setlength{\footskip}{24pt}
+    \renewcommand{\headrulewidth}{1pt} %0pt for no rule, 2pt thicker etc...
+    \renewcommand{\footrulewidth}{0pt}
+}
+\pagestyle{plain}
+
+%% Code Listings
+\usepackage{minted}
+
+%% For NFA, DFA diagrams
+\usepackage{tikz}
+\usetikzlibrary{automata,positioning}
+
+\begin{document}
+\section{Overview}
+\section{Style Guide}
+XML
+begins with <?xml ... ?> tag
+each block has at least a name attribute
+each block tag has attributes in-tag e.g. <BLOCK attr1="..." attr2="..." etc... />
+will ignore out of tag attributes e.g. <BLOCK><attr1="..."/></BLOCK>
+will ignore unrecognized tags
+ignores both comment types
+file location strings
+usage of connection identifier in file location strings and named blocks
+CONNECTION tags tie things together, can be placed anywhere, but usually directly after the destination block
+accepted float and int literals
+accepted data types
+\section{List of Accepted Tags and Attributes}
 Below is the list of standard elements supported by the language, and their attributes:
 \begin{longtable}[c]{ |c|c|c|c| } 
     \hline
