@@ -3,6 +3,7 @@ src/scanner.ml
 *.log
 *.aux
 *.pdf
+*.pyg
 *.cmi
 *.cmo
 *.cmx

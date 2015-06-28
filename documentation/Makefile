@@ -1,3 +1,3 @@
 # LaTeX makefile for documentation
-proposal:
-	@pdflatex -output-directory ~/Downloads/ proposal.tex
+%.pdf: %.tex
+	@pdflatex -shell-escape -output-directory ~/Downloads $<
