@@ -2,9 +2,6 @@
     (* open Parser *)
     open Printf
 
-    (* current token line number *)
-    let line_num = ref 1
-
     (* Define errors *)
     let error msg start finish  = 
             Printf.sprintf "(line %d: char %d..%d): %s" 
@@ -14,14 +11,17 @@
                     msg
     exception XML_Error of string
     let xml_error lexbuf = raise
-                    ( 
-                        XML_Error (error "Bad XML"
+                    (XML_Error
+                        (error 
+                            ("Badly Formatted XML")
                             (lexbuf.Lexing.lex_start_p) 
-                            (lexbuf.Lexing.lex_curr_p))
+                            (lexbuf.Lexing.lex_curr_p)
+                        )
                     )
 }
 (* Main definitions for use below *)
-let ws      = [' ' '\t' '\r' '\n']
+let ws      = [' ' '\t']
+let newline = ['\r' '\n']
 let name    = ['A'-'Z' 'a'-'z']['A'-'Z' 'a'-'z' '0'-'9' '_']*
 let file    = ("../" | "./" | "/")
               (['A'-'Z' 'a'-'z' '0'-'9' '_' '.']+ ("/")?)+
@@ -49,6 +49,7 @@ rule token =
                                         "Closing tag found for %s\n" tag; 
                                       token lexbuf }
         | ws                        { token lexbuf }
+        | newline                   { Lexing.new_line lexbuf; token lexbuf }
         | _                         { xml_error lexbuf }
         | eof                       { exit 0 }
 (* Comment sub-rule: search for matching comment tag.
