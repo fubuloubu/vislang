@@ -1,42 +1,45 @@
 {
-   (* open Parser *)
+    (* open Parser *)
     open Printf
 
     (* current token line number *)
     let line_num = ref 1
 
     (* Define errors *)
-    (*let error msg start finish  = 
+    let error msg start finish  = 
             Printf.sprintf "(line %d: char %d..%d): %s" 
-                    Position.pos_lnum start
-                    (Position.pos_cnum start - Position.pos_bol start) 
-                    (Position.pos_cnum finish - Position.pos_bol finish)
+                    (start.Lexing.pos_lnum)
+                    (start.Lexing.pos_cnum - start.Lexing.pos_bol) 
+                    (finish.Lexing.pos_cnum - finish.Lexing.pos_bol)
                     msg
-   *) 
     exception XML_Error of string
-    let xml_error lexbuf = 
-            raise ( XML_Error "Bad XML BAD!" 
-                    (* error "Bad XML"
-                    (Lexbuf.lex_start_p lexbuf) 
-                    (Lexbuf.lex_curr_p lexbuf) *)
-                  )
+    let xml_error lexbuf = raise
+                    ( 
+                        XML_Error (error "Bad XML"
+                            (lexbuf.Lexing.lex_start_p) 
+                            (lexbuf.Lexing.lex_curr_p))
+                    )
 }
 (* Main definitions for use below *)
-let ws = [' ' '\t' '\r' '\n']
-(*TODO: I think name and attribute being incorrect is causing the issue *)
-let name  = ['A'-'Z' 'a'-'z']['A'-'Z' 'a'-'z' '0'-'9' '_']*
-let file  = ("../" | "./" | "/")
-            (['A'-'Z' 'a'-'z' '0'-'9' '_' '.']+ ("/")?)+
-            (".vl")
-let cnx = ("|" name)+
-
-let sign = ("+" | "-")
-let digit = ['0'-'9']
-let flt_pt = sign? (digit+ "." digit* | "." digit+)
-let intpfx = ("0x" | "2x" | "8x" | sign)
-let op = ("==" | ">" | "<" | ">=" | "<=" | "!=")
-let attribute = (name '=' '"'
-                (name cnx* | flt_pt | intpfx? digit+ | op) '"')
+let ws      = [' ' '\t' '\r' '\n']
+let name    = ['A'-'Z' 'a'-'z']['A'-'Z' 'a'-'z' '0'-'9' '_']*
+let file    = ("../" | "./" | "/")
+              (['A'-'Z' 'a'-'z' '0'-'9' '_' '.']+ ("/")?)+
+              (".vl")
+let cnx     = ("|" name)+
+let sign    = ("+" | "-")
+let digit   = ['0'-'9']
+let flt_pt  = sign? (digit+ "." digit* | "." digit+)
+let hexdig  = ['A'-'F' 'a'-'f' '0'-'9']
+let hex     = sign? "0x" hexdig+ (* Allow signed hex numbers *)
+let octdig  = ['0'-'7']
+let octal   = "8x" octdig+
+let bindig  = ['0' '1']
+let binary  = "2x" bindig+
+let decimal = sign? digit+ (* Allow signed decimals *)
+let integer = (hex | decimal | binary | octal)
+let op      = ("==" | ">" | "<" | ">=" | "<=" | "!=")
+let attribute = (name '=' '"' (name cnx* | flt_pt | integer | op) '"')
 
 (* Main scanner step: search for blocks and comments *)
 rule token =
