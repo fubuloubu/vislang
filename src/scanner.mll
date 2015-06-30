@@ -21,13 +21,14 @@
 }
 (* Main definitions for use below *)
 let ws      = [' ' '\t']
-let newline = ['\r' '\n']
+let nl      = ['\r' '\n']
 let name    = ['A'-'Z' 'a'-'z']['A'-'Z' 'a'-'z' '0'-'9' '_']*
 let file    = ("../" | "./" | "/")
-              (['A'-'Z' 'a'-'z' '0'-'9' '_' '.']+ ("/")?)+
+              (['A'-'Z' 'a'-'z' '0'-'9' '_' '-' '.']+ ("/")?)+
               (".vl")
 let cnx     = ("|" name)+
 let sign    = ("+" | "-")
+let boolean = ("true" | "false")
 let digit   = ['0'-'9']
 let flt_pt  = sign? (digit+ "." digit* | "." digit+)
 let hexdig  = ['A'-'F' 'a'-'f' '0'-'9']
@@ -37,9 +38,9 @@ let octal   = "8x" octdig+
 let bindig  = ['0' '1']
 let binary  = "2x" bindig+
 let decimal = sign? digit+ (* Allow signed decimals *)
-let integer = (hex | decimal | binary | octal)
+let literal = (boolean | flt_pt | hex | decimal | binary | octal)
 let op      = ("==" | ">" | "<" | ">=" | "<=" | "!=")
-let attribute = (name '=' '"' (name cnx* | flt_pt | integer | op) '"')
+let attribute = (name '=' '"' ((name | file) cnx* | literal | op) '"')
 
 (* Main scanner step: search for blocks and comments *)
 rule token =
@@ -49,7 +50,7 @@ rule token =
                                         "Closing tag found for %s\n" tag; 
                                       token lexbuf }
         | ws                        { token lexbuf }
-        | newline                   { Lexing.new_line lexbuf; token lexbuf }
+        | nl                        { Lexing.new_line lexbuf; token lexbuf }
         | _                         { xml_error lexbuf }
         | eof                       { exit 0 }
 (* Comment sub-rule: search for matching comment tag.
@@ -62,12 +63,13 @@ and comment ctype =
         | "?>"  { if ctype = "<?"
                   then token lexbuf
                   else comment ctype lexbuf }
+        | nl    { Lexing.new_line lexbuf; comment ctype lexbuf }
         | _     { comment ctype lexbuf }
 (* Block sub-rule: Scan for supported blocks and link
  * to parsing stage. If an unsupported block is found, note
  * it as information for compilation *)
 and block tag =
-    parse (ws+ attribute)* as attributes ws? ("/>" | ">") as blk_end
+    parse ((ws | nl)+ attribute)* as attributes ws? ("/>" | ">") as blk_end
         {
             printf "Block %s contains: %s\n" tag attributes;
             (* Only the BLOCK tag is allowed to contain tags
