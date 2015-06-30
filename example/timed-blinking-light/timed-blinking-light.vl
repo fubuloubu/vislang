@@ -35,6 +35,7 @@
          attribute) or reference an external file (with reference
          attribute). File location is referenced relatively, or via
          include statements for library parts folders -->
+    <attribute>This will be ignored!</attribute>
     <!-- If a subsystem block were locally defined, everything inside
          the tag would be considered a part of that subsystem  -->
 </BLOCK>

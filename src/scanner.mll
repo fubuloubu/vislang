@@ -50,7 +50,8 @@ rule token =
                                       token lexbuf }
         | ws                        { token lexbuf }
         | nl                        { Lexing.new_line lexbuf; token lexbuf }
-        | _                         { xml_error lexbuf }
+        | _ as c                    { printf "Warning, undefined XML: %c\n" c;
+        (* TODO: Find a better way *) token lexbuf }
         | eof                       { exit 0 }
 (* Comment sub-rule: search for matching comment tag.
  * If a different comment tag type found, then continue,
