@@ -76,11 +76,8 @@ and block tag =
         | "/>"              { printf (* Replace with CTAG *)
                                      "Closing tag found for %s\n" tag;
                               token lexbuf }
-        | ">"               { if tag = "BLOCK" (* Only block part can contain
-                                                * moar blocks *)
-                              then token lexbuf
-                              else printf "Warning: Unclosed block %s" tag;
-                                   block_end tag lexbuf }
+        | ">"               { printf "Warning: Unclosed block %s\n" tag;
+                              token lexbuf }
         | _                 { xml_error lexbuf }
 and value tag =
     parse ws                { value tag lexbuf }
@@ -104,11 +101,6 @@ and value tag =
         | "2x" bindig+ as bin "\""              { printf "%s (Bin)\n" bin;
                                                   block tag lexbuf }
         | _                                     { xml_error lexbuf }
-and block_end tag =
-    parse "</" name as tag_to_chk ">" { if tag_to_chk = tag
-                                        then token lexbuf
-                                        else block_end tag lexbuf }
-        | _                           { block_end tag lexbuf }
 {
     (* Code for test purposes *)
     let rec parse lexbuf =
