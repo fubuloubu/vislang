@@ -26,7 +26,6 @@ let name    = ['A'-'Z' 'a'-'z']['A'-'Z' 'a'-'z' '0'-'9' '_']*
 let file    = ("../" | "./" | "/")
               (['A'-'Z' 'a'-'z' '0'-'9' '_' '-' '.']+ ("/")?)+
               (".vl")
-let cnx     = ("|" name)+
 let sign    = ("+" | "-")
 let boolean = ("true" | "false")
 let digit   = ['0'-'9']
@@ -38,15 +37,15 @@ let octal   = "8x" octdig+
 let bindig  = ['0' '1']
 let binary  = "2x" bindig+
 let decimal = sign? digit+ (* Allow signed decimals *)
-let literal = (boolean | flt_pt | hex | decimal | binary | octal)
 let op      = ("==" | ">" | "<" | ">=" | "<=" | "!=")
-let attribute = (name '=' '"' ((name | file) cnx* | literal | op) '"')
 
 (* Main scanner step: search for blocks and comments *)
 rule token =
     parse ("<?" | "<!--") as ctype  { comment ctype lexbuf }
-        | '<' (name as tag)         { block tag lexbuf }
-        | "</" (name as tag) ">"    { printf 
+        | '<' (name as tag)         { printf (* Replace with OTAG *)
+                                        "Opening tag found for %s\n" tag;
+                                      block tag lexbuf }
+        | "</" (name as tag) ">"    { printf (* Replace with CTAG *)
                                         "Closing tag found for %s\n" tag; 
                                       token lexbuf }
         | ws                        { token lexbuf }
@@ -69,25 +68,47 @@ and comment ctype =
  * to parsing stage. If an unsupported block is found, note
  * it as information for compilation *)
 and block tag =
-    parse ((ws | nl)+ attribute)* as attributes ws? ("/>" | ">") as blk_end
-        {
-            printf "Block %s contains: %s\n" tag attributes;
-            (* Only the BLOCK tag is allowed to contain tags
-             * underneath.*)
-            if blk_end = ">"
-            then printf "Block %s not closed\n" tag;
-            token lexbuf
-        }
+    parse ws                { block tag lexbuf }
+        | nl    { Lexing.new_line lexbuf; block tag lexbuf }
         (* Note: attributes are only accepted in-tag e.g.:
          * <attr>inner attributes are ignored</attr> *)
-        | ("/>" | ">" [^'\n' '\r']* "</" name as tag_to_chk ">") 
-            {
-                if tag_to_chk = tag
-                then (printf "Ignoring Attribute %s\n" tag;
-                    token lexbuf)
-                else xml_error lexbuf
-            }
-        | _ { xml_error lexbuf }
+        | name as n "=\""   { printf "Attribute %s: " n; value tag lexbuf }
+        | "/>"              { printf (* Replace with CTAG *)
+                                     "Closing tag found for %s\n" tag;
+                              token lexbuf }
+        | ">"               { if tag = "BLOCK" (* Only block part can contain
+                                                * moar blocks *)
+                              then token lexbuf
+                              else printf "Warning: Unclosed block %s" tag;
+                                   block_end tag lexbuf }
+        | _                 { xml_error lexbuf }
+and value tag =
+    parse ws                { value tag lexbuf }
+        | nl                { Lexing.new_line lexbuf; value tag lexbuf }
+        | name as n         { printf "%s (Name) " n; value tag lexbuf }
+        | file as f         { printf "%s (File) " f; value tag lexbuf }
+        | "|" (name as cnx) { printf "%s (Connection) " cnx; value tag lexbuf }
+        | "\""              { printf "\n"; block tag lexbuf }
+        (* Only allow recursive calls for the above types by restricting
+         * to terminated values *)
+        | op as o "\""      { printf "%s (Operator)\n" o; block tag lexbuf }
+        | boolean as b "\"" { printf "%s (Bool)\n" b; block tag lexbuf }
+        | flt_pt as f "\""  { printf "%s (Float)\n" f; block tag lexbuf }
+        (* Integer types *)
+        | sign? as s "0x" hexdig+ as hex "\""   { printf "%s0x%s (Hex)\n" s hex;
+        (* Allow signed hex values *)             block tag lexbuf }
+        | sign? as s digit+ as dec "\""         { printf "%s%s (Dec)\n" s dec;
+        (* Allow signed decimal values *)         block tag lexbuf }
+        | "8x" octdig+ as oct "\""              { printf "%s (Oct)\n" oct;
+                                                  block tag lexbuf }
+        | "2x" bindig+ as bin "\""              { printf "%s (Bin)\n" bin;
+                                                  block tag lexbuf }
+        | _                                     { xml_error lexbuf }
+and block_end tag =
+    parse "</" name as tag_to_chk ">" { if tag_to_chk = tag
+                                        then token lexbuf
+                                        else block_end tag lexbuf }
+        | _                           { block_end tag lexbuf }
 {
     (* Code for test purposes *)
     let rec parse lexbuf =
