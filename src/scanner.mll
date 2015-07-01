@@ -50,6 +50,7 @@ rule token =
                                       token lexbuf }
         | ws                        { token lexbuf }
         | nl                        { Lexing.new_line lexbuf; token lexbuf }
+        (* This is here to allow anything between attribute tags to work *)
         | _ as c                    { printf "Warning, undefined XML: %c\n" c;
         (* TODO: Find a better way *) token lexbuf }
         | eof                       { exit 0 }
