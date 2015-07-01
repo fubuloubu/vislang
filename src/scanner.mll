@@ -23,6 +23,8 @@
 let ws      = [' ' '\t']
 let nl      = ['\r' '\n']
 let name    = ['A'-'Z' 'a'-'z']['A'-'Z' 'a'-'z' '0'-'9' '_']*
+let datatype= ("double" | "single" | "boolean" 
+                | 'u'? "int" ("8" | "16" | "32"))
 let file    = ("../" | "./" | "/")
               (['A'-'Z' 'a'-'z' '0'-'9' '_' '-' '.']+ ("/")?)+
               (".vl")
@@ -84,6 +86,7 @@ and block tag =
 and value tag =
     parse ws                { value tag lexbuf }
         | nl                { Lexing.new_line lexbuf; value tag lexbuf }
+        | datatype as d     { printf "%s (Datatype) " d; value tag lexbuf }
         | name as n         { printf "%s (Name) " n; value tag lexbuf }
         | file as f         { printf "%s (File) " f; value tag lexbuf }
         | "|" (name as cnx) { printf "%s (Connection) " cnx; value tag lexbuf }
