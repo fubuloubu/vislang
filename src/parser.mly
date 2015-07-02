@@ -12,27 +12,22 @@
 %left FLOAT HEX DEC OCT BIN BOOL
 %left OTAG CTAG ATTR
 
-%start xml_obj
-%type <Ast.xml_obj> xml_obj
+%start xml_list
+%type <Ast.xml_list> xml_list
 
 %%
 
-xml_obj:
-      xml_list                      { if List.length $1 != 1
-                                      then raise (XML_Parsing_Error
-                                        "Multiple objects in top level element")
-                                      else List.nth $1 0 }
-    | OTAG attr_list xml_list CTAG  { { tagname = $1; 
-                                        attributes = $2; 
-                                        inner_objs = $3 } }
 xml_list:
+      xml_obj                       { [ $1 ] }
+    | xml_list xml_obj              { $1 :: $2 }
+
+xml_obj:
       OTAG attr_list CTAG           {[{ tagname = $1; 
                                         attributes = $2;
                                         inner_objs = [] }]}
-    | xml_obj OTAG attr_list CTAG   { $1 ::
-                                     [{ tagname = $2; 
-                                        attributes = $3;
-                                        inner_objs = [] }]}
+      OTAG attr_list xml_list CTAG  { { tagname = $1; 
+                                        attributes = $2; 
+                                        inner_objs = $3 } }
 
 attr_list: 
       attr             { [$1] }
