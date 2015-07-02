@@ -33,13 +33,10 @@ let sign    = ("+" | "-")
 let boolean = ("true" | "false")
 let digit   = ['0'-'9']
 let flt_pt  = sign? (digit+ "." digit* | "." digit+)
-let hexdig  = ['A'-'F' 'a'-'f' '0'-'9']
-let hex     = sign? "0x" hexdig+ (* Allow signed hex numbers *)
-let octdig  = ['0'-'7']
-let octal   = "8x" octdig+
-let bindig  = ['0' '1']
-let binary  = "2x" bindig+
-let decimal = sign? digit+ (* Allow signed decimals *)
+let hex     = sign? ("0x" | "0X") ['A'-'F' 'a'-'f' '0'-'9']+
+let oct     = sign? ("0o" | "0O") ['0'-'7']+
+let bin     = sign? ("0b" | "0B") ['0' '1']+
+let dec     = sign? digit+ (* Allow signed integers for any encoding *)
 let op      = ("==" | ">" | "<" | ">=" | "<=" | "!=")
 
 (* Main scanner step: search for blocks and comments *)
@@ -99,15 +96,11 @@ and value tag =
         | boolean as b "\"" { printf "%s (Bool)\n" b; block tag lexbuf }
         | flt_pt as f "\""  { printf "%s (Float)\n" f; block tag lexbuf }
         (* Integer types *)
-        | sign? as s "0x" hexdig+ as hex "\""   { printf "%s0x%s (Hex)\n" s hex;
-        (* Allow signed hex values *)             block tag lexbuf }
-        | sign? as s digit+ as dec "\""         { printf "%s%s (Dec)\n" s dec;
-        (* Allow signed decimal values *)         block tag lexbuf }
-        | "8x" octdig+ as oct "\""              { printf "%s (Oct)\n" oct;
-                                                  block tag lexbuf }
-        | "2x" bindig+ as bin "\""              { printf "%s (Bin)\n" bin;
-                                                  block tag lexbuf }
-        | _                                     { xml_error lexbuf }
+        | hex as h "\""     { printf "%s (Hex)\n" h; block tag lexbuf }
+        | dec as d "\""     { printf "%s (Dec)\n" d; block tag lexbuf }
+        | oct as o "\""     { printf "%s (Oct)\n" o; block tag lexbuf }
+        | bin as b "\""     { printf "%s (Bin)\n" b; block tag lexbuf }
+        | _                 { xml_error lexbuf }
 {
     (* Code for test purposes *)
     let rec parse lexbuf =
