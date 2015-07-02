@@ -26,19 +26,22 @@
 
 \begin{document}
 \section{Overview}
+%Vislang overview
 \section{Style Guide}
-XML
-begins with <?xml ... ?> tag
-each block has at least a name attribute
-each block tag has attributes in-tag e.g. <BLOCK attr1="..." attr2="..." etc... />
-will ignore out of tag attributes e.g. <BLOCK><attr1="..."/></BLOCK>
-will ignore unrecognized tags
-ignores both comment types
-file location strings
-usage of connection identifier in file location strings and named blocks
-CONNECTION tags tie things together, can be placed anywhere, but usually directly after the destination block
-accepted float and int literals
-accepted data types
+%XML syntax
+    %begins with <?xml ... ?> tag
+    %each block has at least a name attribute
+    %each block tag has attributes in-tag e.g. <BLOCK attr1="..." attr2="..." etc... />
+    %will ignore out of tag attributes e.g. <BLOCK><attr1="..."/></BLOCK>
+    %will ignore unrecognized tags
+    %ignores both comment types
+    %file location strings valid chars
+    %usage of connection identifier in file location strings and named blocks
+
+    %CONNECTION tags tie things together, can be placed anywhere,
+    %    but usually directly after the destination block
+    %accepted float and int literals
+    %accepted data type literals
 \section{List of Accepted Tags and Attributes}
 Below is the list of standard elements supported by the language, and their attributes:
 \begin{longtable}[c]{ |c|c|c|c| } 
