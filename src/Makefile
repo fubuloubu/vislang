@@ -1,31 +1,47 @@
 .DEFAULT_GOAL := vlcc
 
+OCAMLC=ocamlc
+OCAMLOPT=ocamlopt
+OCAMLDEP=ocamldep
+OCAMLLEX=ocamllex
+OCAMLYACC=ocamlyacc
+INCLUDES=                 # all relevant -I options here
+OCAMLFLAGS=$(INCLUDES)    # add other options for ocamlc here
+OCAMLOPTFLAGS=$(INCLUDES) # add other options for ocamlopt here
+
 # main compilation
-OBJS = parser.cmo scanner.cmo vlcc.cmo
-vlcc : $(OBJS)
-	ocamlc -o vlcc $(OBJS)
+MAIN_OBJS = parser.cmo scanner.cmo ast.cmi vlcc.cmo
+vlcc : $(MAIN_OBJS)
+	$(OCAMLC) -o vlcc $(OCAMLFLAGS) $(MAIN_OBJS)
 
-# Rule to build only scanner
-scanner_test : scanner.cmo
-	ocamlc -o scanner_test scanner.cmo
-
-# Intermediate rules
 # Lexxer rules
 %.ml : %.mll
-	ocamllex $<
+	$(OCAMLLEX) $<
 
 # Parser rules
 %.ml %.mli : %.mly
-	ocamlyacc $<
+	$(OCAMLYACC) $<
 
-# OCaml Object file rules
-%.cmo : %.ml
-	ocamlc -c $<
+# Common rules
+.SUFFIXES: .ml .mli .cmo .cmi .cmx
 
-%.cmi : %.mli
-	ocamlc -c $<
+.ml.cmo:
+	$(OCAMLC) $(OCAMLFLAGS) -c $<
 
-# Alias for cleaning up code
-.PHONY : clean
-clean :
-	rm -f vlcc parser.ml parser.mli scanner.ml *.cmo *.cmi
+.mli.cmi:
+	$(OCAMLC) $(OCAMLFLAGS) -c $<
+
+.ml.cmx:
+	$(OCAMLOPT) $(OCAMLOPTFLAGS) -c $<
+
+# Clean up
+clean:
+	rm -f vlcc
+	rm -f lexer.ml parser.ml parser.mli
+	rm -f *.cm[iox]
+
+# Dependencies
+depend:
+	$(OCAMLDEP) $(INCLUDES) *.mli *.ml > .depend
+
+include .depend
