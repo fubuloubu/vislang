@@ -1,4 +1,7 @@
 src/scanner.ml
+src/parser.mli
+src/parser.ml
+src/vlcc
 *.swp
 *.log
 *.aux
@@ -7,5 +10,3 @@ src/scanner.ml
 *.cmi
 *.cmo
 *.cmx
-src/scanner_test
-src/vlcc
