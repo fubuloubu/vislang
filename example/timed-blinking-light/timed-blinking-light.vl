@@ -14,7 +14,7 @@
          here. Not relevant for the compiler -->
 </CONNECTION>
 <!-- literal constants for booleans are "true" and "false"-->
-<MEM name="count_expired_lp" initial_condition="false"/>
+<MEM name="count_expired_lp" ic="false"/>
 <!-- Memory block would store the state each pass of the variable
      specified by current_pass_value at the end of execution 
      such that the last_pass_value can be used in the local scope

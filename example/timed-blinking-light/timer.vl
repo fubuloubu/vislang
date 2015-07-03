@@ -47,9 +47,9 @@
 <CONNECTION to="is_count_expired|lhs" from="elapsed_time"/>
 <CONNECTION to="is_count_expired|rhs" from="time"/>
 <CONNECTION to="count_expired" from="is_count_expired|output"/>
-<MEM name="elapsed_time_lp" initial_condition="0.000"/>
+<MEM name="elapsed_time_lp" ic="0.000"/>
 <CONNECTION to="elapsed_time_lp|current" from="elapsed_time"/>
-<MEM name="count_expired_lp" initial_condition="false"/>
+<MEM name="count_expired_lp" ic="false"/>
 <CONNECTION to="count_expired_lp|current" from="count_expired"/>
 <!-- All Outputs need to have a connection in the part,
      at least to a constant -->
