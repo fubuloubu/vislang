@@ -9,6 +9,9 @@ INCLUDES=                 # all relevant -I options here
 OCAMLFLAGS=$(INCLUDES)    # add other options for ocamlc here
 OCAMLOPTFLAGS=$(INCLUDES) # add other options for ocamlopt here
 
+.SECONDARY:
+	
+
 # main compilation
 MAIN_OBJS = parser.cmo scanner.cmo ast.cmi vlcc.cmo
 vlcc : $(MAIN_OBJS)
