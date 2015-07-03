@@ -6,28 +6,34 @@
 %}
 
 %token <string> OTAG CTAG ATTR
-%token <Ast.value> NAME FILE OPR SCOPE REF DTYPE BOOL FLOAT HEX DEC OCT BIN
+%token <Ast.value> NAME FILE OPR SCOPE REF DTYPE
+%token <string> BOOL FLOAT HEX DEC OCT BIN
 
 %left NAME REF FILE OPR SCOPE DTYPE
 %left FLOAT HEX DEC OCT BIN BOOL
 %left OTAG CTAG ATTR
 
-%start xml_list
-%type <Ast.xml_list> xml_list
+%start xml_tree
+%type <Ast.xml_obj list> xml_tree
+%type <Ast.xml_obj list> xml_list
+%type <Ast.xml_obj>      xml_obj
 
 %%
 
-xml_list:
-      xml_obj                       { [ $1 ] }
-    | xml_list xml_obj              { $1 :: $2 }
+xml_tree:
+      xml_list                      { $1 }
 
 xml_obj:
-      OTAG attr_list CTAG           {[{ tagname = $1; 
+      OTAG attr_list CTAG           { { tagname = $1; 
                                         attributes = $2;
-                                        inner_objs = [] }]}
-      OTAG attr_list xml_list CTAG  { { tagname = $1; 
+                                        inner_objs = [] } }
+    | OTAG attr_list xml_list CTAG  { { tagname = $1; 
                                         attributes = $2; 
                                         inner_objs = $3 } }
+
+xml_list:
+      xml_obj                       { [ $1 ] }
+    | xml_list xml_obj              { $2 :: $1 }
 
 attr_list: 
       attr             { [$1] }
@@ -46,7 +52,7 @@ value:
     | DTYPE            { $1 }
 
 ref_list: 
-      FILE REF         { $2 :: $1 }
+      FILE REF         { [$2; $1] }
     | ref_list REF     { $2 :: $1 }
 
 literal: 
