@@ -1,9 +1,9 @@
 .DEFAULT_GOAL := vlcc
 
-OCAMLC=ocamlc
-OCAMLOPT=ocamlopt
-OCAMLDEP=ocamldep
-OCAMLLEX=ocamllex
+   OCAMLC=ocamlc   
+ OCAMLOPT=ocamlopt 
+ OCAMLDEP=ocamldep 
+ OCAMLLEX=ocamllex 
 OCAMLYACC=ocamlyacc
 INCLUDES=                 # all relevant -I options here
 OCAMLFLAGS=$(INCLUDES)    # add other options for ocamlc here
@@ -16,23 +16,23 @@ vlcc : $(MAIN_OBJS)
 
 # Lexxer rules
 %.ml : %.mll
-	$(OCAMLLEX) $<
+	$(OCAMLLEX)   $<
 
 # Parser rules
 %.ml %.mli : %.mly
-	$(OCAMLYACC) $<
+	$(OCAMLYACC)    $<
 
 # Common rules
 .SUFFIXES: .ml .mli .cmo .cmi .cmx
 
 .ml.cmo:
-	$(OCAMLC) $(OCAMLFLAGS) -c $<
+	$(OCAMLC) -c $<
 
 .mli.cmi:
-	$(OCAMLC) $(OCAMLFLAGS) -c $<
+	$(OCAMLC) -c $<
 
 .ml.cmx:
-	$(OCAMLOPT) $(OCAMLOPTFLAGS) -c $<
+	$(OCAMLOPT) -c $<
 
 # Clean up
 clean:
