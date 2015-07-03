@@ -10,8 +10,10 @@
 <NOT name="not_di_1"/>
 <!-- The | operator on a name denotes an available connection -->
 <CONNECTION to="not_di_1|input" from="digital_input_1">
-    <!-- A GUI Program could specify the shape of the connection
-         here. Not relevant for the compiler -->
+    <!-- Any unrecognized elements or attributes are ignored, e.g. 
+         A GUI Program could specify the shape of the connection
+         here, but the compiler would ignore this attribute.  -->
+    <shape>This will get ignored!</shape>
 </CONNECTION>
 <!-- literal constants for booleans are "true" and "false"-->
 <MEM name="count_expired_lp" ic="false"/>
@@ -30,15 +32,12 @@
 <CONNECTION to="reset_blink|input2" from="count_expired_lp|stored"/>
 <!-- The | operator on a reference denotes a member of the referenced
      file or library -->
-<BLOCK name="timer_instance_1" reference="./timer.vl|timer">
-    <!-- Subsystem block can either be locally defined (no reference
-         attribute) or reference an external file (with reference
-         attribute). File location is referenced relatively, or via
-         include statements for library parts folders -->
-    <attribute>This will be ignored!</attribute>
-    <!-- If a subsystem block were locally defined, everything inside
-         the tag would be considered a part of that subsystem  -->
-</BLOCK>
+<REFERENCE name="timer_instance_1" reference="./timer.vl|timer">
+    <!-- Reference block references a block in an external file as
+         specified. File location is referenced relatively. All 
+         Inputs and Outputs of that block will be checked at compile
+         time to match the connections made to the block. -->
+</REFERENCE>
 <CONNECTION to="timer_instance_1|start" from="digital_input_1"/>
 <!-- Input and output connections to blocks are partially ambigious.
      However for a Connection to work, one and only one of "to" or
