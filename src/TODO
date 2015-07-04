@@ -1,0 +1,6 @@
+reorganize scanner to match the extra comment types (<? ?>, <![ ]>, and <!-- -->)
+handle connections separetely
+blocks can have inner elements, ignore inner elemenets for other parts (except connections)
+parser should first hand parse through blocks and parts into the object specification syntax
+the object specification syntax should be a struct definition the main compiler can use to interpret each type of part, and additionally ensure connections are valid (right name and type)
+each part needs a functional component and a code generation equivalent. recursive parts (gates and sum/prod blocks) needs special attention. DT block needs a method for getting run time of the program.
