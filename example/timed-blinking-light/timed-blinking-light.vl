@@ -39,7 +39,7 @@
         <!-- The | operator on a reference denotes a member of the referenced
              file or library -->
     </OR>
-    <REFERENCE name="timer_instance_1" reference="./timer.vl|timer">
+    <REFERENCE name="timer_instance_1" ref="./timer.vl|timer">
         <!-- Reference block references a block in an external file as
              specified. File location is referenced relatively. All 
              Inputs and Outputs of that block will be checked at compile
