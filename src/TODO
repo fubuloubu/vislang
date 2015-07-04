@@ -4,3 +4,7 @@ blocks can have inner elements, ignore inner elemenets for other parts (except c
 parser should first hand parse through blocks and parts into the object specification syntax
 the object specification syntax should be a struct definition the main compiler can use to interpret each type of part, and additionally ensure connections are valid (right name and type)
 each part needs a functional component and a code generation equivalent. recursive parts (gates and sum/prod blocks) needs special attention. DT block needs a method for getting run time of the program.
+
+Nice to haves:
+restructure all the blocks such that all built-in parts are actually references to blocks in a std_lib.vl file. Then reorganize such that attributes can be inside tags. Then add a way for us to specify ocaml method code and C method code, using the defined element attributes. This would take a lot of effort though....
+
