@@ -1,5 +1,3 @@
-reorganize scanner to match the extra comment types (<? ?>, <![ ]>, and <!-- -->)
-handle connections separetely
 blocks can have inner elements, ignore inner elemenets for other parts (except connections)
 parser should first hand parse through blocks and parts into the object specification syntax
 the object specification syntax should be a struct definition the main compiler can use to interpret each type of part, and additionally ensure connections are valid (right name and type)

@@ -40,7 +40,7 @@ vlcc : $(MAIN_OBJS)
 # Clean up
 clean:
 	rm -f vlcc
-	rm -f lexer.ml parser.ml parser.mli
+	rm -f scanner.ml parser.ml parser.mli
 	rm -f *.cm[iox]
 
 # Dependencies
