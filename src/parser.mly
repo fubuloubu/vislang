@@ -5,8 +5,8 @@
     exception XML_Parsing_Error of string
 %}
 
-%token O_ELEM C_ELEM
-%token <string> ELEM ATTR
+%token C_ELEM EOF
+%token <string> O_ELEM ATTR
 %token <string> NAME FILE REF DTYPE SCOPE
 %token GRT LST EQT NEQ LEQ GEQ
 %token OR AND NOT XOR NAND NOR XNOR
@@ -16,19 +16,23 @@
 %left BOOL FLOAT HEX DEC OCT BIN
 %left O_ELEM C_ELEM ELEM ATTR
 
-%start xml_obj 
+%start xml_tree
+%type <Ast.xml_obj>      xml_tree
 %type <Ast.xml_obj list> xml_list
 %type <Ast.xml_obj>      xml_obj
 
 %%
 
+xml_tree:
+    xml_obj EOF { $1 }
+
 xml_obj:
-      O_ELEM ELEM attr_list C_ELEM          { { blkname     = $2 ; 
-                                                attributes  = $3 ;
-                                                inner_objs  = [] } }
-    | O_ELEM ELEM attr_list xml_list C_ELEM { { blkname     = $2 ; 
-                                                attributes  = $3 ; 
-                                                inner_objs  = $4 } }
+      O_ELEM attr_list C_ELEM           { { blkname     = $1 ; 
+                                            attributes  = $2 ;
+                                            inner_objs  = [] } }
+    | O_ELEM attr_list xml_list C_ELEM  { { blkname     = $1 ; 
+                                            attributes  = $2 ; 
+                                            inner_objs  = $3 } }
 
 xml_list:
       xml_obj           { [  $1  ] }
