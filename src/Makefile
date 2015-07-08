@@ -13,9 +13,18 @@ OCAMLOPTFLAGS=$(INCLUDES) # add other options for ocamlopt here
 	
 
 # main compilation
-MAIN_OBJS = parser.cmo scanner.cmo ast.cmi vlcc.cmo
+MAIN_OBJS = scanner.cmo parser.cmo ast.cmi vlcc.cmo
 vlcc : $(MAIN_OBJS)
-	$(OCAMLC) -o vlcc $(OCAMLFLAGS) $(MAIN_OBJS)
+	$(OCAMLC) -o $@ $(OCAMLFLAGS) $<
+
+# create test binaries
+SCANNER_OBJS = scanner.cmo ast.cmi scanner_test.cmo
+scanner_test : $(SCANNER_OBJS)
+	$(OCAMLC) -o $@ $<
+
+PARSER_OBJS = scanner.cmo parser.cmo ast.cmi parser_test.cmo
+parser_test : $(PARSER_OBJS)
+	$(OCAMLC) -o $@ $<
 
 # Lexxer rules
 %.ml : %.mll
@@ -40,6 +49,7 @@ vlcc : $(MAIN_OBJS)
 # Clean up
 clean:
 	rm -f vlcc
+	rm -f scanner_test parser_test
 	rm -f scanner.ml parser.ml parser.mli
 	rm -f *.cm[iox]
 

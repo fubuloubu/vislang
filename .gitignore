@@ -1,7 +1,9 @@
 src/scanner.ml
+src/scanner_test
 src/parser.mli
 src/parser.ml
 src/parser.output
+src/parser_test
 src/vlcc
 *.swp
 *.log
