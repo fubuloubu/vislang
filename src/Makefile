@@ -40,7 +40,6 @@ vlcc : $(MAIN_OBJS)
 # Clean up
 clean:
 	rm -f vlcc
-	rm -f scanner_test parser_test
 	rm -f scanner.ml parser.ml parser.mli
 	rm -f *.cm[iox]
 
