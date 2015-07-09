@@ -17,15 +17,6 @@ MAIN_OBJS = scanner.cmo parser.cmo ast.cmi vlcc.cmo
 vlcc : $(MAIN_OBJS)
 	$(OCAMLC) -o $@ $(OCAMLFLAGS) $<
 
-# create test binaries
-SCANNER_OBJS = scanner.cmo ast.cmi scanner_test.cmo
-scanner_test : $(SCANNER_OBJS)
-	$(OCAMLC) -o $@ $<
-
-PARSER_OBJS = scanner.cmo parser.cmo ast.cmi parser_test.cmo
-parser_test : $(PARSER_OBJS)
-	$(OCAMLC) -o $@ $<
-
 # Lexxer rules
 %.ml : %.mll
 	$(OCAMLLEX)   $<
