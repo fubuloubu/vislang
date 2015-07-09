@@ -13,7 +13,7 @@ OCAMLOPTFLAGS=$(INCLUDES) # add other options for ocamlopt here
 	
 
 # main compilation
-MAIN_OBJS = scanner.cmo parser.cmo ast.cmi vlcc.cmo
+MAIN_OBJS = scanner.cmo parser.cmo ast.cmo vlcc.cmo
 vlcc : $(MAIN_OBJS)
 	$(OCAMLC) -o $@ $(OCAMLFLAGS) $<
 
