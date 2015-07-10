@@ -13,13 +13,13 @@ OCAMLOPTFLAGS=$(INCLUDES) # add other options for ocamlopt here
 	
 
 # main compilation
-MAIN_OBJS = scanner.cmo parser.cmo ast.cmo vislang.cmo
+MAIN_OBJS = errors.cmo scanner.cmo parser.cmo ast.cmo vislang.cmo
 vlcc : $(MAIN_OBJS)
 	$(OCAMLC) -o $@ $(OCAMLFLAGS) $^
 
 # Lexxer rules
 %.ml : %.mll
-	$(OCAMLLEX)   $<
+	$(OCAMLLEX)    $<
 
 # Parser rules
 %.ml %.mli : %.mly

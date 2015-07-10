@@ -1,7 +1,7 @@
-vislang.cmo : scanner.cmo parser.cmo ast.cmo
-vislang.cmx : scanner.cmx parser.cmx ast.cmo
-parser.cmo  : ast.cmo parser.cmi
-parser.cmx  : ast.cmo parser.cmi
-scanner.cmo : parser.cmi
-scanner.cmx : parser.cmx
+vislang.cmo : scanner.cmo parser.cmo ast.cmo errors.cmo
+vislang.cmx : scanner.cmx parser.cmx ast.cmx errors.cmx
+parser.cmo  : ast.cmo parser.cmi errors.cmo
+parser.cmx  : ast.cmo parser.cmi errors.cmo
+scanner.cmo : parser.cmi errors.cmo
+scanner.cmx : parser.cmx errors.cmx
 parser.cmi  : ast.cmo
