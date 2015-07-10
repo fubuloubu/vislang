@@ -1,8 +1,6 @@
 %{
     open Ast
     open Printf
-    (* Define errors *)
-    exception XML_Parsing_Error of string
 %}
 
 %token C_ELEM EOF

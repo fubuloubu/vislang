@@ -1,5 +1,5 @@
 (* Define errors *)
-let lex_issue msg start finish  = 
+let issue msg start finish  = 
         Printf.sprintf "(line %d: char %d..%d): %s" 
                 (start.Lexing.pos_lnum)
                 (start.Lexing.pos_cnum - start.Lexing.pos_bol) 
@@ -8,15 +8,24 @@ let lex_issue msg start finish  =
 exception XML_Error of string
 let xml_error lexbuf = raise
                 (XML_Error
-                    (lex_issue 
+                    (issue 
                         ("Badly Formatted XML")
                         (lexbuf.Lexing.lex_start_p) 
                         (lexbuf.Lexing.lex_curr_p)
                     )
                 )
-let xml_warning lexbuf =
-                    (lex_issue 
+let xml_warning lexbuf = ignore 
+                    (issue 
                         ("Warning -- Skipping XML")
                         (lexbuf.Lexing.lex_start_p) 
                         (lexbuf.Lexing.lex_curr_p)
                     )
+exception XML_Parse_Error of string
+let xml_parse_error lexbuf = raise
+                (XML_Parse_Error
+                    (issue 
+                        ("Badly Formatted XML")
+                        (lexbuf.Lexing.lex_start_p) 
+                        (lexbuf.Lexing.lex_curr_p)
+                    )
+                )
