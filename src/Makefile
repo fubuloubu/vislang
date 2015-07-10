@@ -15,11 +15,12 @@ OCAMLOPTFLAGS=$(INCLUDES) # add other options for ocamlopt here
 # main compilation
 MAIN_OBJS = errors.cmo scanner.cmo parser.cmo ast.cmo vislang.cmo
 vlcc : $(MAIN_OBJS)
-	$(OCAMLC) -o $@ $(OCAMLFLAGS) $^
+	@echo "$(OCAMLC) -o vlcc MAIN_OBJS"
+	@$(OCAMLC) -o $@ $(OCAMLFLAGS) $^
 
 # Lexxer rules
 %.ml : %.mll
-	$(OCAMLLEX)    $<
+	$(OCAMLLEX) -q $<
 
 # Parser rules
 %.ml %.mli : %.mly
@@ -39,9 +40,10 @@ vlcc : $(MAIN_OBJS)
 
 # Clean up
 clean:
-	rm -f vlcc
-	rm -f scanner.ml parser.ml parser.mli
-	rm -f *.cm[iox]
+	@echo "Cleaning Directory..."
+	@rm -f vlcc
+	@rm -f scanner.ml parser.ml parser.mli
+	@rm -f *.cm[iox]
 
 # Dependencies
 depend:
