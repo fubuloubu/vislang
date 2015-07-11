@@ -15,7 +15,7 @@ OCAMLOPTFLAGS=$(INCLUDES) # add other options for ocamlopt here
 # main compilation
 MAIN_OBJS = errors.cmo scanner.cmo parser.cmo ast.cmo vislang.cmo
 vlcc : $(MAIN_OBJS)
-	@echo "$(OCAMLC) -o vlcc MAIN_OBJS"
+	@echo "$(OCAMLC) -o vlcc"
 	@$(OCAMLC) -o $@ $(OCAMLFLAGS) $^
 
 # Lexxer rules
