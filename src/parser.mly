@@ -49,8 +49,8 @@ value:
     | literal           {            $1  }
     | bitwopr           { Bitwopr   ($1) }
     | compopr           { Compopr   ($1) }
-    | SCOPE             { Datatype  ($1) }
-    | DTYPE             { Scope     ($1) }
+    | DTYPE             { Datatype  ($1) }
+    | SCOPE             { Scope     ($1) }
 
 ref:
       FILE ref_list     { { reftype = "FILE" ; 
