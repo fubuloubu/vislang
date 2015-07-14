@@ -1,0 +1,21 @@
+<BLOCK name="set_reset_latch">
+    <INPUT name="set" scope="local" type="boolean" size="1"/>
+    <INPUT name="reset" scope="local" type="boolean" size="1"/>
+    <NOT name="not_reset">
+        <CONNECTION to="input" from="reset"/>
+    </NOT>
+    <OR name="set_or_mem">
+        <CONNECTION to="input1" from="latch_lp|stored"/>
+        <CONNECTION to="input2" from="set"/>
+    </OR>
+    <AND name="latch_and_not_reset">
+        <CONNECTION to="input1" from="set_or_mem|output"/>
+        <CONNECTION to="input2" from="not_reset|output"/>
+    </AND>
+    <MEM name="latch_lp" ic="false">
+        <CONNECTION to="current" from="latch_and_not_reset|output"/>
+    </MEM>
+    <OUTPUT name="latch" type="boolean" scope="local" size="1">
+        <CONNECTION to="latch" from="latch_and_not_reset|output"/>
+    </OUTPUT>
+</BLOCK>
