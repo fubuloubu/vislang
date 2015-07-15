@@ -107,7 +107,7 @@ if [ $# -ge 1 ]
 then
     files=$@
 else
-    files="./fail-*.vl ./test-*.vl"
+    files="./fail-*.vl ./pass-*.vl ./test-*.vl"
 fi
 
 for file in $files
@@ -118,6 +118,9 @@ do
         ;;
         *fail-*)
             CheckFail $file 2>> $globallog
+        ;;
+        *pass-*)
+            CheckPass $file 2>> $globallog
         ;;
         *)
             echo "unknown file type $file"
