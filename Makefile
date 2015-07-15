@@ -1,4 +1,4 @@
-.PHONY : complier tests
+.PHONY : compiler tests
 compiler:
 	@cd src/ && make
 	@cd ../
