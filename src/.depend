@@ -3,8 +3,8 @@ ast.cmo :
 ast.cmx :
 errors.cmo :
 errors.cmx :
-parser.cmo : ast.cmo parser.cmi
-parser.cmx : ast.cmx parser.cmi
+parser.cmo : errors.cmo ast.cmo parser.cmi
+parser.cmx : errors.cmx ast.cmx parser.cmi
 scanner.cmo : parser.cmi errors.cmo
 scanner.cmx : parser.cmx errors.cmx
 vislang.cmo : scanner.cmo parser.cmi ast.cmo

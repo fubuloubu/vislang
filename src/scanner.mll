@@ -35,8 +35,8 @@ rule token =
     (* Elements: Scan for supported blocks and link to parsing stage. 
      * If an unsupported block is found, note it as information for compilation *)
         | '<' (blktag as b)         { O_ELEM( b )                           }
-        | "</" blktag ">"           { C_ELEM }
-        | "/>"                      { C_ELEM }
+        | "</" (blktag as b) ">"    { C_ELEM( b )                           }
+        | "/>"                      { E_ELEM                                }
         | ">"                       { (* No tag required *) token lexbuf    }
     (* Attributes: The following are tokens for different values
      * attributes might take on. *)

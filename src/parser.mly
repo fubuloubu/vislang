@@ -1,10 +1,11 @@
 %{
     open Ast
     open Printf
+    open Errors
 %}
 
-%token C_ELEM EOF
-%token <string> O_ELEM ATTR
+%token E_ELEM EOF
+%token <string> O_ELEM C_ELEM ATTR
 %token <string> NAME FILE REF DTYPE SCOPE
 %token GRT LST EQT NEQ LEQ GEQ
 %token OR AND NOT XOR NAND NOR XNOR
@@ -25,10 +26,15 @@ xml_tree:
     xml_obj EOF { $1 }
 
 xml_obj:
-      O_ELEM attr_list C_ELEM           { { blkname     = $1 ; 
+      O_ELEM attr_list E_ELEM           { { blkname     = $1 ; 
                                             attributes  = $2 ;
                                             inner_objs  = [] } }
-    | O_ELEM attr_list xml_list C_ELEM  { { blkname     = $1 ; 
+    | O_ELEM attr_list xml_list C_ELEM  { if $1 <> $4
+                                          then xml_parse_error (4) 
+                                            ("Open/Close element mismatch. " ^
+                                             "Element " ^ $1 ^ " <> " ^ $4)
+                                          else
+                                          { blkname     = $1 ; 
                                             attributes  = $2 ; 
                                             inner_objs  = $3 } }
 

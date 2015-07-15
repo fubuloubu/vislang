@@ -24,10 +24,10 @@ let xml_warning lexbuf = ignore
                         (Lexing.lexeme_end_p lexbuf)
                     )
 exception XML_Parse_Error of string
-let xml_parse_error nterm = raise
+let xml_parse_error nterm msg = raise
                 (XML_Parse_Error
                     (issue 
-                        ("Badly Formatted XML")
+                        ("Badly Formatted XML: " ^ msg)
                         (rhs_start_pos nterm) 
                         (rhs_end_pos nterm)
                     )
