@@ -6,3 +6,7 @@ compiler:
 tests:
 	@cd test/ && ./run_tests.sh
 	@cd ../
+
+clean_tests:
+	@rm ./test/*.c*
+	@rm ./test/*.i.*
