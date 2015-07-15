@@ -52,7 +52,8 @@ attr:
 
 value: 
       ref               { Ref       ($1) }
-    | literal           {            $1  }
+    | NAME              { Name      ($1) }
+    | literal           {           ($1) }
     | bitwopr           { Bitwopr   ($1) }
     | compopr           { Compopr   ($1) }
     | DTYPE             { Datatype  ($1) }

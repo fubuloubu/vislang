@@ -10,6 +10,7 @@ type ref  = {
 
 type value = 
       Ref       of ref              (* List of strings leading to a block           *)
+    | Name      of string           (* Name of a block                              *)
     | Int       of int              (* Standard int type                            *)
     | Float     of float            (* Standard float type                          *)
     | Bool      of bool             (* Standard boolean type                        *)
@@ -49,26 +50,30 @@ let string_of_comp_opr v = match v with
     | Geq   -> ">="
 
 let string_of_ref (v) =
-    "(" ^ v.reftype ^ "): " ^ v.refroot ^ "|" ^ String.concat "|" (v.reflist)
+      v.refroot ^ "|" ^ String.concat "|" (v.reflist) ^ " (" ^ v.reftype ^ " REF)"
 
 let string_of_value value = match value with
-      Ref      v ->  "(REF): "   ^ string_of_ref v
-    | Int      v ->  "(INT): "   ^ string_of_int v
-    | Float    v ->  "(FLOAT): " ^ string_of_float v
-    | Bool     v ->  "(BOOL): "  ^ string_of_bool v
-    | Scope    v ->  "(SCOPE): " ^ v
-    | Datatype v ->  "(DTYPE): " ^ v
-    | Compopr  v ->  "(COMP): "  ^ string_of_comp_opr v
-    | Bitwopr  v ->  "(BITW): "  ^ string_of_bitw_opr v
-    | Size     v ->  "(SIZE): "  ^ string_of_int v
+      Ref      v -> string_of_ref v
+    | Name     v -> v
+    | Int      v -> string_of_int v
+    | Float    v -> string_of_float v
+    | Bool     v -> string_of_bool v
+    | Scope    v -> v
+    | Datatype v -> v
+    | Compopr  v -> string_of_comp_opr v
+    | Bitwopr  v -> string_of_bitw_opr v
+    | Size     v -> string_of_int v
 
 let string_of_attr (a) =
     a.aname ^ ": " ^ string_of_value a.avalue
 
 let rec string_of_xml (obj) =
     "Block: " ^ obj.blkname ^ "\n" ^
-    "Has the following Attributes:\n" ^ 
-    String.concat "\n" (List.map string_of_attr obj.attributes) ^
-    "And contains the following blocks:\n" ^
-    String.concat "\n" (List.map string_of_xml obj.inner_objs) ^
-    "\n%--------------------------------%\n"
+    "Attributes:\n-" ^ 
+    (String.concat "\n-" (List.map string_of_attr obj.attributes)) ^
+    if obj.inner_objs == []
+    then "\n"
+    else
+    "\n\nChildren:\n" ^
+    (String.concat "\n" (List.map string_of_xml obj.inner_objs)) ^
+    "\nEnd of Children for: " ^ obj.blkname ^"\n"
