@@ -1,5 +1,6 @@
 open Scanner
 open Parser
+open Blockify
 
 type action = Ast | Interpret | Bytecode | Compile
 
@@ -12,10 +13,11 @@ let _ =
     else Compile in
 
     let lexbuf = Lexing.from_channel stdin in
-    let program = Parser.xml_tree Scanner.token lexbuf in
+    let xml_tree = Parser.xml_tree Scanner.token lexbuf in
+    let program = Blockify.parse_tree xml_tree in
 
     match action with
-          Ast       -> let listing = Ast.string_of_xml program
+          Ast       -> let listing = Ast.string_of_xml xml_tree
                         in print_string listing
         | Interpret -> ()(*ignore (Interpret.run program) *)
         | Bytecode  -> ()(*let listing = Bytecode.string_of_prog
