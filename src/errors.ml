@@ -1,5 +1,6 @@
 open Lexing
 open Parsing
+open Ast
 
 (* Define errors *)
 let issue msg start finish  = 
@@ -31,4 +32,10 @@ let xml_parse_error nterm msg = raise
                         (rhs_start_pos nterm) 
                         (rhs_end_pos nterm)
                     )
+                )
+
+exception Block_Error of string
+let block_error blk msg = raise
+                (Block_Error
+                    (msg ^ " for block:\n" ^ Ast.string_of_xml blk)
                 )
