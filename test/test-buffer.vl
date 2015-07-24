@@ -1,0 +1,6 @@
+<BLOCK name="buffer">
+    <INPUT name="in" scope="local" type="auto" size="auto"/>
+    <OUTPUT name="out" type="auto" scope="local" size="auto">
+        <CONNECTION to="out" from="in"/>
+    </OUTPUT>
+</BLOCK>

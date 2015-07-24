@@ -3,8 +3,8 @@ src/parser.mli
 src/parser.ml
 src/parser.output
 src/vlcc
-test/*.c*
-test/*.i*
+test/*.c.*
+test/*.i.*
 *.swp
 *.log
 *.aux
