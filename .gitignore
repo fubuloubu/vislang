@@ -1,7 +1,7 @@
-src/scanner.ml
-src/parser.mli
-src/parser.ml
-src/parser.output
+src/xscanner.ml
+src/xparser.mli
+src/xparser.ml
+src/xparser.output
 src/vlcc
 test/*.c.*
 test/*.i.*
