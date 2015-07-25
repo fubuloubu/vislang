@@ -11,7 +11,8 @@ let blktag  = ['A'-'Z']+ (* All accepted tags are upper case. TODO: insert list 
 let attr    = ['a'-'z']+ (* All accepted attrs are lower case. TODO: insert list of 
                                                              * accepted attrs here *)
 let name    = ['A'-'Z' 'a'-'z']['A'-'Z' 'a'-'z' '0'-'9' '_']*
-let dtype   = ("double" | "single" | "boolean" | 'u'? "int" ("8" | "16" | "32"))
+let dtype   = ("auto" | "double" | "single" | "boolean" 
+                | 'u'? "int" ("8" | "16" | "32"))
 let scope   = ("global" | "local")
 let file    = (".." | ".")? ("/" ['A'-'Z' 'a'-'z' '0'-'9' '_' '-' '.']+ )+ ".vl"
 let sign    = ("+" | "-")
