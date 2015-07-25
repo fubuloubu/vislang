@@ -1,5 +1,5 @@
 {
-    open Parser
+    open Xparser
     open Errors
 }
 (* Main definitions for use below *)
