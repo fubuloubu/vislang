@@ -1,6 +1,6 @@
 <vl:BLOCK name="buffer">
-    <vl:INPUT name="in" scope="local" type="auto" size="auto"/>
-    <vl:OUTPUT name="out" type="auto" scope="local" size="auto">
+    <vl:INPUT name="in" scope="local" datatype="auto" size="auto"/>
+    <vl:OUTPUT name="out" datatype="auto" scope="local" size="auto">
         <vl:CONNECTION to="out" from="in"/>
     </vl:OUTPUT>
 </vl:BLOCK>
