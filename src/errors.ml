@@ -39,3 +39,5 @@ let block_error blk msg = raise
                 (Block_Error
                     (msg ^ " for block:\n" ^ Xst.string_of_xml blk)
                 )
+
+let object_error msg = raise (Block_Error (msg) )
