@@ -1,8 +1,8 @@
 src/xscanner.ml
-src/xparser.mli
 src/xparser.ml
 src/xparser.output
 src/vlcc
+src/*.mli
 test/*.c.*
 test/*.i.*
 *.swp
