@@ -1,6 +1,5 @@
 %{
-    open Ast
-    open Printf
+    open Xst
     open Errors
 %}
 
@@ -16,9 +15,9 @@
 %left O_ELEM C_ELEM ELEM ATTR
 
 %start xml_tree
-%type <Ast.xml_obj>      xml_tree
-%type <Ast.xml_obj list> xml_list
-%type <Ast.xml_obj>      xml_obj
+%type <Xst.xml_obj>      xml_tree
+%type <Xst.xml_obj list> xml_list
+%type <Xst.xml_obj>      xml_obj
 
 %%
 
@@ -26,7 +25,7 @@ xml_tree:
     xml_obj EOF { $1 }
 
 xml_obj:
-      O_ELEM attr_list E_ELEM           { { blkname     = $1 ; 
+      O_ELEM attr_list E_ELEM           { { tagname     = $1 ; 
                                             attributes  = $2 ;
                                             inner_objs  = [] } }
     | O_ELEM attr_list xml_list C_ELEM  { if $1 <> $4
@@ -34,7 +33,7 @@ xml_obj:
                                             ("Open/Close element mismatch. " ^
                                              "Element " ^ $1 ^ " <> " ^ $4)
                                           else
-                                          { blkname     = $1 ; 
+                                          { tagname     = $1 ; 
                                             attributes  = $2 ; 
                                             inner_objs  = $3 } }
 

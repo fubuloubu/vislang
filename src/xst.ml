@@ -26,12 +26,12 @@ type attr = {
 }
 
 type xml_obj = {
-    blkname     :  string;          (* Block Name                                   *)
+    tagname     :  string;          (* Block Name                                   *)
     attributes  :  attr list;       (* Dictionary of attribute names and values     *)
     inner_objs  :  xml_obj list;    (* List of contained XML objects (can be empty) *)
 }
 
-(* Helper functions for printing AST *)
+(* Helper functions for printing XML AST *)
 let string_of_bitw_opr v = match v with
       Or    -> "or"
     | And   -> "and"
@@ -68,7 +68,7 @@ let string_of_attr (a) =
     a.aname ^ ": " ^ string_of_value a.avalue
 
 let rec string_of_xml (obj) =
-    "Block: " ^ obj.blkname ^ "\n" ^
+    "Block: " ^ obj.tagname ^ "\n" ^
     "Attributes:\n-" ^ 
     (String.concat "\n-" (List.map string_of_attr obj.attributes)) ^
     if obj.inner_objs == []
@@ -76,4 +76,4 @@ let rec string_of_xml (obj) =
     else
     "\n\nChildren:\n" ^
     (String.concat "\n" (List.map string_of_xml obj.inner_objs)) ^
-    "\nEnd of Children for: " ^ obj.blkname ^"\n"
+    "\nEnd of Children for: " ^ obj.tagname ^"\n"
