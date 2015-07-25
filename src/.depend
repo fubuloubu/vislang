@@ -1,11 +1,19 @@
 parser.cmi : ast.cmo
 ast.cmo :
 ast.cmx :
-errors.cmo :
-errors.cmx :
+blockify.cmo :
+blockify.cmx :
+bytecode.cmo :
+bytecode.cmx :
+compile.cmo :
+compile.cmx :
+errors.cmo : ast.cmo
+errors.cmx : ast.cmx
 parser.cmo : errors.cmo ast.cmo parser.cmi
 parser.cmx : errors.cmx ast.cmx parser.cmi
 scanner.cmo : parser.cmi errors.cmo
 scanner.cmx : parser.cmx errors.cmx
-vislang.cmo : scanner.cmo parser.cmi ast.cmo
-vislang.cmx : scanner.cmx parser.cmx ast.cmx
+vislang.cmo : scanner.cmo parser.cmi compile.cmo bytecode.cmo blockify.cmo \
+    ast.cmo
+vislang.cmx : scanner.cmx parser.cmx compile.cmx bytecode.cmx blockify.cmx \
+    ast.cmx
