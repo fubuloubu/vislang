@@ -13,7 +13,7 @@ OCAMLOPTFLAGS=$(INCLUDES) # add other options for ocamlopt here
 	
 
 # main compilation
-MAIN_OBJS = errors.cmo scanner.cmo parser.cmo ast.cmo vislang.cmo
+MAIN_OBJS = errors.cmo xscanner.cmo xparser.cmo xst.cmo blockify.cmi bot.cmo blockify.cmo vislang.cmo
 vlcc : $(MAIN_OBJS)
 	@echo "$(OCAMLC) -o vlcc"
 	@$(OCAMLC) -o $@ $(OCAMLFLAGS) $^
@@ -25,6 +25,10 @@ vlcc : $(MAIN_OBJS)
 # Parser rules
 %.ml %.mli : %.mly
 	$(OCAMLYACC)    $<
+
+# Rule to make interface files
+%.mli: %.ml
+	$(OCAMLC) -i $< > $@
 
 # Common rules
 .SUFFIXES: .ml .mli .cmo .cmi .cmx
