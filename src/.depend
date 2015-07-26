@@ -7,8 +7,10 @@ compile.cmo :
 compile.cmx :
 errors.cmo : xst.cmo
 errors.cmx : xst.cmx
-vislang.cmo : compile.cmo bytecode.cmo blockify.cmo
-vislang.cmx : compile.cmx bytecode.cmx blockify.cmx
+vislang.cmo : xst.cmo xscanner.cmo xparser.cmi compile.cmo bytecode.cmo \
+    blockify.cmo
+vislang.cmx : xst.cmx xscanner.cmx xparser.cmx compile.cmx bytecode.cmx \
+    blockify.cmx
 xparser.cmo : xst.cmo errors.cmo xparser.cmi
 xparser.cmx : xst.cmx errors.cmx xparser.cmi
 xscanner.cmo : xparser.cmi errors.cmo
