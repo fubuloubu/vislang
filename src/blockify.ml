@@ -68,7 +68,8 @@ end;;
 
 let blockify xml_obj = 
     match xml_obj.tagname with
-          "BLOCK"   -> new block    xml_obj
+          "BLOCK"   -> new block    xml_obj (* TODO: Need to set mutable inner_obj to 
+                                             * List.map blockify xml_obj.inner_objs *)
         | "INPUT"   -> new input    xml_obj
         | "OUTPUT"  -> new output   xml_obj
         (* CONNECTION blocks are not supported by this operation. 
