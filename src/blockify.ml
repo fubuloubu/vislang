@@ -24,6 +24,7 @@ class virtual base xml_obj = object
     method virtual init_code    : string
     method virtual body_code    : string
     method virtual final_code   : string
+    method virtual print_obj    : string
 end;;
 
 (* Block class: inherits from base, is a container for other blocks *)
@@ -37,6 +38,7 @@ class block xml_obj = object (self)
    *) method init_code  = ""
     method body_code  = ""
     method final_code = ""
+    method print_obj = ""
 end;;
 
 (* virtual I/O Part class: do all I/O Part attributes and checking *)
@@ -55,6 +57,7 @@ class input xml_obj = object (self)
     method init_code  = ""
     method body_code  = ""
     method final_code = ""
+    method print_obj = ""
 end;;
 
 (* Output class: *)
@@ -64,6 +67,7 @@ class output xml_obj = object (self)
     method init_code  = ""
     method body_code  = ""
     method final_code = ""
+    method print_obj = ""
 end;;
 
 let blockify xml_obj = 
