@@ -28,9 +28,9 @@ class virtual base xml_obj = object
 end;;
 
 (* Block class: inherits from base, is a container for other blocks *)
-class block xml_obj = object (self)
+class block blockify xml_obj = object (self)
     inherit base xml_obj as super
-    val mutable inner_objs = []
+    val inner_objs = List.map blockify xml_obj.inner_objs
     method self_check = false
     method get_inputs = []
     (*    List.map (fun x -> x#name)
@@ -70,11 +70,11 @@ class output xml_obj = object (self)
     method print_obj = ""
 end;;
 
-let blockify xml_obj = 
+let rec blockify xml_obj = 
     match xml_obj.tagname with
-          "BLOCK"   -> (new block   xml_obj :> base)
-          (* TODO: Need to set mutable inner_obj to 
-           *       List.map blockify xml_obj.inner_objs *)
+          "BLOCK"   -> (new block blockify xml_obj :> base)
+          (* Note: passing blockify into block instantiation because it can't 
+           * see at compile time what the function blockify is referring to *)
         | "INPUT"   -> (new input   xml_obj :> base)
         | "OUTPUT"  -> (new output  xml_obj :> base)
         (* CONNECTION blocks are not supported by this operation. 
