@@ -46,7 +46,8 @@ vlcc : $(MAIN_OBJS)
 clean:
 	@echo "Cleaning Directory..."
 	@rm -f vlcc
-	@rm -f scanner.ml parser.ml parser.mli
+	@rm -f xscanner.ml xparser.ml xparser.mli
+	@rm -f bot.mli blockify.mli
 	@rm -f *.cm[iox]
 
 # Dependencies
