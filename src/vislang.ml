@@ -1,10 +1,10 @@
-open Scanner
-open Parser
+open Xscanner
+open Xparser
 open Blockify
 open Compile
 open Bytecode
 
-type action = Ast | Interpret | Bytecode | Compile
+type action = Ast | Bytecode | Compile
 
 let _ =
     let action = if Array.length Sys.argv > 1 then
@@ -14,13 +14,14 @@ let _ =
     else Compile in
 
     let lexbuf = Lexing.from_channel stdin in
-    let xml_tree = Parser.xml_tree Scanner.token lexbuf in
-    let program = Blockify.parse_tree xml_tree in
+    let xml_tree = Xparser.xml_tree Xscanner.token lexbuf in
 
     match action with
-          Ast       -> let listing = Ast.string_of_xml xml_tree
+          Ast       -> let listing = Xst.string_of_xml xml_tree
                         in print_string listing
-        | Bytecode  -> let listing = Bytecode.string_of_prog
-                                    (Compile.translate program)
-                        in print_endline listing
-        | Compile   -> print_endline (Compile.translate program)
+        | Bytecode  -> let program = Blockify.parse_tree xml_tree in
+                           let listing = Bytecode.string_of_prog program
+                            in print_endline listing
+        | Compile   -> let program = Blockify.parse_tree xml_tree in
+                           let listing = Compile.translate program
+                            in print_endline listing
