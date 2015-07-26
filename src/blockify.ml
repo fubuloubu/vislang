@@ -68,10 +68,16 @@ end;;
 
 let blockify xml_obj = 
     match xml_obj.tagname with
-          "BLOCK"   -> new block    xml_obj (* TODO: Need to set mutable inner_obj to 
-                                             * List.map blockify xml_obj.inner_objs *)
-        | "INPUT"   -> new input    xml_obj
-        | "OUTPUT"  -> new output   xml_obj
+          "BLOCK"   -> (new block   xml_obj :> base)
+          (* TODO: Need to set mutable inner_obj to 
+           *       List.map blockify xml_obj.inner_objs *)
+        | "INPUT"   -> (new input   xml_obj :> base)
+        | "OUTPUT"  -> (new output  xml_obj :> base)
         (* CONNECTION blocks are not supported by this operation. 
          * See get_connection above *)
-        | _ as name     -> object_error ("Tag " ^ name ^ " not supported.")
+        | _ as name -> object_error ("Tag " ^ name ^ " not supported.")
+
+let parse_tree xml_obj = 
+    match xml_obj.tagname with
+          "BLOCK"   -> blockify xml_obj
+        | _ as name -> object_error ("Tag " ^ name ^ " cannot be top level block")
