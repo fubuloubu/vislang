@@ -1,6 +1,6 @@
 open Xst
 open Errors
-
+(* Helper functions for Object instantiaion *)
 let get_attr attribute xml_obj = 
     let attr = List.filter (fun x -> x.aname = attribute) xml_obj.attributes in
         match attr with
@@ -28,9 +28,9 @@ class virtual base xml_obj = object
 end;;
 
 (* Block class: inherits from base, is a container for other blocks *)
-class block blockify xml_obj = object (self)
+class block block_trace xml_obj = object (self)
     inherit base xml_obj as super
-    val inner_objs = List.map blockify xml_obj.inner_objs
+    val inner_objs = block_trace xml_obj.inner_objs
     method self_check = false
     method get_inputs = []
     (*    List.map (fun x -> x#name)
@@ -70,9 +70,11 @@ class output xml_obj = object (self)
     method print_obj = ""
 end;;
 
+(* Main block management functions *)
+(* Blockify goes through and matches the tagname to the appropiate object *)
 let rec blockify xml_obj = 
     match xml_obj.tagname with
-          "BLOCK"   -> (new block blockify xml_obj :> base)
+          "BLOCK"   -> (new block block_trace xml_obj :> base)
           (* Note: passing blockify into block instantiation because it can't 
            * see at compile time what the function blockify is referring to *)
         | "INPUT"   -> (new input   xml_obj :> base)
@@ -81,6 +83,15 @@ let rec blockify xml_obj =
          * See get_connection above *)
         | _ as name -> object_error ("Tag " ^ name ^ " not supported.")
 
+(* Block Trace intelligently traces through the objects from output to input and
+ * finds an appropiate path through the program such that when it is compiled
+ * in the order determined to be okay by block trace, no issues occur *)
+and block_trace obj_list =
+(* TODO: This needs to be smarter and "trace" through inner blocks *)
+    List.map blockify obj_list
+
+(* Main caller function simply to protect against top level blocks not being
+ * of type BLOCK *)
 let parse_tree xml_obj = 
     match xml_obj.tagname with
           "BLOCK"   -> blockify xml_obj
