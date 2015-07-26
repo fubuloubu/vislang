@@ -1,1 +1,2 @@
-let translate program = ""
+open Bytecode
+let translate bytecode = bytecode
