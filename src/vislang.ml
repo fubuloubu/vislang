@@ -20,7 +20,7 @@ let _ =
     match action with
           Ast       -> let listing = block_tree#print_obj
                         in print_string listing
-        | Bytecode  -> let listing = Bytecode.string_of_block_tree block_tree
+        | Bytecode  -> let listing = Bytecode.parse_block_tree block_tree
                         in print_endline listing
         | Compile   -> let program = Bytecode.parse_block_tree block_tree
                         in let listing = Compile.translate program
