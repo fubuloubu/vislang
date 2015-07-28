@@ -27,6 +27,8 @@ class virtual base xml_obj = object
     val name = Xst.string_of_value (get_attr "name" xml_obj)
     method name = name
     method virtual get_inputs   : string list
+    method virtual get_outputs  : string list
+    method virtual inner_objs   : base list
     method virtual print_class  : string
     method virtual bytecode     : string
     method virtual print_obj    : string
@@ -36,6 +38,7 @@ end;;
 class block blockify xml_obj = object (self)
     inherit base xml_obj as super
     val inner_objs = List.map blockify xml_obj.inner_objs
+    method inner_objs = inner_objs
     method get_inputs =
         List.map    (fun (x : base) -> (x :> base) #name)
         (List.filter (fun (x : base) -> ((x :> base) #print_class) = "input")
@@ -61,6 +64,7 @@ end;;
 (* virtual I/O Part class: do all I/O Part attributes and checking *)
 class virtual io_part xml_obj = object (self)
     inherit base xml_obj as super
+    method inner_objs = []
     val scope    = Xst.string_of_value (get_attr "scope"    xml_obj)
     val datatype = Xst.string_of_value (get_attr "datatype" xml_obj)
     val size     =                      get_attr "size"     xml_obj
@@ -70,6 +74,7 @@ end;;
 class input xml_obj = object (self)
     inherit io_part xml_obj as super
     method get_inputs   = []
+    method get_outputs  = [(*FIXME: get_connection name xml_obj*)]
     method print_class  = "input"
     method bytecode     =  "bytecode for input" ^ name ^ "\n"
     method print_obj    = "\"input\": { " ^
@@ -82,6 +87,7 @@ end;;
 class output xml_obj = object (self)
     inherit io_part xml_obj as super
     method get_inputs   = [(*FIXME: get_connection name xml_obj*)]
+    method get_outputs  = []
     method print_class = "output"
     method bytecode  =  "bytecode for input" ^ name ^ "\n"
     method print_obj  = "\"output\": { " ^
