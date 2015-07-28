@@ -48,7 +48,7 @@ class block blockify xml_obj = object (self)
         (List.filter (fun (x : base) -> ((x :> base) #print_class) = "output")
                     inner_objs)
     method print_class= "block"
-    method bytecode  =  "bytecode for input" ^ name ^ "\n"
+    method bytecode  =  "bytecode for block " ^ name ^ "\n"
     method print_obj  = "{\n  \"block\": {\n" ^
                         "    \"name\":\"" ^ name ^ "\"\n" ^
                         "    \"inner_objs\": [\n      " ^
@@ -76,7 +76,7 @@ class input xml_obj = object (self)
     method get_inputs   = []
     method get_outputs  = [(*FIXME: get_connection name xml_obj*)]
     method print_class  = "input"
-    method bytecode     =  "bytecode for input" ^ name ^ "\n"
+    method bytecode     =  "bytecode for input " ^ name ^ "\n"
     method print_obj    = "\"input\": { " ^
                           "\"name\":\"" ^ name ^ "\", " ^
                           "\"scope\":" ^ scope ^ "\", " ^
@@ -89,7 +89,7 @@ class output xml_obj = object (self)
     method get_inputs   = [(*FIXME: get_connection name xml_obj*)]
     method get_outputs  = []
     method print_class = "output"
-    method bytecode  =  "bytecode for input" ^ name ^ "\n"
+    method bytecode  =  "bytecode for output " ^ name ^ "\n"
     method print_obj  = "\"output\": { " ^
                         "\"name\":\"" ^ name ^ "\", " ^
                         "\"scope\":" ^ scope ^ "\", " ^
