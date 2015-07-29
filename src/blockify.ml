@@ -34,7 +34,8 @@ class virtual base xml_obj = object
     method virtual print_obj    : string
 end;;
 
-(* Block class: inherits from base, is a container for other blocks *)
+(* Block class: BLOCK tag
+ * inherits from base, is a container for other blocks *)
 class block blockify xml_obj = object (self)
     inherit base xml_obj as super
     val inner_objs = List.map blockify xml_obj.inner_objs
@@ -64,16 +65,17 @@ end;;
 (* virtual I/O Part class: do all I/O Part attributes and checking *)
 class virtual io_part xml_obj = object (self)
     inherit base xml_obj as super
-    method inner_objs = []
+    method inner_objs   = block_error ("Should never try and access " ^
+                                       "inner objects of " ^ print_class)
     val scope    = Xst.string_of_value (get_attr "scope"    xml_obj)
     val datatype = Xst.string_of_value (get_attr "datatype" xml_obj)
     val size     =                      get_attr "size"     xml_obj
 end;;
 
-(* Input class: *)
+(* Input class: INPUT tag*)
 class input xml_obj = object (self)
     inherit io_part xml_obj as super
-    method get_inputs   = []
+    method get_inputs   = block_error "Should never access inputs of input obj"
     method get_outputs  = [(*FIXME: get_connection name xml_obj*)]
     method print_class  = "input"
     method bytecode     =  "bytecode for input " ^ name ^ "\n"
@@ -83,11 +85,11 @@ class input xml_obj = object (self)
                           "\"size\":" ^ Xst.string_of_value (size) ^ "\" }"
 end;;
 
-(* Output class: *)
+(* Output class: OUTPUT tag *)
 class output xml_obj = object (self)
     inherit io_part xml_obj as super
     method get_inputs   = [(*FIXME: get_connection name xml_obj*)]
-    method get_outputs  = []
+    method get_outputs  = block_error "Should never access outputs of output obj"
     method print_class = "output"
     method bytecode  =  "bytecode for output " ^ name ^ "\n"
     method print_obj  = "\"output\": { " ^
@@ -96,11 +98,12 @@ class output xml_obj = object (self)
                         "\"size\":" ^ Xst.string_of_value (size) ^ "\" }"
 end;;
 
-(* Memory class: *)
+(* Memory class: MEM tag*)
 class memory xml_obj = object (self)
     inherit base xml_obj as super
     val init_cond       = get_attr "ic" xml_obj
-    method inner_objs   = []
+    method inner_objs   = block_error ("Should never try and access " ^
+                                       "inner objects of " ^ print_class)
     method get_inputs   = [(name ^ "_current")]
     method get_outputs  = [(name ^ "_stored")]
     method print_class  = "memory"
