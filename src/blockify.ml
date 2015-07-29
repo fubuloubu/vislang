@@ -65,8 +65,6 @@ end;;
 (* virtual I/O Part class: do all I/O Part attributes and checking *)
 class virtual io_part xml_obj = object (self)
     inherit base xml_obj as super
-    method inner_objs   = block_error ("Should never try and access " ^
-                                       "inner objects of " ^ print_class)
     val scope    = Xst.string_of_value (get_attr "scope"    xml_obj)
     val datatype = Xst.string_of_value (get_attr "datatype" xml_obj)
     val size     =                      get_attr "size"     xml_obj
@@ -75,9 +73,11 @@ end;;
 (* Input class: INPUT tag*)
 class input xml_obj = object (self)
     inherit io_part xml_obj as super
-    method get_inputs   = block_error "Should never access inputs of input obj"
+    method get_inputs   = object_error "Should never access inputs of input obj"
     method get_outputs  = [(*FIXME: get_connection name xml_obj*)]
     method print_class  = "input"
+    method inner_objs   = object_error ("Should never try and access " ^
+                                       "inner objects of " ^ self#print_class)
     method bytecode     =  "bytecode for input " ^ name ^ "\n"
     method print_obj    = "\"input\": { " ^
                           "\"name\":\"" ^ name ^ "\", " ^
@@ -89,8 +89,10 @@ end;;
 class output xml_obj = object (self)
     inherit io_part xml_obj as super
     method get_inputs   = [(*FIXME: get_connection name xml_obj*)]
-    method get_outputs  = block_error "Should never access outputs of output obj"
+    method get_outputs  = object_error "Should never access outputs of output obj"
     method print_class = "output"
+    method inner_objs   = object_error ("Should never try and access " ^
+                                       "inner objects of " ^ self#print_class)
     method bytecode  =  "bytecode for output " ^ name ^ "\n"
     method print_obj  = "\"output\": { " ^
                         "\"name\":\"" ^ name ^ "\", " ^
@@ -102,8 +104,8 @@ end;;
 class memory xml_obj = object (self)
     inherit base xml_obj as super
     val init_cond       = get_attr "ic" xml_obj
-    method inner_objs   = block_error ("Should never try and access " ^
-                                       "inner objects of " ^ print_class)
+    method inner_objs   = object_error ("Should never try and access " ^
+                                       "inner objects of " ^ self#print_class)
     method get_inputs   = [(name ^ "_current")]
     method get_outputs  = [(name ^ "_stored")]
     method print_class  = "memory"
