@@ -96,6 +96,21 @@ class output xml_obj = object (self)
                         "\"size\":" ^ Xst.string_of_value (size) ^ "\" }"
 end;;
 
+(* Memory class: *)
+class memory xml_obj = object (self)
+    inherit base xml_obj as super
+    val init_cond       = get_attr "ic" xml_obj
+    method inner_objs   = []
+    method get_inputs   = [(name ^ "_current")]
+    method get_outputs  = [(name ^ "_stored")]
+    method print_class  = "memory"
+    method bytecode     = "bytecode for memory " ^ name ^ "\n"
+    method print_obj    = "\"memory\": { " ^
+                          "\"name\":\"" ^ name ^ "\", " ^
+                          "\"init_cond\":" ^ 
+                          Xst.string_of_value (init_cond) ^ "\" }"
+end;;
+
 (* Main block management functions *)
 (* Blockify goes through and matches the tagname to the appropiate object *)
 let rec blockify xml_obj = 
