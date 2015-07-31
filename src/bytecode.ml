@@ -68,11 +68,5 @@ let rec block_parse top =
      @ (List.filter (fun x -> (x :> base) #print_class = "memory") objs) 
     
     (* Kick off wrapper function *)
-     in trace_start objs start_list []
+     in top :: (trace_start objs start_list [])
 
-(* Wrapper function that returns all the bytecode for the parsed block tree *)
-let parse_block_tree program = 
-    String.concat "\n" (
-        List.map (fun x -> (x :> base) #bytecode) 
-        (block_parse program)
-    )

@@ -1,14 +1,18 @@
 xparser.cmi : xst.cmo
 blockify.cmo : xst.cmo errors.cmo
 blockify.cmx : xst.cmx errors.cmx
-bytecode.cmo : blockify.cmo
-bytecode.cmx : blockify.cmx
-compile.cmo : bytecode.cmo
-compile.cmx : bytecode.cmx
+bytecode.cmo : errors.cmo blockify.cmo
+bytecode.cmx : errors.cmx blockify.cmx
+compile.cmo : bytecode.cmo blockify.cmo
+compile.cmx : bytecode.cmx blockify.cmx
 errors.cmo : xst.cmo
 errors.cmx : xst.cmx
-vislang.cmo : xscanner.cmo xparser.cmi compile.cmo bytecode.cmo blockify.cmo
-vislang.cmx : xscanner.cmx xparser.cmx compile.cmx bytecode.cmx blockify.cmx
+optimize.cmo : bytecode.cmo
+optimize.cmx : bytecode.cmx
+vislang.cmo : xscanner.cmo xparser.cmi optimize.cmo compile.cmo bytecode.cmo \
+    blockify.cmo
+vislang.cmx : xscanner.cmx xparser.cmx optimize.cmx compile.cmx bytecode.cmx \
+    blockify.cmx
 xparser.cmo : xst.cmo errors.cmo xparser.cmi
 xparser.cmx : xst.cmx errors.cmx xparser.cmi
 xscanner.cmo : xparser.cmi errors.cmo
