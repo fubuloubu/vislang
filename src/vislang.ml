@@ -1,7 +1,7 @@
 open Xscanner
 open Xparser
 open Blockify
-open Bytecode
+open Blockparse
 open Optimize
 open Compile
 
@@ -21,10 +21,10 @@ let _ =
     match action with
           BlockTree -> let listing = block_tree#print_obj
                         in print_string listing
-        | Compile   -> let program = Bytecode.block_parse block_tree
+        | Compile   -> let program = Blockparse.block_parse block_tree
                         in let generated_code = Compile.translate program
                             in print_endline generated_code
-        | Optimize  -> let program = Bytecode.block_parse block_tree
+        | Optimize  -> let program = Blockparse.block_parse block_tree
                         in let program = Optimize.optimize program
                         in let generated_code = Compile.translate program
                             in print_endline generated_code

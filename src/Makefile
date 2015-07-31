@@ -14,7 +14,7 @@ OCAMLOPTFLAGS=$(INCLUDES) # add other options for ocamlopt here
 
 # main compilation
 MAIN_OBJS = xst.cmo errors.cmo xscanner.cmo xparser.cmo \
-			blockify.cmo bytecode.cmo compile.cmo optimize.cmo \
+			blockify.cmo blockparse.cmo compile.cmo optimize.cmo \
 			vislang.cmo
 vlcc : $(MAIN_OBJS)
 	@echo "$(OCAMLC) -o vlcc"
@@ -49,7 +49,6 @@ clean:
 	@echo "Cleaning Directory..."
 	@rm -f vlcc
 	@rm -f xscanner.ml xparser.ml xparser.mli
-	@rm -f bot.mli blockify.mli
 	@rm -f *.cm[iox]
 
 # Dependencies

@@ -33,7 +33,7 @@ class virtual base parent xml_obj = object
     method virtual inner_objs   : base list
     method virtual print_class  : string
     method virtual header       : string
-    method virtual bytecode     : string
+    method virtual body         : string
     method virtual trailer      : string
     method virtual interface    : string
     method virtual print_obj    : string
@@ -64,7 +64,7 @@ class block blockify parent xml_obj = object (self)
                         name ^ ".outputs = { " ^
                         (String.concat "; " self#get_outputs) ^
                         " }\n\n"
-    method bytecode   = ""
+    method body       = ""
     method trailer    = ""
     method interface  = ""
     method print_obj  = "{\n  \"block\": {\n" ^
@@ -85,7 +85,7 @@ class virtual io_part parent xml_obj = object (self)
     val scope    = Xst.string_of_value (get_attr "scope"    xml_obj)
     val datatype = Xst.string_of_value (get_attr "datatype" xml_obj)
     val size     =                      get_attr "size"     xml_obj
-    method bytecode  =  "/* No bytecode for " ^ self#print_class ^ " " ^ name ^ "*/\n"
+    method body  =  "/* No body code for " ^ self#print_class ^ " " ^ name ^ "*/\n"
     method inner_objs   = object_error ("Should never try and access " ^
                                        "inner objects of " ^ self#print_class)
     method print_obj    = "\"" ^ self#print_class ^ "\": { " ^
@@ -126,7 +126,7 @@ class memory parent xml_obj = object (self)
     method get_outputs  = [(name ^ "_stored")]
     method print_class  = "memory"
     method header     = ""
-    method bytecode     = "bytecode for memory " ^ name ^ "\n"
+    method body       = "/* No body code for memory " ^ name ^ "*/\n"
     method trailer    = ""
     method interface  = ""
     method print_obj    = "\"memory\": { " ^
