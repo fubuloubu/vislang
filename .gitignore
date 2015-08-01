@@ -4,7 +4,9 @@ src/xparser.output
 src/vlcc
 src/*.mli
 test/*.c*
-test/*.i.*
+test/*.py*
+test/*.o
+test/*.so
 *.swp
 *.log
 *.aux

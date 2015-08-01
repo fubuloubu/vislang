@@ -5,26 +5,26 @@ open Blockparse
 open Optimize
 open Compile
 
-type action = BlockTree | Optimize | Compile
+type action = BlockTree | Compile | Optimize | DebugCode
 
 let _ =
     let action = if Array.length Sys.argv > 1 then
         List.assoc Sys.argv.(1) [ ("-b", BlockTree);
+                                  ("-c", Compile); 
                                   ("-o", Optimize);
-                                  ("-c", Compile) ]
+                                  ("-d", DebugCode)]
     else Optimize in
-
+    
     let lexbuf = Lexing.from_channel stdin in
     let xml_tree = Xparser.xml_tree Xscanner.token lexbuf in
     let block_tree = Blockify.parse_xml_tree xml_tree in
-
-    match action with
-          BlockTree -> let listing = block_tree#print_obj
-                        in print_string listing
-        | Compile   -> let program = Blockparse.block_parse block_tree
-                        in let generated_code = Compile.translate program
-                            in print_endline generated_code
-        | Optimize  -> let program = Blockparse.block_parse block_tree
-                        in let program = Optimize.optimize program
-                        in let generated_code = Compile.translate program
-                            in print_endline generated_code
+    let listing =
+        match action with
+              BlockTree -> block_tree#print_obj
+            | Compile   -> let program = Blockparse.block_parse block_tree
+                            in Compile.translate program
+            | Optimize  -> let program = Blockparse.block_parse block_tree
+                            in let program = Optimize.optimize program
+                            in Compile.translate program
+            | DebugCode -> Compile.gen_debug_code block_tree
+     in print_string listing

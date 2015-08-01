@@ -33,7 +33,9 @@ let rec block_parse top =
                                      " is in an algebraic loop...")
             else if List.exists (compare_obj current#name) prior_list
                  then current :: trace_list
-                 else let input_names = ((current :> base) #get_inputs) 
+                 else let input_names = (List.map 
+                                        (fun x -> x.name) 
+                                        (current :> base) #get_inputs) 
                       and find_fun = (fun x -> List.find (compare_obj x) block_list)
                        in let input_list = (List.map find_fun input_names)
                        in trace_split block_list prior_list trace_list input_list
