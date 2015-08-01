@@ -9,4 +9,3 @@ tests:
 
 clean_tests:
 	@rm ./test/*.c*
-	@rm ./test/*.i.*
