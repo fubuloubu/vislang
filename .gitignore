@@ -3,7 +3,7 @@ src/xparser.ml
 src/xparser.output
 src/vlcc
 src/*.mli
-test/*.c.*
+test/*.c*
 test/*.i.*
 *.swp
 *.log
