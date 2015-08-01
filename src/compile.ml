@@ -8,11 +8,10 @@ let translate program =
 let gen_debug_code top =
     let top = (top :> base) in
         let name = top#name in
-        let inputs = List.map 
-            (fun x -> {name = x.name; datatype = "c_" ^ x.datatype})
-            top#get_inputs 
+        let inputs = top#get_inputs 
          in
             "import sys\n" ^
+            "import ctypes\n" ^
             "from ctypes import *\n" ^
             "lib = cdll.LoadLibrary('./test-" ^ name ^ ".so')\n" ^
             "class " ^ name ^ "_inputs(Structure):\n" ^
@@ -20,7 +19,18 @@ let gen_debug_code top =
                 (String.concat 
                     "), (\"" 
                     (List.map 
-                        (fun x -> x.name ^ "\"" ^ x.datatype)
+                        (fun x -> x.name ^ "\", " ^ 
+                            match x.datatype with
+                                "uint8"  -> "c_uint8"
+                              | "uint16" -> "c_uint16"
+                              | "uint32" -> "c_uint32"
+                              | "int8"   -> "c_int8"
+                              | "int16"  -> "c_int16"
+                              | "int32"  -> "c_int32"
+                              | "single" -> "c_float"
+                              | "double" -> "c_double"
+                              | _ -> failwith "unassigned value"
+                        )
                         inputs
                     )
                 ) ^ 
@@ -28,14 +38,27 @@ let gen_debug_code top =
             "    \n" ^
             "with open(sys.argv[1]) as f:\n" ^
             "    for line in f:\n" ^
-            "        listargs = line.strip('\n').split(',')\n" ^
+            "        listargs = line.strip('\\n').split(',')\n" ^
             "        inputs = buffer_inputs(" ^ 
                 (String.concat
-                    "]), "
+                    ", "
                     (List.mapi
-                        (fun i x -> x.datatype ^ "(listargs[" ^ string_of_int(i) )
+                        (fun i x -> (
+                            match x.datatype with 
+                                "uint8"  -> "int"
+                              | "uint16" -> "int"
+                              | "uint32" -> "int"
+                              | "int8"   -> "int"
+                              | "int16"  -> "int"
+                              | "int32"  -> "int"
+                              | "single" -> "float"
+                              | "double" -> "float"
+                              | _ -> failwith "unassigned value"
+                            )
+                            ^ "(listargs[" ^ string_of_int(i) ^ "])"
+                        )
                         inputs
                     )
-                ) ^ "]))\n" ^
+                ) ^ ")\n" ^
             "        outputs = lib." ^ name ^ "(inputs)\n" ^
             "        print(outputs)"

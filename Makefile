@@ -9,3 +9,6 @@ tests:
 
 clean_tests:
 	@rm ./test/*.c*
+	@rm ./test/*.o
+	@rm ./test/*.so
+	@rm ./test/*.py
