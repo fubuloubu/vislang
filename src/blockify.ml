@@ -28,6 +28,12 @@ let get_connection input_to xml_obj =
                     Xst.string_of_value (get_attr "name" xml_obj)
                 )
 
+let get_datatype dtype =
+    match dtype with
+        "single" -> "float_t"
+      | "auto"   -> failwith "Do something here"
+      | _ as d   -> d ^ "_t"
+
 (* Structure for returning input and output types *)
 type interface = {
     name     : string;
@@ -75,18 +81,18 @@ class block blockify parent xml_obj = object (self)
     method print_class  = "block"
     method input_type   = "struct " ^ name ^ "_inputs"
     method output_type  = "struct " ^ name ^ "_outputs"
-    method input_struct = self#input_type ^ " = {\n\t" ^
+    method input_struct = self#input_type ^ " {\n\t" ^
                         (String.concat ";\n\t" 
                             (List.map 
-                            (fun x -> x.datatype ^ " " ^ x.name)
+                            (fun x -> (get_datatype x.datatype) ^ " " ^ x.name)
                             self#get_inputs)
-                        ) ^ ";\n}\n\n" 
-    method output_struct = self#output_type ^ " = {\n\t" ^
+                        ) ^ ";\n};\n\n" 
+    method output_struct = self#output_type ^ " {\n\t" ^
                         (String.concat ";\n\t" 
                             (List.map 
-                            (fun x -> x.datatype ^ " " ^ x.name)
+                            (fun x -> (get_datatype x.datatype) ^ " " ^ x.name)
                             self#get_outputs)
-                        ) ^ ";\n}\n\n"
+                        ) ^ ";\n};\n\n"
     method header     = "/* I/O Structures for block " ^ name ^ " */\n" ^
                         self#input_struct ^ self#output_struct ^
                         "/* Begin block " ^ name ^ " */\n" ^
@@ -95,7 +101,7 @@ class block blockify parent xml_obj = object (self)
                         "\t/* Inputs for block " ^ name ^ " */\n\t" ^ 
                         (String.concat ";\n\t" 
                             (List.map 
-                            (fun x -> x.datatype ^ " " ^ 
+                            (fun x -> (get_datatype x.datatype) ^ " " ^ 
                                 x.name ^ " = inputs." ^ x.name
                             ) 
                             self#get_inputs)
@@ -153,9 +159,10 @@ class output parent xml_obj = object (self)
     inherit io_part parent xml_obj as super
     method get_inputs   = [{ name = self#name; datatype = self#datatype }]
     method get_outputs  = object_error "Should never access outputs of output obj"
-    method print_class = "output"
-    method header     =  "\t" ^ self#datatype ^ " " ^ self#name ^ " = " ^ 
-                        (get_connection name xml_obj) ^ ";\n\n"
+    method print_class  = "output"
+    method header       = "\t" ^ (get_datatype self#datatype) ^ " " ^ 
+                          self#name ^ " = " ^ 
+                          (get_connection name xml_obj) ^ ";\n\n"
     method trailer    = ""
     method interface  = ""
 end;;

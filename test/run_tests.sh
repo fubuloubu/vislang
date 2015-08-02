@@ -2,6 +2,7 @@
 
 VLCC="../src/vlcc"
 GCC="gcc"
+PYTHON="python"
 
 # Set time limit for all operations
 ulimit -t 30
@@ -64,16 +65,16 @@ Check() {
 
     generatedfiles=""
 
-    generatedfiles="$generatedfiles ${basename}.i.out" &&
-    Run "$VLCC" "-i" "<" $1 ${reffile}.in ">" ${basename}.i.out && 
-    Compare ${basename}.i.out ${reffile}.out ${basename}.i.diff
-
     generatedfiles="$generatedfiles ${basename}.c" &&
     Run "$VLCC" "-c" "<" $1 ">" ${basename}.c &&
-    generatedfiles="$generatedfiles ${basename}.bin" &&
-    Run "$GCC" "-o" ${basename}.c.bin ${basename}.c &&
+    generatedfiles="$generatedfiles ${basename}.o" &&
+    Run "$GCC" "-c" ${basename}.c &&
+    generatedfiles="$generatedfiles ${basename}.so" &&
+    Run "$GCC" "-shared -o" ${basename}.so ${basename}.o &&
+    generatedfiles="$generatedfiles ${basename}.py" &&
+    Run "$VLCC" "-d" "<" $1 ">" ${basename}.py &&
     generatedfiles="$generatedfiles ${basename}.c.out" &&
-    Run ${basename}.c.bin ${basename}.in > ${basename}.c.out 
+    Run "$PYTHON" ${basename}.py ${basename}.in > ${basename}.c.out && 
     Compare ${basename}.c.out ${reffile}.out ${basename}.c.diff
 
     # Report the status and clean up the generated files

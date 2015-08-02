@@ -2,25 +2,32 @@ open Blockify
 open Blockparse
 
 let translate program =
-      String.concat "\n" (List.map (fun x -> (x :> base) #header ) program)
+    (* Print standard libraries required *)
+      "#include <stdint.h>\n"
+    ^ "#include <float.h>\n"
+    ^ "#include <math.h>\n\n"
+    (* Print header for all the objects in the ordered list, then trailers *)
+    ^ String.concat "\n" (List.map (fun x -> (x :> base) #header ) program)
     ^ String.concat "\n" (List.map (fun x -> (x :> base) #trailer) program)
 
+(* Generate python script for processing in files and sending it through the
+ * compiled binary and printing the results as it is running *)
 let gen_debug_code top =
     let top = (top :> base) in
         let name = top#name in
         let inputs = top#get_inputs 
          in
-            "import sys\n" ^
-            "import ctypes\n" ^
-            "from ctypes import *\n" ^
-            "lib = cdll.LoadLibrary('./test-" ^ name ^ ".so')\n" ^
-            "class " ^ name ^ "_inputs(Structure):\n" ^
-            "    _fields_ = [(\"" ^ 
-                (String.concat 
+            "import sys\n"
+          ^ "import ctypes\n"
+          ^ "from ctypes import *\n"
+          ^ "lib = cdll.LoadLibrary('./test-" ^ name ^ ".so')\n"
+          ^ "class " ^ name ^ "_inputs(Structure):\n"
+          ^ "    _fields_ = [(\""
+          ^     (String.concat 
                     "), (\"" 
                     (List.map 
-                        (fun x -> x.name ^ "\", " ^ 
-                            match x.datatype with
+                        (fun x -> x.name ^ "\", "
+                         ^  match x.datatype with
                                 "uint8"  -> "c_uint8"
                               | "uint16" -> "c_uint16"
                               | "uint32" -> "c_uint32"
@@ -33,14 +40,14 @@ let gen_debug_code top =
                         )
                         inputs
                     )
-                ) ^ 
-                ")]\n" ^
-            "    \n" ^
-            "with open(sys.argv[1]) as f:\n" ^
-            "    for line in f:\n" ^
-            "        listargs = line.strip('\\n').split(',')\n" ^
-            "        inputs = buffer_inputs(" ^ 
-                (String.concat
+                ) 
+                ^ ")]\n"
+          ^ "    \n"
+          ^ "with open(sys.argv[1]) as f:\n"
+          ^ "    for line in f:\n"
+          ^ "        listargs = line.strip('\\n').split(',')\n"
+          ^ "        inputs = buffer_inputs("
+          ^     (String.concat
                     ", "
                     (List.mapi
                         (fun i x -> (
@@ -59,6 +66,7 @@ let gen_debug_code top =
                         )
                         inputs
                     )
-                ) ^ ")\n" ^
-            "        outputs = lib." ^ name ^ "(inputs)\n" ^
-            "        print(outputs)"
+                ) 
+                ^ ")\n"
+          ^ "        outputs = lib." ^ name ^ "(inputs)\n"
+          ^ "        print(outputs)"
