@@ -2,7 +2,7 @@
     <vl:INPUT name="in" scope="local" datatype="uint32" size="auto"/>
     <vl:MEM name="mem" ic="0x0">
         <vl:CONNECTION to="mem|current" from="in"/>
-    </vl:OUTPUT>
+    </vl:MEM>
     <vl:OUTPUT name="out" datatype="uint32" scope="local" size="auto">
         <vl:CONNECTION to="out" from="mem|stored"/>
     </vl:OUTPUT>

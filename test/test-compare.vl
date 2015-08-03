@@ -2,8 +2,8 @@
     <vl:INPUT name="in" scope="local" datatype="single" size="1"/>
     <vl:CONSTANT name="ten" datatype="single" size="1" value="10.000"/>
     <vl:COMPARE name="compare" operation=">">
-        <vl:CONNECTION to="lhs" from="in">
-        <vl:CONNECTION to="rhs" from="ten">
+        <vl:CONNECTION to="lhs" from="in"/>
+        <vl:CONNECTION to="rhs" from="ten"/>
     </vl:COMPARE>
     <vl:OUTPUT name="out" datatype="boolean" scope="local" size="1">
         <vl:CONNECTION to="out" from="compare|output"/>
