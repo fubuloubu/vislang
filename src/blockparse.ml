@@ -78,5 +78,5 @@ let rec block_parse top =
                                 objs
                             )
     (* Kick off wrapper function *)
-    in [inner_block_list :: top#set_inner_objs (trace_start objs start_list [])]
-
+    top#set_inner_objs (trace_start objs start_list [])
+    in [top :: inner_block_list]
