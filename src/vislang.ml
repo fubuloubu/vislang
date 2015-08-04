@@ -18,13 +18,12 @@ let _ =
     let lexbuf = Lexing.from_channel stdin in
     let xml_tree = Xparser.xml_tree Xscanner.token lexbuf in
     let block_tree = Blockify.parse_xml_tree xml_tree in
+    let program = Blockparse.block_parse block_tree in
     let listing =
         match action with
               BlockTree -> block_tree#print_obj
-            | Compile   -> let program = Blockparse.block_parse block_tree
-                            in Compile.translate program
-            | Optimize  -> let program = Blockparse.block_parse block_tree
-                            in let program = Optimize.optimize program
+            | Compile   -> Compile.translate program
+            | Optimize  -> let program = Optimize.optimize program
                             in Compile.translate program
             | DebugCode -> Compile.gen_debug_code block_tree
      in print_string listing
