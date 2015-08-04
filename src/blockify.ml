@@ -139,8 +139,8 @@ class virtual io_part parent xml_obj = object (self)
                                        "inner objects of " ^ self#print_class)
     method print_obj    = "\"" ^ self#print_class ^ "\": { " ^
                           "\"name\":\"" ^ name ^ "\", " ^
-                          "\"scope\":" ^ scope ^ "\", " ^
-                          "\"size\":" ^ Xst.string_of_value (size) ^ "\" }"
+                          "\"scope\":\"" ^ scope ^ "\", " ^
+                          "\"size\":\"" ^ Xst.string_of_value (size) ^ "\" }"
 end;;
 
 (* Input class: INPUT tag*)
@@ -167,22 +167,119 @@ class output parent xml_obj = object (self)
     method interface  = ""
 end;;
 
+(* Constant class: CONSTANT tag*)
+class constant parent xml_obj = object (self)
+    inherit base parent xml_obj
+    val datatype = Xst.string_of_value (get_attr "datatype" xml_obj)
+    method datatype = datatype
+    val size     =                      get_attr "size"     xml_obj
+    val value    = Xst.string_of_value (get_attr "value"    xml_obj)
+    method value = value
+    method inner_objs   = object_error ("Should never try and access " ^
+                                       "inner objects of " ^ self#print_class)
+    method get_inputs   = object_error "Should never access inputs of input obj"
+    method get_outputs  = [{ name = self#name; datatype = self#datatype }]
+    method print_class  = "constant"
+    method header       = (get_datatype (self#datatype)) ^ " " ^ 
+                          self#name ^ " = " ^ self#value ^ ";\n"
+    method trailer      = ""
+    method interface    = ""
+    method print_obj    = "\"" ^ self#print_class ^ "\": { " ^
+                          "\"name\":\"" ^ name ^ "\", " ^
+                          "\"value\":\"" ^ value ^ "\", " ^
+                          "\"size\":\"" ^ Xst.string_of_value (size) ^ "\" }"
+end;;
+
 (* Memory class: MEM tag*)
 class memory parent xml_obj = object (self)
     inherit base parent xml_obj as super
     val init_cond       = get_attr "ic" xml_obj
     method inner_objs   = object_error ("Should never try and access " ^
                                        "inner objects of " ^ self#print_class)
-    method get_inputs   = [{ name = (self#name ^ "_current"); datatype = "auto" }]
-    method get_outputs  = [{ name = (self#name ^ "_stored" ); datatype = "auto" }]
+    val mutable inputs  = [{ name = "current"; datatype = "auto" }]
+    method get_inputs   = inputs
+    val mutable outputs = [{ name = "stored"; datatype = "auto" }]
+    method get_outputs  = outputs
     method print_class  = "memory"
-    method header     = ""
-    method trailer    = ""
+    method header     = "static " ^ self#name ^ "_stored;\n"
+    method trailer    = self#name ^ "_stored = " ^ 
+                        self#name ^ "_current;\n"
     method interface  = ""
     method print_obj    = "\"memory\": { " ^
                           "\"name\":\"" ^ name ^ "\", " ^
                           "\"init_cond\":" ^ 
                           Xst.string_of_value (init_cond) ^ "\" }"
+end;;
+
+(* NOT Gate Part class: unary NOT operation *)
+class not_gate parent xml_obj = object (self)
+    inherit base parent xml_obj
+    method inner_objs   = object_error ("Should never try and access " ^
+                                       "inner objects of " ^ self#print_class)
+    val mutable inputs  = [{ name = "current"; datatype = "auto" }]
+    method get_inputs   = inputs
+    val mutable outputs = [{ name = "stored"; datatype = "auto" }]
+    method get_outputs  = outputs
+    method header       = "boolean_t " ^ self#name ^ "_output;\n"
+    method trailer      = self#name ^ " = !" ^ (List.hd self#get_inputs).name ^ ";\n"
+    method interface  = ""
+    method print_class = "not"
+    method print_obj    = "\"" ^ self#print_class ^ "\": { " ^
+                          "\"name\":\"" ^ name ^ "\", " ^
+                          "\"operation\":\"!\" }"
+end;;
+
+(* virtual Binary Operation class: do all binary attributes and checking *)
+class virtual binop_part parent xml_obj = object (self)
+    inherit base parent xml_obj
+    val virtual operation : string
+    method operation = operation
+    method inner_objs   = object_error ("Should never try and access " ^
+                                       "inner objects of " ^ self#print_class)
+    val mutable inputs  = [{ name = "current"; datatype = "boolean" }]
+    method get_inputs   = inputs
+    val mutable outputs = [{ name = "stored"; datatype = "auto" }]
+    method get_outputs  = outputs
+    method header       = "boolean_t " ^ self#name ^ "_output;\n"
+    method trailer      = self#name ^ " = " ^ (String.concat 
+                                                (" " ^ operation ^ " ")
+                                                (List.map 
+                                                    (fun x -> x.name) 
+                                                    self#get_inputs
+                                                )
+                                              ) ^ ";\n"
+    method interface  = ""
+    method print_obj    = "\"" ^ self#print_class ^ "\": { " ^
+                          "\"name\":\"" ^ name ^ "\", " ^
+                          "\"operation\":\"" ^ self#operation ^ "\" }"
+end;;
+
+(* OR gate: inherits from binary_gate_part, logical OR operation *)
+class or_gate parent xml_obj = object (self)
+    inherit binop_part parent xml_obj
+    val operation = "||"
+    method print_class = "or"
+end;;
+
+(* AND gate: inherits from binary_gate_part, logical AND operation *)
+class and_gate parent xml_obj = object (self)
+    inherit binop_part parent xml_obj
+    val operation = "&&"
+    method print_class = "and"
+end;;
+
+(* Summation point: inherits from binop_part, addition operation *)
+class sum parent xml_obj = object (self)
+    inherit binop_part parent xml_obj
+    val operation = "+"
+    method print_class = "sum"
+end;;
+
+(* Production point: inherits from binop_part, multiplication operation *)
+class prod parent xml_obj = object (self)
+    inherit binop_part parent xml_obj
+    val operation = "*"
+    method print_class = "prod"
 end;;
 
 (* Main block management functions *)
@@ -192,8 +289,15 @@ let rec blockify parent xml_obj =
           "BLOCK"   -> (new block blockify parent xml_obj :> base)
           (* Note: passing blockify into block instantiation because it can't 
            * see at compile time what the function blockify is referring to *)
-        | "INPUT"   -> (new input  parent xml_obj :> base)
-        | "OUTPUT"  -> (new output parent xml_obj :> base)
+        | "INPUT"   -> (new input       parent xml_obj :> base)
+        | "OUTPUT"  -> (new output      parent xml_obj :> base)
+        | "CONSTANT"-> (new constant    parent xml_obj :> base)
+        | "MEM"     -> (new memory      parent xml_obj :> base)
+        | "NOT"     -> (new not_gate    parent xml_obj :> base)
+        | "AND"     -> (new and_gate    parent xml_obj :> base)
+        | "OR"      -> (new or_gate     parent xml_obj :> base)
+        | "SUM"     -> (new sum         parent xml_obj :> base)
+        | "PROD"    -> (new prod        parent xml_obj :> base)
         (* CONNECTION blocks are not supported by this operation. 
          * See get_connection above *)
         | _ as name -> object_error ("Tag " ^ name ^ " not supported.")
