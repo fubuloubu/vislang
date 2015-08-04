@@ -21,13 +21,14 @@ let rec block_parse top =
      * blocks successfully traverse back to inputs or priors branches. *)
     let rec trace block_list prior_list trace_list current =
         match ((current :> base) #print_class) with
-            "input"     -> current :: trace_list
-          | "memory"    -> current :: trace_list
-          | "const"     -> current :: trace_list
-          | "dt"        -> current :: trace_list
-          | _ as blk    -> (*FIXME: let () = Printf.printf "%s\n" blk in;*)
-          let compare_obj n = (fun x -> (x :> base) #name = n)
-           in
+            "input"     -> trace_list
+          | "memory"    -> trace_list
+          | "const"     -> trace_list
+          | "dt"        -> trace_list
+          (* The above don't need to be in the list of blocks because
+           * the block object will take care of them *)
+          | _ as blk    -> let compare_obj n = (fun x -> (x :> base) #name = n)
+                            in
             if List.exists (compare_obj current#name) trace_list
             then object_error (blk ^ ": " ^ ((current :> base) #name) ^
                                      " is in an algebraic loop...")
@@ -35,7 +36,7 @@ let rec block_parse top =
                  then current :: trace_list
                  else let input_names = (List.map 
                                         (fun x -> x.name) 
-                                        (current :> base) #get_inputs) 
+                                        (current :> base) #inputs) 
                       and find_fun = (fun x -> List.find (compare_obj x) block_list)
                        in let input_list = (List.map find_fun input_names)
                        in trace_split block_list prior_list trace_list input_list
@@ -63,12 +64,19 @@ let rec block_parse top =
      * algorithm. All outputs and memory blocks are added to the start list
      * because *)
      in 
-    let objs = (top :> base) #inner_objs
+    let objs = (top :> block) #inner_objs
      in 
     let start_list  = 
        (List.filter (fun x -> (x :> base) #print_class = "output") objs) 
      @ (List.filter (fun x -> (x :> base) #print_class = "memory") objs) 
-    
+     in
+    (* Perform the same operations for and inner blocks of top*)
+    let inner_block_list = List.map 
+                            block_parse 
+                            (List.filter 
+                                (fun x-> (x :> base) #print_class = "block") 
+                                objs
+                            )
     (* Kick off wrapper function *)
-     in top :: (trace_start objs start_list [])
+    in [inner_block_list :: top#set_inner_objs (trace_start objs start_list [])]
 
