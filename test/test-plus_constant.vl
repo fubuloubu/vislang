@@ -1,5 +1,5 @@
 <vl:BLOCK name="plus_constant">
-    <vl:INPUT name="in" datatype="single" size="1"/>
+    <vl:INPUT name="in" datatype="single" scope="local" size="1"/>
     <vl:CONSTANT name="const" datatype="single" size="1" value="1.235"/>
     <vl:SUM name="summer">
         <vl:CONNECTION to="input1" from="in"/>
