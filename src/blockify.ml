@@ -81,14 +81,17 @@ class block blockify xml_obj = object (self)
     method set_outputs a = object_error (
                                 "Should not set outputs of " ^
                                 self#print_class ^ " object")
-    method mem_blks = List.filter 
-            (fun (x : base) -> ((x :> base) #print_class) = "memory")
+    method static_blks = List.filter 
+            (fun (x : base) -> let c = ((x :> base) #print_class) in
+                                 c = "memory"
+                              || c = "constant"
+            )
             inner_objs
     method print_static = String.concat 
                                 "\n" 
                                 (List.map 
                                     (fun x -> (x :> base) #header)
-                                    self#mem_blks
+                                    self#static_blks
                                 )
     method print_class  = "block"
     method input_type   = "struct " ^ name ^ "_in"
@@ -211,6 +214,9 @@ class constant xml_obj = object (self)
                            * a value and doesn't interact with block I/O *)
     val value    = Xst.string_of_value (get_attr "value"    xml_obj)
     method value = value
+    method header     = (* overriden for block#header*)
+                        "static " ^ (get_datatype self#datatype) ^ " " ^
+                        self#name ^ " = " ^ value ^ ";"
     method print_class  = "constant"
     method print_obj    = "\"" ^ self#print_class ^ "\": { " ^
                           "\"name\":\"" ^ name ^ "\", " ^
@@ -358,6 +364,28 @@ class prod xml_obj = object (self)
     val mutable outputs = [{ name = "output"; datatype = "auto" }]
 end;;
 
+(* Production point: inherits from binop_part, multiplication operation *)
+class compare xml_obj = object (self)
+    inherit part xml_obj
+    val operation = Xst.string_of_value (get_attr "operation" xml_obj)
+    val datatype = Xst.string_of_value (get_attr "datatype" xml_obj)
+    method datatype = datatype
+    method print_class = "compare"
+    val mutable inputs  = [{ name = "lhs"; datatype = "auto" }; 
+                           { name = "rhs"; datatype = "auto" }]
+    val mutable outputs = [{ name = "output"; datatype = "boolean" }]
+    method body         = (get_datatype (List.hd outputs).datatype) ^ " " ^ 
+                          self#name ^ " = (" ^ 
+                            String.concat 
+                                ( " " ^ operation ^ " ") 
+                                (List.map (fun x -> x.name) self#inputs)
+                          ^ ");"
+    method print_obj    = "\"" ^ self#print_class ^ "\": { " ^
+                          "\"name\":\"" ^ name ^ "\", " ^
+                          "\"datatype\":\"" ^ datatype ^ "\", " ^
+                          "\"operation\":\"" ^ operation ^ "\" }"
+end;;
+
 (* Main block management functions *)
 (* Blockify goes through and matches the tagname to the appropiate object *)
 let rec blockify xml_obj = 
@@ -374,6 +402,7 @@ let rec blockify xml_obj =
         | "OR"      -> (new or_gate     xml_obj :> base)
         | "SUM"     -> (new sum         xml_obj :> base)
         | "PROD"    -> (new prod        xml_obj :> base)
+        | "COMPARE" -> (new compare     xml_obj :> base)
         (* CONNECTION blocks are not supported by this operation. 
          * See get_connection above *)
         | _ as name -> object_error ("Tag " ^ name ^ " not supported.")
