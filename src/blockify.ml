@@ -136,7 +136,6 @@ class virtual io_part xml_obj = object (self)
     method set_inner_objs new_inner_objs = object_error
                             ("Should not try to set inner objects of " ^
                              self#print_class ^ " object: " ^ self#name ^ "")
-    val scope    = Xst.string_of_value (get_attr "scope"    xml_obj)
     val datatype = Xst.string_of_value (get_attr "datatype" xml_obj)
     method datatype = datatype
     val size     =                      get_attr "size"     xml_obj
@@ -144,7 +143,6 @@ class virtual io_part xml_obj = object (self)
     method outputs  = [{ name = self#name; datatype = self#datatype }]
     method print_obj    = "\"" ^ self#print_class ^ "\": { " ^
                           "\"name\":\"" ^ name ^ "\", " ^
-                          "\"scope\":\"" ^ scope ^ "\", " ^
                           "\"size\":\"" ^ Xst.string_of_value (size) ^ "\" }"
     method header     = ""
     method body       = ""
