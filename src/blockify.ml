@@ -71,6 +71,15 @@ class block blockify xml_obj = object (self)
             (fun (x : base) -> ((x :> base) #print_class) = "output")
             inner_objs
         )
+    method mem_blks = List.filter 
+            (fun (x : base) -> ((x :> base) #print_class) = "memory")
+            inner_objs
+    method print_static = String.concat 
+                                "\n" 
+                                (List.map 
+                                    (fun x -> (x :> base) #header)
+                                    self#mem_blks
+                                )
     method print_class  = "block"
     method input_type   = "struct " ^ name ^ "_in"
     method output_type  = "struct " ^ name ^ "_out"
@@ -88,6 +97,8 @@ class block blockify xml_obj = object (self)
                         ) ^ ";\n};\n\n"
     method header     = "/* I/O Structures for block " ^ name ^ " */\n" ^
                         self#input_struct ^ self#output_struct ^
+                        "/* Initialize static variables */\n" ^
+                        self#print_static ^ "\n\n" ^
                         "/* Begin block " ^ name ^ " */\n" ^
                         self#output_type ^ " " ^ name ^ "(" ^ self#input_type ^ 
                         " inputs) {\n" ^ 
@@ -99,7 +110,13 @@ class block blockify xml_obj = object (self)
                             ) 
                             self#inputs)
                         ) ^ ";\n\n"
-    method trailer    = "\t/* Outputs for block " ^ name ^" */\n\t" ^
+    method body       = "\t/* Body for block " ^ name ^ " */\n" ^
+                        String.concat "\t" 
+                            (List.map
+                                (fun x -> (x :> base) #body)
+                                self#inner_objs
+                            )
+    method trailer    = "\n\t/* Outputs for block " ^ name ^" */\n\t" ^
                         self#output_type ^ " outputs;\n\t" ^
                         (String.concat ";\n\t" 
                             (List.map 
@@ -108,11 +125,6 @@ class block blockify xml_obj = object (self)
                         ) ^ ";\n\n" ^
                         "\treturn outputs;\n}\n" ^
                         "/* End block " ^ name ^ " */\n"
-    method body       = "\t" ^ String.concat "\t" 
-                            (List.map
-                                (fun x -> (x :> base) #body)
-                                self#inner_objs
-                            )
     method print_obj  = "{\n  \"block\": {\n" ^
                         "    \"name\":\"" ^ name ^ "\"\n" ^
                         "    \"inner_objs\": [\n      " ^
@@ -143,7 +155,6 @@ class virtual io_part xml_obj = object (self)
                           "\"name\":\"" ^ name ^ "\", " ^
                           "\"size\":\"" ^ Xst.string_of_value (size) ^ "\" }"
     method header     = ""
-    method body       = ""
     method trailer    = ""
 end;;
 
@@ -152,13 +163,16 @@ class input xml_obj = object (self)
     inherit io_part xml_obj as super
     method inputs   = object_error "Should never access inputs of input obj"
     method print_class  = "input"
+    method body       = ""
 end;;
 
 (* Output class: OUTPUT tag *)
 class output xml_obj = object (self)
     inherit io_part xml_obj as super
-    method outputs  = object_error "Should never access outputs of output obj"
+    method outputs      = object_error "Should never access outputs of output obj"
     method print_class  = "output"
+    method body         = (get_datatype self#datatype) ^ " " ^ 
+                          self#name ^ " = " ^ (List.hd self#inputs).name ^ ";\n"
 end;;
 
 (* Constant class: CONSTANT tag*)
@@ -207,8 +221,11 @@ class memory xml_obj = object (self)
                           "\"name\":\"" ^ name ^ "\", " ^
                           "\"init_cond\":" ^ init_cond ^ "\"" ^
                           " }"
-    method body         = "\t" ^ (List.hd outputs).name ^ " = " ^ 
-                          (List.hd inputs).name ^ "\n"
+    method header     = let output = List.hd self#outputs in
+                        (* overriden for block#header*)
+                        "static " ^ (get_datatype output.datatype) ^ " " ^
+                        output.name ^ " = " ^ init_cond ^ ";"
+    method body         = "" (* Taken care of by block *)
 end;;
 
 (* NOT Gate Part class: unary NOT operation *)
@@ -220,9 +237,9 @@ class not_gate xml_obj = object (self)
     method print_obj    = "\"" ^ self#print_class ^ "\": { " ^
                           "\"name\":\"" ^ name ^ "\", " ^
                           "\"operation\":\"!\" }"
-    method body         = "\t" ^ (get_datatype (List.hd outputs).datatype) ^ " " ^ 
+    method body         = (get_datatype (List.hd outputs).datatype) ^ " " ^ 
                           (List.hd outputs).name ^ " = !(" ^ 
-                          (List.hd inputs).name ^ ")\n"
+                          (List.hd inputs).name ^ ");\n"
 end;;
 
 let get_num_connections xml_obj =
@@ -253,7 +270,7 @@ class virtual binop_part xml_obj = object (self)
     method print_obj    = "\"" ^ self#print_class ^ "\": { " ^
                           "\"name\":\"" ^ name ^ "\", " ^
                           "\"operation\":\"" ^ self#operation ^ "\" }"
-    method body         = "\t" ^ (get_datatype (List.hd outputs).datatype) ^ " " ^ 
+    method body         = (get_datatype (List.hd outputs).datatype) ^ " " ^ 
                           (List.hd outputs).name ^ " =  " ^ String.concat 
                                 (" " ^ self#operation ^ " ")
                                 (List.map 
