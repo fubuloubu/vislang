@@ -6,6 +6,6 @@
         <vl:CONNECTION to="input2" from="const"/>
     </vl:SUM>
     <vl:OUTPUT name="out" datatype="single" scope="local" size="1">
-        <vl:CONNECTION to="out" from="summer|output"/>
+        <vl:CONNECTION to="out" from="summer"/>
     </vl:OUTPUT>
 </vl:BLOCK>

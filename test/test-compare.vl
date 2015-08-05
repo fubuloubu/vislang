@@ -6,6 +6,6 @@
         <vl:CONNECTION to="rhs" from="ten"/>
     </vl:COMPARE>
     <vl:OUTPUT name="out" datatype="boolean" scope="local" size="1">
-        <vl:CONNECTION to="out" from="compare|output"/>
+        <vl:CONNECTION to="out" from="compare"/>
     </vl:OUTPUT>
 </vl:BLOCK>
