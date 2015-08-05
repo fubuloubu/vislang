@@ -27,7 +27,6 @@ let rec block_parse top =
     let rec trace block_list prior_list trace_list current =
         match ((current :> base) #print_class) with
             "input"     -> current :: trace_list
-          | "memory"    -> current :: trace_list
           | "const"     -> current :: trace_list
           | "dt"        -> current :: trace_list
           (* The above don't need to be in the list of blocks because
@@ -44,28 +43,32 @@ let rec block_parse top =
              * that value is already computed and will not need to be 
              * computed again. *)
             else if List.exists (compare_obj current#name) prior_list
-                 then current :: trace_list
+                 then trace_list
                  (* Default case: kick off trace for each connected input 
                   * in current object's list of inputs *)
-                 else let input_names = (List.map 
-                                        (fun x ->
-                                            let ref = current#get_connection x.name
-                                             in match ref with
-                                                Name name -> string_of_value ref
-                                              | Ref ref -> 
-                                                    if ref.reftype = "NAME"
-                                                    then ref.refroot
-                                                    else object_error 
-                                                        ("FILE reference type " ^
-                                                        "not supported for ref " ^
-                                                            (string_of_ref ref)
-                                                        )
-                                              | _ as attr -> object_error 
-                                                    ("Attribute " ^ 
-                                                     (string_of_value attr) ^ 
-                                                     " not supported.")
-                                        ) 
-                                        (current :> base) #inputs) 
+                 else if (blk = "memory") && ((List.length trace_list) > 0) 
+                      then trace_list (* Terminate trace at memory block
+                                       * if we are tracing and one is found *)
+                 else let input_names = 
+                            (List.map 
+                                (fun x ->
+                                    let ref = current#get_connection x.name
+                                     in match ref with
+                                        Name name -> string_of_value ref
+                                      | Ref ref -> 
+                                            if ref.reftype = "NAME"
+                                            then ref.refroot
+                                            else object_error 
+                                                ("FILE reference type " ^
+                                                "not supported for ref " ^
+                                                    (string_of_ref ref)
+                                                )
+                                      | _ as attr -> object_error 
+                                            ("Attribute " ^ 
+                                             (string_of_value attr) ^ 
+                                             " not supported.")
+                                ) 
+                                (current :> base) #inputs) 
                       and find_fun = (fun x -> List.find (compare_obj x) block_list)
                        in let input_list = (List.map find_fun input_names)
                           and trace_list = current :: trace_list
