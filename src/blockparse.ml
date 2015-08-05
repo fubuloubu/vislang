@@ -62,16 +62,15 @@ let rec block_parse top =
                                                         )
                                         ) 
                                         (current :> base) #inputs) 
-   (* might want to try partition or popping the found blocks into input_list *)
                       and find_fun = (fun x -> List.find (compare_obj x) block_list)
                        in let input_list = (List.map find_fun input_names)
+                          and trace_list = current :: trace_list
                        in trace_split block_list prior_list trace_list input_list
     (* for each input of a block, trace out the list from that point on *)
     and trace_split block_list prior_list trace_list input_list =
         match input_list with
             []          -> trace_list
-          | hd :: tl    -> let trace_list = trace_list @
-                               (trace block_list prior_list trace_list hd)
+          | hd :: tl    -> let trace_list = (trace block_list prior_list trace_list hd)
                             in trace_split block_list prior_list trace_list tl
             
     (* trace_start function: this function is the wrapper used to call the
@@ -81,7 +80,8 @@ let rec block_parse top =
      in 
      let rec trace_start block_list prior_list start_list =
         match start_list with
-            []       -> prior_list
+            []       -> List.rev prior_list (* reverse list here because we were
+                                             * traversing backwards above *)
           | hd :: tl -> let prior_list = prior_list @ 
                             (trace block_list prior_list [] hd)
                          in trace_start block_list prior_list tl
@@ -104,10 +104,12 @@ let rec block_parse top =
     ignore
         (List.map 
             (fun x -> (x :> base) #set_inner_objs
+            (* TODO: note dead code here e.g. blocks not in list returned *)
                 (trace_start (inner_objs x) (start_list x) [])
             )
             inner_block_list
         );
+    (* TODO: note dead code here e.g. blocks not in list returned *)
     top#set_inner_objs (trace_start (inner_objs top) [] (start_list top));
     (* Return a list of blocks with properly configured inner objects
      * to be used for compilation *)
