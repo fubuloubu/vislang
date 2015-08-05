@@ -58,10 +58,15 @@ let rec block_parse top =
                                 (fun x ->
                                     let ref = current#get_connection x.name
                                      in match ref with
-                                        Name name -> string_of_value ref
+                                        Name name -> name
                                       | Ref ref -> 
                                             if ref.reftype = "NAME"
-                                            then ref.refroot
+                                            then if ((List.length ref.reflist) = 1)
+                                                 then (ref.refroot ^ "_" ^ 
+                                                      (List.hd ref.reflist))
+                                                 else object_error
+                                                    ("Cannot reference more " ^
+                                                    "than 1 deep for blocks")
                                             else object_error 
                                                 ("FILE reference type " ^
                                                 "not supported for ref " ^
@@ -77,6 +82,7 @@ let rec block_parse top =
                        in let input_list = (List.map find_fun input_names)
                           and trace_list = current :: trace_list
                        in begin
+                           (* Set input names to actual names *)
                            (current :> base) #set_inputs
                            (List.mapi
                                 (fun i x -> { name = (List.nth input_names i); 

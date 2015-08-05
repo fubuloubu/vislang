@@ -10,8 +10,8 @@ let get_attr attribute xml_obj =
 
 let get_datatype dtype =
     match dtype with
-        "single"
-      | "auto"   -> "float_t" (* Assume single if unspecified *)
+        "auto" (* Assume single if unspecified *)
+      | "single"   -> "float_t"
       | "boolean"-> "bool"
       | _ as d   -> d ^ "_t"
 
@@ -68,7 +68,7 @@ class block blockify xml_obj = object (self)
             inner_objs
         )
     method outputs  = List.map
-        (fun x -> List.hd ((x :> base) #inputs))
+        (fun x -> List.hd ((x :> base) #outputs))
         (List.filter 
             (fun (x : base) -> ((x :> base) #print_class) = "output")
             inner_objs
@@ -128,7 +128,6 @@ class block blockify xml_obj = object (self)
                                         not (   c = "input" 
                                              || c = "dt"    
                                              || c = "constant"
-                                             || c = "output"
                                             )
                                     )
                                     self#inner_objs
@@ -197,8 +196,10 @@ end;;
 (* Output class: OUTPUT tag *)
 class output xml_obj = object (self)
     inherit io_part xml_obj as super
-    method outputs      = object_error "Should never access outputs of output obj"
     method print_class  = "output"
+    method body       = get_datatype (List.hd self#outputs).datatype ^ " " ^
+                        self#name ^ " = " ^
+                        (List.hd self#inputs).name ^ ";"
 end;;
 
 (* Constant class: CONSTANT tag*)
@@ -250,9 +251,9 @@ class memory xml_obj = object (self)
     method header     = let output = List.hd self#outputs in
                         (* overriden for block#header*)
                         "static " ^ (get_datatype output.datatype) ^ " " ^
-                        output.name ^ " = " ^ init_cond ^ ";"
-    method body         = (List.hd outputs).name ^ " = " ^ 
-                          (List.hd inputs).name ^ ";"
+                        self#name ^ " = " ^ init_cond ^ ";"
+    method body         = self#name ^ " = " ^ 
+                          (List.hd inputs).name ^ "; /* Update for next pass */"
 end;;
 
 (* NOT Gate Part class: unary NOT operation *)
@@ -265,7 +266,7 @@ class not_gate xml_obj = object (self)
                           "\"name\":\"" ^ name ^ "\", " ^
                           "\"operation\":\"!\" }"
     method body         = (get_datatype (List.hd outputs).datatype) ^ " " ^ 
-                          (List.hd outputs).name ^ " = !(" ^ 
+                          self#name ^ " = !(" ^ 
                           (List.hd inputs).name ^ ");"
 end;;
 
@@ -298,7 +299,7 @@ class virtual binop_part xml_obj = object (self)
                           "\"name\":\"" ^ name ^ "\", " ^
                           "\"operation\":\"" ^ self#operation ^ "\" }"
     method body         = (get_datatype (List.hd outputs).datatype) ^ " " ^ 
-                          (List.hd outputs).name ^ " =  " ^ String.concat 
+                          self#name ^ " = " ^ String.concat 
                                 (" " ^ self#operation ^ " ")
                                 (List.map 
                                     (fun x -> x.name) 
