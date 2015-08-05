@@ -43,6 +43,7 @@ let gen_debug_code program =
                               | "int32"  -> "c_int32"
                               | "single" -> "c_float"
                               | "double" -> "c_double"
+                              | "boolean"-> "c_byte" (* Assume uint8 *)
                               | _ -> failwith "unassigned value"
                         )
                         inputs
@@ -67,6 +68,7 @@ let gen_debug_code program =
                               | "int32"  -> "int"
                               | "single" -> "float"
                               | "double" -> "float"
+                              | "boolean"-> "int" (* Assume uint8 *)
                               | _ -> failwith "unassigned value"
                             )
                             ^ "(listargs[" ^ string_of_int(i) ^ "])"
