@@ -110,13 +110,23 @@ class block blockify xml_obj = object (self)
                             ) 
                             self#inputs)
                         ) ^ ";\n\n"
-    method body       = "\t/* Body for block " ^ name ^ " */\n" ^
-                        String.concat "\t" 
+    method body       = "\t/* Body for block " ^ name ^ " */\n\t" ^
+                        (String.concat "\n\t" 
                             (List.map
                                 (fun x -> (x :> base) #body)
-                                self#inner_objs
+                                (* Skip parts block takes care of *)
+                                (List.filter
+                                    (fun x -> let c = (x :> base) #print_class in
+                                        not (   c = "input" 
+                                             || c = "dt"    
+                                             || c = "constant"
+                                            )
+                                    )
+                                    self#inner_objs
+                                )
                             )
-    method trailer    = "\n\t/* Outputs for block " ^ name ^" */\n\t" ^
+                        ) ^ "\n\n"
+    method trailer    = "\t/* Outputs for block " ^ name ^" */\n\t" ^
                         self#output_type ^ " outputs;\n\t" ^
                         (String.concat ";\n\t" 
                             (List.map 
@@ -172,7 +182,7 @@ class output xml_obj = object (self)
     method outputs      = object_error "Should never access outputs of output obj"
     method print_class  = "output"
     method body         = (get_datatype self#datatype) ^ " " ^ 
-                          self#name ^ " = " ^ (List.hd self#inputs).name ^ ";\n"
+                          self#name ^ " = " ^ (List.hd self#inputs).name ^ ";"
 end;;
 
 (* Constant class: CONSTANT tag*)
@@ -225,7 +235,8 @@ class memory xml_obj = object (self)
                         (* overriden for block#header*)
                         "static " ^ (get_datatype output.datatype) ^ " " ^
                         output.name ^ " = " ^ init_cond ^ ";"
-    method body         = "" (* Taken care of by block *)
+    method body         = (List.hd outputs).name ^ " = " ^ 
+                          (List.hd inputs).name ^ ";"
 end;;
 
 (* NOT Gate Part class: unary NOT operation *)
@@ -239,7 +250,7 @@ class not_gate xml_obj = object (self)
                           "\"operation\":\"!\" }"
     method body         = (get_datatype (List.hd outputs).datatype) ^ " " ^ 
                           (List.hd outputs).name ^ " = !(" ^ 
-                          (List.hd inputs).name ^ ");\n"
+                          (List.hd inputs).name ^ ");"
 end;;
 
 let get_num_connections xml_obj =
@@ -277,7 +288,7 @@ class virtual binop_part xml_obj = object (self)
                                     (fun x -> x.name) 
                                     self#inputs
                                 ) ^ 
-                          ";\n"
+                          ";"
 end;;
 
 (* intermediate class to explicitly set datatype for gate parts *)
