@@ -60,6 +60,10 @@ let rec block_parse top =
                                                         "not supported for ref " ^
                                                             (string_of_ref ref)
                                                         )
+                                              | _ as attr -> object_error 
+                                                    ("Attribute " ^ 
+                                                     (string_of_value attr) ^ 
+                                                     " not supported.")
                                         ) 
                                         (current :> base) #inputs) 
                       and find_fun = (fun x -> List.find (compare_obj x) block_list)
@@ -95,22 +99,44 @@ let rec block_parse top =
     let start_list obj = 
        (List.filter (fun x -> (x :> base) #print_class = "output") (inner_objs obj)) 
      @ (List.filter (fun x -> (x :> base) #print_class = "memory") (inner_objs obj))
+    (* function to detect and print code that existing in object before, but not now *)
+    and print_dead_code new_inner_objs obj =
+        let dead_code = List.filter (fun x -> 
+                            not (List.exists (fun y -> 
+                                (y :> base) #name = (x :> base) #name) 
+                                new_inner_objs)
+                            )
+                            (inner_objs obj)
+         in if (List.length dead_code) > 0
+         then print_endline 
+            ("Removed the following unreachable blocks from " ^ 
+                (obj :> base) #name ^ ":\n" ^
+                (print_list dead_code) ^ "\n"
+            )
      in
-    (* Perform the same mutation operations for inner blocks and top*)
+    (* Perform the same mutation operations for any inner blocks of top. 
+     * Note: at this point, if an inner object was not used, it should not appear
+     * in the code for top below. *)
     let inner_block_list = List.filter 
                             (fun x-> (x :> base) #print_class = "block") 
                             (inner_objs top)
      in
     ignore
         (List.map 
-            (fun x -> (x :> base) #set_inner_objs
-            (* TODO: note dead code here e.g. blocks not in list returned *)
-                (trace_start (inner_objs x) (start_list x) [])
+            (fun x -> let new_inner_objs = 
+                            (trace_start (inner_objs x) (start_list x) [])
+                       in print_dead_code new_inner_objs x;
+                          (x :> base) #set_inner_objs new_inner_objs
             )
             inner_block_list
         );
-    (* TODO: note dead code here e.g. blocks not in list returned *)
-    top#set_inner_objs (trace_start (inner_objs top) [] (start_list top));
+    (* Perform the trace operation and re-set the inner objects of top with the
+     * result. Also print objects that will be removed. *)
+    let new_inner_objs = (trace_start (inner_objs top) [] (start_list top))
+     in
+    top#set_inner_objs new_inner_objs;
+    print_dead_code new_inner_objs top;
     (* Return a list of blocks with properly configured inner objects
-     * to be used for compilation *)
+     * to be used for compilation. Note: we reverse the list here so that 
+     * inner_blks are first to be compiled. *)
     List.rev (top :: inner_block_list)
