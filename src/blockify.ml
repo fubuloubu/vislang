@@ -59,7 +59,7 @@ end;;
 class block blockify xml_obj = object (self)
     inherit base xml_obj
     val mutable inner_objs = List.map blockify xml_obj.inner_objs
-    method inner_objs   = inner_objs
+    method inner_objs   = List.rev inner_objs
     method set_inner_objs new_inner_objs = inner_objs <- new_inner_objs
     method inputs   = List.map
         (fun x -> List.hd ((x :> base) #outputs))
@@ -121,7 +121,7 @@ class block blockify xml_obj = object (self)
                         (String.concat "\n      "
                             (List.map 
                                 (fun (x : base) -> (x :> base) #print_obj) 
-                                inner_objs
+                                self#inner_objs
                             )
                         ) ^ "\n    ]" ^ 
                         "\n  }\n}\n"
