@@ -1,6 +1,5 @@
 open Xst
 open Errors
-
 (* Helper functions for Object instantiaion *)
 let get_attr attribute xml_obj = 
     let attr = List.filter (fun x -> x.aname = attribute) xml_obj.attributes in
@@ -8,20 +7,6 @@ let get_attr attribute xml_obj =
             []      -> object_error ("No attribute named " ^ attribute )
           | [a]     -> a.avalue
           | _ :: _  -> object_error ("Too many attributes named " ^ attribute)
-
-let get_connection input_to xml_obj =
-    let input_from = List.filter (fun x -> (get_attr "to" x) = Name input_to)
-        (List.filter (fun x -> x.tagname = "CONNECTION") xml_obj.inner_objs) in
-        match input_from with
-            []      -> object_error
-                        ("No connections found for " ^ 
-                            Xst.string_of_value (get_attr "name" xml_obj)
-                        )
-          | [cnx]   -> Xst.string_of_value (get_attr "from" cnx )
-          | _ :: _  -> object_error 
-                        ("Too many connections defined for " ^ 
-                            Xst.string_of_value (get_attr "name" xml_obj)
-                        )
 
 let get_datatype dtype =
     match dtype with
@@ -52,6 +37,19 @@ class virtual base xml_obj = object
     method virtual header       : string
     method virtual body         : string
     method virtual trailer      : string
+    method get_connection input_to =
+        let input_from = List.filter (fun x -> (get_attr "to" x) = Name input_to)
+            (List.filter (fun x -> x.tagname = "CONNECTION") xml_obj.inner_objs) in
+            match input_from with
+                []      -> object_error
+                            ("No connections found for " ^ 
+                                Xst.string_of_value (get_attr "name" xml_obj)
+                            )
+              | [cnx]   -> get_attr "from" cnx
+              | _ :: _  -> object_error 
+                            ("Too many connections defined for " ^ 
+                                Xst.string_of_value (get_attr "name" xml_obj)
+                            )
 end;;
 
 (* Block class: BLOCK tag
