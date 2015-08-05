@@ -245,15 +245,16 @@ class memory xml_obj = object (self)
     val init_cond       = Xst.string_of_value (get_attr "ic" xml_obj)
     val mutable inputs   = [{ name = "current"; datatype = "auto" }]
     val mutable outputs  = [{ name = "stored"; datatype = "auto" }]
+    val datatype = Xst.string_of_value (get_attr "datatype" xml_obj)
+    method datatype = datatype
     method init_cond = init_cond
     method print_class  = "memory"
     method print_obj    = "\"memory\": { " ^
                           "\"name\":\"" ^ name ^ "\", " ^
                           "\"init_cond\":" ^ init_cond ^ "\"" ^
                           " }"
-    method header     = let output = List.hd self#outputs in
-                        (* overriden for block#header*)
-                        "static " ^ (get_datatype output.datatype) ^ " " ^
+    method header     = (* overriden for block#header*)
+                        "static " ^ (get_datatype self#datatype) ^ " " ^
                         self#name ^ " = " ^ init_cond ^ ";"
     method body         = self#name ^ " = " ^ 
                           (List.hd inputs).name ^ "; /* Update for next pass */"
@@ -298,10 +299,11 @@ class virtual binop_part xml_obj = object (self)
     inherit part xml_obj
     val virtual operation : string
     method operation = operation
+    method virtual datatype : string
     method print_obj    = "\"" ^ self#print_class ^ "\": { " ^
                           "\"name\":\"" ^ name ^ "\", " ^
                           "\"operation\":\"" ^ self#operation ^ "\" }"
-    method body         = (get_datatype (List.hd outputs).datatype) ^ " " ^ 
+    method body         = (get_datatype self#datatype) ^ " " ^ 
                           self#name ^ " = " ^ String.concat 
                                 (" " ^ self#operation ^ " ")
                                 (List.map 
@@ -314,6 +316,8 @@ end;;
 (* intermediate class to explicitly set datatype for gate parts *)
 class virtual gate xml_obj = object
     inherit binop_part xml_obj as super
+    val datatype = "boolean"
+    method datatype = datatype
     val mutable inputs  = get_cnx_list xml_obj "boolean"
     val mutable outputs = [{ name = "output"; datatype = "boolean" }]
 end;;
@@ -336,6 +340,8 @@ end;;
 class sum xml_obj = object (self)
     inherit binop_part xml_obj
     val operation = "+"
+    val datatype = Xst.string_of_value (get_attr "datatype" xml_obj)
+    method datatype = datatype
     method print_class = "sum"
     val mutable inputs  = get_cnx_list xml_obj "auto"
     val mutable outputs = [{ name = "output"; datatype = "auto" }]
@@ -345,6 +351,8 @@ end;;
 class prod xml_obj = object (self)
     inherit binop_part xml_obj
     val operation = "*"
+    val datatype = Xst.string_of_value (get_attr "datatype" xml_obj)
+    method datatype = datatype
     method print_class = "prod"
     val mutable inputs  = get_cnx_list xml_obj "auto"
     val mutable outputs = [{ name = "output"; datatype = "auto" }]
