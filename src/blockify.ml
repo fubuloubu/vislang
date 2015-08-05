@@ -179,6 +179,7 @@ class virtual io_part xml_obj = object (self)
                                 self#print_class ^ " object")
     method print_obj    = "\"" ^ self#print_class ^ "\": { " ^
                           "\"name\":\"" ^ name ^ "\", " ^
+                          "\"datatype\":\"" ^ datatype ^ "\", " ^
                           "\"size\":\"" ^ Xst.string_of_value (size) ^ "\" }"
     method header     = ""
     method body       = ""
