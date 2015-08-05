@@ -49,7 +49,11 @@ let rec block_parse top =
                  else if (blk = "memory") && ((List.length trace_list) > 0) 
                       then trace_list (* Terminate trace at memory block
                                        * if we are tracing and one is found *)
-                 else let input_names = 
+                 else let datatypes =
+                            (List.map 
+                                (fun x -> x.datatype) 
+                                (current :> base) #inputs) 
+                      and input_names = 
                             (List.map 
                                 (fun x ->
                                     let ref = current#get_connection x.name
@@ -72,7 +76,15 @@ let rec block_parse top =
                       and find_fun = (fun x -> List.find (compare_obj x) block_list)
                        in let input_list = (List.map find_fun input_names)
                           and trace_list = current :: trace_list
-                       in trace_split block_list prior_list trace_list input_list
+                       in begin
+                           (current :> base) #set_inputs
+                           (List.mapi
+                                (fun i x -> { name = (List.nth input_names i); 
+                                              datatype = x.datatype})
+                                ((current :> base) #inputs)
+                           );
+                          trace_split block_list prior_list trace_list input_list
+                          end
     (* for each input of a block, trace out the list from that point on *)
     and trace_split block_list prior_list trace_list input_list =
         match input_list with

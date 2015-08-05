@@ -27,7 +27,9 @@ class virtual base xml_obj = object
     val name : string   = Xst.string_of_value (get_attr "name" xml_obj)
     method name         = name
     method virtual inputs       : interface list
+    method virtual set_inputs   : interface list -> unit
     method virtual outputs      : interface list
+    method virtual set_outputs  : interface list -> unit
     method virtual inner_objs   : base list
     (* Potentially dangerous, but only used in context of 
      * getting inner objects first *)
@@ -71,6 +73,12 @@ class block blockify xml_obj = object (self)
             (fun (x : base) -> ((x :> base) #print_class) = "output")
             inner_objs
         )
+    method set_inputs  a = object_error 
+                                ("Should not set inputs of " ^
+                                self#print_class ^ " object")
+    method set_outputs a = object_error (
+                                "Should not set outputs of " ^
+                                self#print_class ^ " object")
     method mem_blks = List.filter 
             (fun (x : base) -> ((x :> base) #print_class) = "memory")
             inner_objs
@@ -120,6 +128,7 @@ class block blockify xml_obj = object (self)
                                         not (   c = "input" 
                                              || c = "dt"    
                                              || c = "constant"
+                                             || c = "output"
                                             )
                                     )
                                     self#inner_objs
@@ -159,12 +168,19 @@ class virtual io_part xml_obj = object (self)
     val datatype = Xst.string_of_value (get_attr "datatype" xml_obj)
     method datatype = datatype
     val size     =                      get_attr "size"     xml_obj
-    method inputs   = [{ name = self#name; datatype = self#datatype }]
+    val mutable inputs   = [{ name = string_of_value (get_attr "name" xml_obj); 
+                          datatype = string_of_value (get_attr "datatype" xml_obj)}]
+    method inputs = inputs
+    method set_inputs new_inputs = inputs <- new_inputs
     method outputs  = [{ name = self#name; datatype = self#datatype }]
+    method set_outputs a = object_error (
+                                "Should not set outputs of " ^
+                                self#print_class ^ " object")
     method print_obj    = "\"" ^ self#print_class ^ "\": { " ^
                           "\"name\":\"" ^ name ^ "\", " ^
                           "\"size\":\"" ^ Xst.string_of_value (size) ^ "\" }"
     method header     = ""
+    method body       = ""
     method trailer    = ""
 end;;
 
@@ -172,8 +188,10 @@ end;;
 class input xml_obj = object (self)
     inherit io_part xml_obj as super
     method inputs   = object_error "Should never access inputs of input obj"
+    method set_inputs  a = object_error 
+                                ("Should not set inputs of " ^
+                                self#print_class ^ " object")
     method print_class  = "input"
-    method body       = ""
 end;;
 
 (* Output class: OUTPUT tag *)
@@ -181,8 +199,6 @@ class output xml_obj = object (self)
     inherit io_part xml_obj as super
     method outputs      = object_error "Should never access outputs of output obj"
     method print_class  = "output"
-    method body         = (get_datatype self#datatype) ^ " " ^ 
-                          self#name ^ " = " ^ (List.hd self#inputs).name ^ ";"
 end;;
 
 (* Constant class: CONSTANT tag*)
