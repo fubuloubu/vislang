@@ -137,8 +137,8 @@ let rec block_parse top =
      * result. Also print objects that will be removed. *)
     let new_inner_objs = (trace_start (inner_objs top) [] (start_list top))
      in
-    top#set_inner_objs new_inner_objs;
     print_dead_code new_inner_objs top;
+    top#set_inner_objs new_inner_objs;
     (* Return a list of blocks with properly configured inner objects
      * to be used for compilation. Note: we reverse the list here so that 
      * inner_blks are first to be compiled. *)
