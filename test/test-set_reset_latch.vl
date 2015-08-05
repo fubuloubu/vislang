@@ -5,17 +5,17 @@
         <vl:CONNECTION to="input" from="reset"/>
     </vl:NOT>
     <vl:AND name="latch_and_not_reset">
-        <vl:CONNECTION to="input1" from="set_or_mem|output"/>
-        <vl:CONNECTION to="input2" from="not_reset|output"/>
+        <vl:CONNECTION to="input1" from="set_or_mem"/>
+        <vl:CONNECTION to="input2" from="not_reset"/>
     </vl:AND>
     <vl:OR name="set_or_mem">
-        <vl:CONNECTION to="input1" from="latch_lp|stored"/>
-        <vl:CONNECTION to="input2" from="set"/>
+        <vl:CONNECTION to="input1" from="set"/>
+        <vl:CONNECTION to="input2" from="latch_lp"/>
     </vl:OR>
     <vl:MEM name="latch_lp" ic="false">
-        <vl:CONNECTION to="current" from="latch_and_not_reset|output"/>
+        <vl:CONNECTION to="current" from="latch_and_not_reset"/>
     </vl:MEM>
     <vl:OUTPUT name="latch" datatype="boolean" scope="local" size="1">
-        <vl:CONNECTION to="latch" from="latch_and_not_reset|output"/>
+        <vl:CONNECTION to="latch" from="latch_and_not_reset"/>
     </vl:OUTPUT>
 </vl:BLOCK>
