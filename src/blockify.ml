@@ -10,10 +10,12 @@ let get_attr attribute xml_obj =
 
 let get_datatype dtype =
     match dtype with
-        "auto" (* Assume single if unspecified *)
-      | "single"   -> "float_t"
-      | "boolean"-> "bool"
-      | _ as d   -> d ^ "_t"
+        "auto"      -> object_error ("Datatype not interpreted. " ^
+                                     "Please ensure all inputs and outputs " ^
+                                     "of this block have correct datatypes.")
+      | "boolean"   -> "bool"
+      | "single"    -> "float_t"
+      | _ as d      -> d ^ "_t"
 
 (* Structure for returning input and output types *)
 type interface = {
