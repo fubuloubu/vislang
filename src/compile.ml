@@ -53,7 +53,7 @@ let gen_debug_code program =
           ^ "with open(sys.argv[1]) as f:\n"
           ^ "    for line in f:\n"
           ^ "        listargs = line.strip('\\n').split(',')\n"
-          ^ "        inputs = buffer_inputs("
+          ^ "        inputs = " ^ name ^ "_inputs("
           ^     (String.concat
                     ", "
                     (List.mapi
