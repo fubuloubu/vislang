@@ -36,14 +36,22 @@ type interface = {
     datatype : string;
 }
 
-(* virtual Base class all blocks inherit from *)
+(* virtual Base class all blocks inherit from. All methods here
+ * will be utilized by upstream utilities *)
 class virtual base xml_obj = object
     val name : string   = Xst.string_of_value (get_attr "name" xml_obj)
     method name         = name
     method virtual inputs       : interface list
     method virtual outputs      : interface list
+    method virtual inner_objs   : base list
+    (* Potentially dangerous, but only used in context of 
+     * getting inner objects first *)
+    method virtual set_inner_objs : base list -> unit
     method virtual print_class  : string
     method virtual print_obj    : string
+    method virtual header       : string
+    method virtual body         : string
+    method virtual trailer      : string
 end;;
 
 (* Block class: BLOCK tag
@@ -102,7 +110,11 @@ class block blockify xml_obj = object (self)
                         ) ^ ";\n\n" ^
                         "\treturn outputs;\n}\n" ^
                         "/* End block " ^ name ^ " */\n"
-    method interface  = ""
+    method body       = "\t" ^ String.concat "\t" 
+                            (List.map
+                                (fun x -> (x :> base) #body)
+                                self#inner_objs
+                            )
     method print_obj  = "{\n  \"block\": {\n" ^
                         "    \"name\":\"" ^ name ^ "\"\n" ^
                         "    \"inner_objs\": [\n      " ^
@@ -118,6 +130,12 @@ end;;
 (* virtual I/O Part class: do all I/O Part attributes and checking *)
 class virtual io_part xml_obj = object (self)
     inherit base xml_obj
+    method inner_objs = object_error 
+                            ("Should not try to access inner objects of " ^
+                             self#print_class ^ " object: " ^ self#name ^ "")
+    method set_inner_objs new_inner_objs = object_error
+                            ("Should not try to set inner objects of " ^
+                             self#print_class ^ " object: " ^ self#name ^ "")
     val scope    = Xst.string_of_value (get_attr "scope"    xml_obj)
     val datatype = Xst.string_of_value (get_attr "datatype" xml_obj)
     method datatype = datatype
@@ -128,6 +146,9 @@ class virtual io_part xml_obj = object (self)
                           "\"name\":\"" ^ name ^ "\", " ^
                           "\"scope\":\"" ^ scope ^ "\", " ^
                           "\"size\":\"" ^ Xst.string_of_value (size) ^ "\" }"
+    method header     = ""
+    method body       = ""
+    method trailer    = ""
 end;;
 
 (* Input class: INPUT tag*)
@@ -161,13 +182,21 @@ end;;
 (* All parts inherit from this one *)
 class virtual part xml_obj = object (self)
     inherit base xml_obj
+    method inner_objs = object_error 
+                            ("Should not try to access inner objects of " ^
+                             self#print_class ^ " object: " ^ self#name ^ "")
+    method set_inner_objs new_inner_objs = object_error
+                            ("Should not try to set inner objects of " ^
+                             self#print_class ^ " object: " ^ self#name ^ "")
     val virtual mutable inputs  : interface list
     method inputs  = inputs
     method set_inputs new_inputs = inputs <- new_inputs
     val virtual mutable outputs : interface list
     method outputs = outputs
     method set_outputs new_outputs = outputs <- new_outputs
-    method virtual body_code    : string
+    method virtual body         : string
+    method header     = ""
+    method trailer    = ""
 end;;
 
 (* Memory class: MEM tag*)
@@ -182,7 +211,7 @@ class memory xml_obj = object (self)
                           "\"name\":\"" ^ name ^ "\", " ^
                           "\"init_cond\":" ^ init_cond ^ "\"" ^
                           " }"
-    method body_code    = "\t" ^ (List.hd outputs).name ^ " = " ^ 
+    method body         = "\t" ^ (List.hd outputs).name ^ " = " ^ 
                           (List.hd inputs).name ^ "\n"
 end;;
 
@@ -195,7 +224,7 @@ class not_gate xml_obj = object (self)
     method print_obj    = "\"" ^ self#print_class ^ "\": { " ^
                           "\"name\":\"" ^ name ^ "\", " ^
                           "\"operation\":\"!\" }"
-    method body_code    = "\t" ^ (get_datatype (List.hd outputs).datatype) ^ " " ^ 
+    method body         = "\t" ^ (get_datatype (List.hd outputs).datatype) ^ " " ^ 
                           (List.hd outputs).name ^ " = !(" ^ 
                           (List.hd inputs).name ^ ")\n"
 end;;
@@ -228,7 +257,7 @@ class virtual binop_part xml_obj = object (self)
     method print_obj    = "\"" ^ self#print_class ^ "\": { " ^
                           "\"name\":\"" ^ name ^ "\", " ^
                           "\"operation\":\"" ^ self#operation ^ "\" }"
-    method body_code    = "\t" ^ (get_datatype (List.hd outputs).datatype) ^ " " ^ 
+    method body         = "\t" ^ (get_datatype (List.hd outputs).datatype) ^ " " ^ 
                           (List.hd outputs).name ^ " =  " ^ String.concat 
                                 (" " ^ self#operation ^ " ")
                                 (List.map 

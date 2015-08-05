@@ -64,19 +64,33 @@ let rec block_parse top =
      * algorithm. All outputs and memory blocks are added to the start list
      * because *)
      in 
-    let objs = (top :> block) #inner_objs
-     in 
-    let start_list  = 
-       (List.filter (fun x -> (x :> base) #print_class = "output") objs) 
-     @ (List.filter (fun x -> (x :> base) #print_class = "memory") objs) 
+    let inner_objs obj = (obj :> base) #inner_objs
      in
-    (* Perform the same operations for and inner blocks of top*)
-    let inner_block_list = List.map 
-                            block_parse 
-                            (List.filter 
-                                (fun x-> (x :> base) #print_class = "block") 
-                                objs
-                            )
-    (* Kick off wrapper function *)
-    top#set_inner_objs (trace_start objs start_list [])
-    in [top :: inner_block_list]
+    let start_list obj = 
+       (List.filter (fun x -> (x :> base) #print_class = "output") (inner_objs obj)) 
+     @ (List.filter (fun x -> (x :> base) #print_class = "memory") (inner_objs obj))
+     in
+    (* Perform the same mutation operations for inner blocks and top*)
+    let inner_block_list = List.filter 
+                            (fun x-> (x :> base) #print_class = "block") 
+                            (inner_objs top)
+     in
+    ignore 
+        (List.map 
+            (fun x -> (x :> base) #set_inner_objs 
+                (trace_start (inner_objs x) (start_list x) [])
+            )
+            inner_block_list
+        );
+    top#set_inner_objs (trace_start (inner_objs top) (start_list top) []);
+    (* Return a list of blocks with properly configured inner objects
+     * to be used for compilation *)
+    List.rev (top :: inner_block_list)
+
+let print_list program =
+    String.concat
+                "\n\n" 
+                (List.map
+                    (fun x -> (x :> base) #print_obj)
+                    program
+                )

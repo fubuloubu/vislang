@@ -3,19 +3,26 @@ open Blockparse
 
 let translate program =
     (* Print standard libraries required *)
-      "#include <stdint.h>\n"
+      "#include <stdbool.h>\n"
+    ^ "#include <stdint.h>\n"
     ^ "#include <float.h>\n"
-    ^ "#include <math.h>\n\n"
-    (* Print header for all the objects in the ordered list, then trailers *)
-    ^ String.concat "\n" (List.map (fun x -> (x :> base) #header ) program)
-    ^ String.concat "\n" (List.map (fun x -> (x :> base) #trailer) program)
-
+    ^ "#include <math.h>\n"
+    ^ "\n"
+    (* Print print the code for each block in the program using the optimized and
+     * ordered inner blocks in the body code method for each *)
+    ^ String.concat "\n\n" (List.map 
+                                (fun x -> let obj = (x :> base) in 
+                                    obj#header ^ obj#body ^ obj#trailer
+                                ) 
+                                program
+                           )
+    ^ "\n\n/*Generated using VLCC */"
 (* Generate python script for processing in files and sending it through the
  * compiled binary and printing the results as it is running *)
-let gen_debug_code top =
-    let top = (top :> base) in
+let gen_debug_code program =
+    let top = ((List.hd (List.rev program)) :> base) in
         let name = top#name in
-        let inputs = top#get_inputs 
+        let inputs = top#inputs 
          in
             "import sys\n"
           ^ "import ctypes\n"

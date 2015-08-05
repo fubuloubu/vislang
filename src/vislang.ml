@@ -21,9 +21,9 @@ let _ =
     let program = Blockparse.block_parse block_tree in
     let listing =
         match action with
-              BlockTree -> block_tree#print_obj
+              BlockTree -> Blockparse.print_list program
             | Compile   -> Compile.translate program
             | Optimize  -> let program = Optimize.optimize program
                             in Compile.translate program
-            | DebugCode -> Compile.gen_debug_code block_tree
+            | DebugCode -> Compile.gen_debug_code program
      in print_string listing
