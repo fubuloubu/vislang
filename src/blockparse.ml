@@ -1,5 +1,10 @@
 open Blockify
 open Errors
+open Xst
+
+let print_list program = String.concat "\n\n" 
+    (List.map (fun x -> (x :> base) #print_obj) program)
+
 (* Block Parse intelligently traces through the objects inside a block from
  * output to input and finds an appropiate path through the program such
  * that when the bytecode is extracted in the order obtained here,
@@ -21,22 +26,43 @@ let rec block_parse top =
      * blocks successfully traverse back to inputs or priors branches. *)
     let rec trace block_list prior_list trace_list current =
         match ((current :> base) #print_class) with
-            "input"     -> trace_list
-          | "memory"    -> trace_list
-          | "const"     -> trace_list
-          | "dt"        -> trace_list
+            "input"     -> current :: trace_list
+          | "memory"    -> current :: trace_list
+          | "const"     -> current :: trace_list
+          | "dt"        -> current :: trace_list
           (* The above don't need to be in the list of blocks because
            * the block object will take care of them *)
           | _ as blk    -> let compare_obj n = (fun x -> (x :> base) #name = n)
                             in
+            (* If current object exists in the current trace loop,
+             * this means there's a cyclic reference in the trace that
+             * will not be possible to escape, e.g. algebraic loop *)
             if List.exists (compare_obj current#name) trace_list
             then object_error (blk ^ ": " ^ ((current :> base) #name) ^
                                      " is in an algebraic loop...")
+            (* If current object exists on the list of priors, that means
+             * that value is already computed and will not need to be 
+             * computed again. *)
             else if List.exists (compare_obj current#name) prior_list
                  then current :: trace_list
+                 (* Default case: kick off trace for each connected input 
+                  * in current object's list of inputs *)
                  else let input_names = (List.map 
-                                        (fun x -> x.name) 
+                                        (fun x ->
+                                            let ref = current#get_connection x.name
+                                             in match ref with
+                                                Name name -> string_of_value ref
+                                              | Ref ref -> 
+                                                    if ref.reftype = "NAME"
+                                                    then ref.refroot
+                                                    else object_error 
+                                                        ("FILE reference type " ^
+                                                        "not supported for ref " ^
+                                                            (string_of_ref ref)
+                                                        )
+                                        ) 
                                         (current :> base) #inputs) 
+   (* might want to try partition or popping the found blocks into input_list *)
                       and find_fun = (fun x -> List.find (compare_obj x) block_list)
                        in let input_list = (List.map find_fun input_names)
                        in trace_split block_list prior_list trace_list input_list
@@ -75,22 +101,14 @@ let rec block_parse top =
                             (fun x-> (x :> base) #print_class = "block") 
                             (inner_objs top)
      in
-    ignore 
+    ignore
         (List.map 
-            (fun x -> (x :> base) #set_inner_objs 
+            (fun x -> (x :> base) #set_inner_objs
                 (trace_start (inner_objs x) (start_list x) [])
             )
             inner_block_list
         );
-    top#set_inner_objs (trace_start (inner_objs top) (start_list top) []);
+    top#set_inner_objs (trace_start (inner_objs top) [] (start_list top));
     (* Return a list of blocks with properly configured inner objects
      * to be used for compilation *)
     List.rev (top :: inner_block_list)
-
-let print_list program =
-    String.concat
-                "\n\n" 
-                (List.map
-                    (fun x -> (x :> base) #print_obj)
-                    program
-                )
