@@ -1,6 +1,6 @@
 <vl:BLOCK name="memory">
     <vl:INPUT name="in" scope="local" datatype="uint32" size="auto"/>
-    <vl:MEM name="mem" ic="0x0">
+    <vl:MEM name="mem" datatype="uint32" ic="0x0">
         <vl:CONNECTION to="current" from="in"/>
     </vl:MEM>
     <vl:OUTPUT name="out" datatype="uint32" scope="local" size="auto">

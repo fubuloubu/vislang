@@ -12,7 +12,7 @@
         <vl:CONNECTION to="input1" from="set"/>
         <vl:CONNECTION to="input2" from="latch_lp"/>
     </vl:OR>
-    <vl:MEM name="latch_lp" ic="false">
+    <vl:MEM name="latch_lp" datatype="boolean" ic="false">
         <vl:CONNECTION to="current" from="latch_and_not_reset"/>
     </vl:MEM>
     <vl:OUTPUT name="latch" datatype="boolean" scope="local" size="1">
