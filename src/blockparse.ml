@@ -49,11 +49,7 @@ let rec block_parse top =
                  else if (blk = "memory") && ((List.length trace_list) > 0) 
                       then trace_list (* Terminate trace at memory block
                                        * if we are tracing and one is found *)
-                 else let datatypes =
-                            (List.map 
-                                (fun x -> x.datatype) 
-                                (current :> base) #inputs) 
-                      and input_names = 
+                 else let input_names = 
                             (List.map 
                                 (fun x ->
                                     let ref = current#get_connection x.name
