@@ -21,18 +21,10 @@ let translate program =
  * compiled binary and printing the results as it is running *)
 let gen_debug_code program =
     let top = ((List.hd (List.rev program)) :> base) in
-        let name = top#name in
-        let inputs = top#inputs 
-         in
-            "import sys\n"
-          ^ "import ctypes\n"
-          ^ "from ctypes import *\n"
-          ^ "lib = cdll.LoadLibrary('./test-" ^ name ^ ".so')\n"
-          ^ "class " ^ name ^ "_inputs(Structure):\n"
-          ^ "    _fields_ = [(\""
-          ^     (String.concat 
-                    "), (\"" 
-                    (List.map 
+        let name    = top#name in
+        let inputs  = top#inputs in
+        let outputs = top#outputs in
+        let ctypes  = List.map 
                         (fun x -> x.name ^ "\", "
                          ^  match x.datatype with
                                 "uint8"  -> "c_uint8"
@@ -46,11 +38,20 @@ let gen_debug_code program =
                               | "boolean"-> "c_byte" (* Assume uint8 *)
                               | _ -> failwith "unassigned value"
                         )
-                        inputs
-                    )
-                ) 
-                ^ ")]\n"
+         in
+            "import sys\n"
+          ^ "import ctypes\n"
+          ^ "from ctypes import *\n"
+          ^ "lib = cdll.LoadLibrary('./test-" ^ name ^ ".so')\n"
+          ^ "class " ^ name ^ "_inputs(Structure):\n"
+          ^ "    _fields_ = [(\""
+          ^ (String.concat "), (\"" (ctypes inputs)) ^ ")]\n"
           ^ "    \n"
+          ^ "class " ^ name ^ "_outputs(Structure):\n"
+          ^ "    _fields_ = [(\""
+          ^ (String.concat "), (\"" (ctypes outputs)) ^ ")]\n"
+          ^ "    \n"
+          ^ "lib." ^ name ^ ".restype = " ^ name ^ "_outputs\n"
           ^ "with open(sys.argv[1]) as f:\n"
           ^ "    for line in f:\n"
           ^ "        listargs = line.strip('\\n').split(',')\n"
@@ -60,13 +61,13 @@ let gen_debug_code program =
                     (List.mapi
                         (fun i x -> (
                             match x.datatype with 
-                                "uint8"  -> "int"
-                              | "uint16" -> "int"
-                              | "uint32" -> "int"
-                              | "int8"   -> "int"
-                              | "int16"  -> "int"
+                                "uint8"
+                              | "uint16"
+                              | "uint32"
+                              | "int8"
+                              | "int16"
                               | "int32"  -> "int"
-                              | "single" -> "float"
+                              | "single"
                               | "double" -> "float"
                               | "boolean"-> "int" (* Assume uint8 *)
                               | _ -> failwith "unassigned value"
@@ -78,4 +79,26 @@ let gen_debug_code program =
                 ) 
                 ^ ")\n"
           ^ "        outputs = lib." ^ name ^ "(inputs)\n"
-          ^ "        print(outputs)"
+          ^ "        print ','.join([" 
+          ^     (String.concat
+                    ", "
+                    (List.map
+                        (fun x -> "\"" ^ (
+                            match x.datatype with 
+                                "uint8"
+                              | "uint16"
+                              | "uint32"
+                              | "int8"
+                              | "int16"
+                              | "int32"  -> "%d"
+                              | "single"
+                              | "double" -> "%.3f"
+                              | "boolean"-> "%d" (* Assume uint8 *)
+                              | _ -> failwith "unassigned value"
+                            ) 
+                            ^ "\" % outputs." ^ x.name
+                        )
+                        outputs
+                    )
+                ) 
+                ^ "])"
