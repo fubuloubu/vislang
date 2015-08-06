@@ -27,7 +27,7 @@ let rec block_parse top =
     let rec trace block_list prior_list trace_list current =
         match ((current :> base) #print_class) with
             "input"     -> current :: trace_list
-          | "const"     -> current :: trace_list
+          | "constant"  -> current :: trace_list
           | "dt"        -> current :: trace_list
           (* The above don't need to be in the list of blocks because
            * the block object will take care of them *)
