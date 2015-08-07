@@ -342,6 +342,51 @@ class and_gate xml_obj = object (self)
     method print_class = "and"
 end;;
 
+(* NOR gate: inherits from binary_gate_part, logical NOR operation *)
+class nor_gate xml_obj = object (self)
+    inherit gate xml_obj as super
+    val operation = "" (* overriden body, operation is AND of NOT-ed inputs *)
+    method print_class = "nor"
+    method body         = (get_datatype self#datatype) ^ " " ^ 
+                          self#name ^ " = !(" ^ String.concat 
+                                (") && !(")
+                                (List.map 
+                                    (fun x -> x.name) 
+                                    self#inputs
+                                ) ^ 
+                          ");"
+end;;
+
+(* NAND gate: inherits from binary_gate_part, logical NAND operation *)
+class nand_gate xml_obj = object (self)
+    inherit gate xml_obj
+    val operation = "" (* overriden body, operation is OR of NOT-ed inputs *)
+    method print_class = "nand"
+    method body         = (get_datatype self#datatype) ^ " " ^ 
+                          self#name ^ " = !(" ^ String.concat 
+                                (") || !(")
+                                (List.map 
+                                    (fun x -> x.name) 
+                                    self#inputs
+                                ) ^ 
+                          ");"
+end;;
+
+(* XOR gate: inherits from binary_gate_part, logical XOR operation *)
+class xor_gate xml_obj = object (self)
+    inherit gate xml_obj as super
+    val operation = "" (* overriden body, operation is NEQ of NOT-ed inputs *)
+    method print_class = "xor"
+    method body         = (get_datatype self#datatype) ^ " " ^ 
+                          self#name ^ " = !(" ^ String.concat 
+                                (") != !(")
+                                (List.map 
+                                    (fun x -> x.name) 
+                                    self#inputs
+                                ) ^ 
+                          ");"
+end;;
+
 (* Summation point: inherits from binop_part, addition operation *)
 class sum xml_obj = object (self)
     inherit binop_part xml_obj
@@ -400,6 +445,9 @@ let rec blockify xml_obj =
         | "NOT"     -> (new not_gate    xml_obj :> base)
         | "AND"     -> (new and_gate    xml_obj :> base)
         | "OR"      -> (new or_gate     xml_obj :> base)
+        | "NAND"    -> (new nand_gate   xml_obj :> base)
+        | "NOR"     -> (new nor_gate    xml_obj :> base)
+        | "XOR"     -> (new xor_gate    xml_obj :> base)
         | "SUM"     -> (new sum         xml_obj :> base)
         | "PROD"    -> (new prod        xml_obj :> base)
         | "COMPARE" -> (new compare     xml_obj :> base)
