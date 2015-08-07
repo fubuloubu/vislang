@@ -30,6 +30,8 @@ let rec block_parse top =
             "input"
           | "constant"
           | "dt"        -> if List.exists (compare_obj current#name) prior_list
+                           (* If terminating block exists in EITHER list, exclude *)
+                           || List.exists (compare_obj current#name) trace_list
                            then trace_list
                            else current :: trace_list
           (* The above don't need to be in the list of blocks because
