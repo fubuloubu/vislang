@@ -91,6 +91,39 @@ Check() {
     fi
 }
 
+# RunFail <args>
+# Report the command, run it, and report any errors
+RunFail() {
+    echo $* 1>&2
+    eval $* || {
+        return 0
+    }
+}
+
+CheckFail() {
+    error=0
+    basename=`echo $1 | sed 's/.*\\///
+                             s/.vl//'`
+    reffile=`echo $1 | sed 's/.vl$//'`
+    basedir="`echo $1 | sed 's/\/[^\/]*$//'`/."
+
+    echo -n "$basename..."
+
+    echo 1>&2
+    echo "###### Testing $basename" 1>&2
+
+    RunFail "$VLCC" "-c" "<" $1
+
+    # Report the status and clean up the generated files
+    if [ $error -eq 0 ] ; then
+        echo "OK"
+        echo "###### SUCCESS" 1>&2
+    else
+        echo "###### FAILED" 1>&2
+        globalerror=$error
+    fi
+}
+
 while getopts kdpsh c; do
     case $c in
         k) # Keep intermediate files
