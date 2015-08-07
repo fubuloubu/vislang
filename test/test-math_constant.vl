@@ -29,7 +29,7 @@
     <vl:CONSTANT name="four" datatype="single" size="1" value="4"/>
     <vl:SUM name="summer2" datatype="single">
         <vl:CONNECTION to="input1" from="in"/>
-        <vl:CONNECTION to="input2" from="two"/>
+        <vl:CONNECTION to="input2" from="four"/>
     </vl:SUM>
     <vl:INV name="inv" datatype="single">
         <vl:CONNECTION to="input" from="summer2"/>
