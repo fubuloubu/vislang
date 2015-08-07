@@ -1,11 +1,18 @@
-<vl:BLOCK name="plus_constant">
+<vl:BLOCK name="math_constant">
     <vl:INPUT name="in" datatype="single" scope="local" size="1"/>
-    <vl:CONSTANT name="some_val" datatype="single" size="1" value="1.235"/>
+    <vl:CONSTANT name="two" datatype="single" size="1" value="2"/>
     <vl:SUM name="summer" datatype="single">
         <vl:CONNECTION to="input1" from="in"/>
-        <vl:CONNECTION to="input2" from="some_val"/>
+        <vl:CONNECTION to="input2" from="two"/>
     </vl:SUM>
-    <vl:OUTPUT name="out" datatype="single" scope="local" size="1">
-        <vl:CONNECTION to="out" from="summer"/>
+    <vl:OUTPUT name="sum_out" datatype="single" scope="local" size="1">
+        <vl:CONNECTION to="sum_out" from="summer"/>
+    </vl:OUTPUT>
+    <vl:PROD name="mult" datatype="single">
+        <vl:CONNECTION to="input1" from="in"/>
+        <vl:CONNECTION to="input2" from="two"/>
+    </vl:PROD>
+    <vl:OUTPUT name="mult_out" datatype="single" scope="local" size="1">
+        <vl:CONNECTION to="mult_out" from="mult"/>
     </vl:OUTPUT>
 </vl:BLOCK>
