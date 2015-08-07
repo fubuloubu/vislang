@@ -85,6 +85,7 @@ class block blockify xml_obj = object (self)
             (fun (x : base) -> let c = ((x :> base) #print_class) in
                                  c = "memory"
                               || c = "constant"
+                              || c = "dt"
             )
             inner_objs
     method print_static = String.concat 
@@ -222,6 +223,36 @@ class constant xml_obj = object (self)
                           "\"name\":\"" ^ name ^ "\", " ^
                           "\"value\":\"" ^ value ^ "\", " ^
                           "\"size\":\"" ^ Xst.string_of_value (size) ^ "\"" ^
+                          " }"
+end;;
+
+(* DT class: starts as ic, gets updated each pass as delta t in code exec *)
+class dt xml_obj = object (self)
+    inherit base xml_obj
+    method inner_objs = object_error 
+                            ("Should not try to access inner objects of " ^
+                             self#print_class ^ " object: " ^ self#name ^ "")
+    method set_inner_objs new_inner_objs = object_error
+                            ("Should not try to set inner objects of " ^
+                             self#print_class ^ " object: " ^ self#name ^ "")
+    method inputs   = object_error "Should never access inputs of dt obj"
+    method set_inputs  a = object_error 
+                                ("Should not set inputs of " ^
+                                self#print_class ^ " object")
+    method outputs  = [{ name = self#name; datatype = "single" }]
+    method set_outputs a = object_error (
+                                "Should not set outputs of " ^
+                                self#print_class ^ " object")
+    method datatype = "single"
+    val init_cond       = Xst.string_of_value (get_attr "ic" xml_obj)
+    method header     = "static " ^ (get_datatype self#datatype) ^ " " ^
+                        self#name ^ " = " ^ init_cond ^ ";"
+    method body         = ""
+    method trailer      = ""
+    method print_class  = "dt"
+    method print_obj    = "\"" ^ self#print_class ^ "\": { " ^
+                          "\"name\":\"" ^ name ^ "\", " ^
+                          "\"ic\":\"" ^ init_cond ^ "\", " ^
                           " }"
 end;;
 
@@ -444,7 +475,7 @@ class inv xml_obj = object (self)
                           (List.hd inputs).name ^ " );"
 end;;
 
-(* Production point: inherits from binop_part, multiplication operation *)
+(* Compare Part: compares two inputs using operation *)
 class compare xml_obj = object (self)
     inherit part xml_obj
     val operation = Xst.string_of_value (get_attr "operation" xml_obj)
@@ -466,6 +497,26 @@ class compare xml_obj = object (self)
                           "\"operation\":\"" ^ operation ^ "\" }"
 end;;
 
+(* If part: if control is true, pass true input, else false input *)
+class if_sw xml_obj = object (self)
+    inherit part xml_obj
+    val datatype = Xst.string_of_value (get_attr "datatype" xml_obj)
+    method datatype = datatype
+    method print_class = "if"
+    val mutable inputs  = [{ name = "control"; datatype = "boolean" }; 
+                           { name = "true"; datatype = "auto" };
+                           { name = "false"; datatype = "auto" }]
+    val mutable outputs = [{ name = "output"; datatype = "auto" }]
+    method body         = (get_datatype datatype) ^ " " ^ 
+                          self#name ^ " = (" ^ (List.nth self#inputs 0).name ^
+                          ") ? (" ^ (List.nth self#inputs 1).name ^
+                          ") : (" ^ (List.nth self#inputs 2).name ^
+                          ");"
+    method print_obj    = "\"" ^ self#print_class ^ "\": { " ^
+                          "\"name\":\"" ^ name ^ "\", " ^
+                          "\"datatype\":\"" ^ datatype ^ "\" }"
+end;;
+
 (* Main block management functions *)
 (* Blockify goes through and matches the tagname to the appropiate object *)
 let rec blockify xml_obj = 
@@ -476,6 +527,7 @@ let rec blockify xml_obj =
         | "INPUT"   -> (new input       xml_obj :> base)
         | "OUTPUT"  -> (new output      xml_obj :> base)
         | "CONSTANT"-> (new constant    xml_obj :> base)
+        | "DT"      -> (new dt          xml_obj :> base)
         | "MEM"     -> (new memory      xml_obj :> base)
         | "NOT"     -> (new not_gate    xml_obj :> base)
         | "AND"     -> (new and_gate    xml_obj :> base)
@@ -488,6 +540,7 @@ let rec blockify xml_obj =
         | "GAIN"    -> (new gain        xml_obj :> base)
         | "INV"     -> (new inv         xml_obj :> base)
         | "COMPARE" -> (new compare     xml_obj :> base)
+        | "IF"      -> (new if_sw       xml_obj :> base)
         (* CONNECTION blocks are not supported by this operation. 
          * See get_connection above *)
         | _ as name -> object_error ("Tag " ^ name ^ " not supported.")
