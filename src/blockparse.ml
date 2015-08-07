@@ -25,14 +25,16 @@ let rec block_parse top =
      * list of priors. This process continues until all output and memory
      * blocks successfully traverse back to inputs or priors branches. *)
     let rec trace block_list prior_list trace_list current =
+        let compare_obj n = (fun x -> (x :> base) #name = n)in
         match ((current :> base) #print_class) with
-            "input"     -> current :: trace_list
-          | "constant"  -> current :: trace_list
-          | "dt"        -> current :: trace_list
+            "input"
+          | "constant"
+          | "dt"        -> if List.exists (compare_obj current#name) prior_list
+                           then trace_list
+                           else current :: trace_list
           (* The above don't need to be in the list of blocks because
            * the block object will take care of them *)
-          | _ as blk    -> let compare_obj n = (fun x -> (x :> base) #name = n)
-                            in
+          | _ as blk    -> 
             (* If current object exists in the current trace loop,
              * this means there's a cyclic reference in the trace that
              * will not be possible to escape, e.g. algebraic loop *)
