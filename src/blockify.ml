@@ -409,6 +409,41 @@ class prod xml_obj = object (self)
     val mutable outputs = [{ name = "output"; datatype = "auto" }]
 end;;
 
+(* GAIN Part class: unary multiplication operation *)
+class gain xml_obj = object (self)
+    inherit part xml_obj
+    val mutable inputs  = [{ name = "input"; datatype = "auto" }]
+    val mutable outputs = [{ name = "output"; datatype = "auto" }]
+    val datatype = Xst.string_of_value (get_attr "datatype" xml_obj)
+    method datatype = datatype
+    val value    = Xst.string_of_value (get_attr "value"    xml_obj)
+    method value = value
+    method print_class  = "gain"
+    method print_obj    = "\"" ^ self#print_class ^ "\": { " ^
+                          "\"name\":\"" ^ name ^ "\", " ^
+                          "\"datatype\":\"" ^ datatype ^ "\", " ^
+                          "\"value\":\"" ^ value ^ "\" }"
+    method body         = (get_datatype datatype) ^ " " ^ 
+                          self#name ^ " = " ^ value ^ " * " ^
+                          (List.hd inputs).name ^ ";"
+end;;
+
+(* INV Part class: unary inversion/division operation *)
+class inv xml_obj = object (self)
+    inherit part xml_obj
+    val mutable inputs  = [{ name = "input"; datatype = "auto" }]
+    val mutable outputs = [{ name = "output"; datatype = "auto" }]
+    val datatype = Xst.string_of_value (get_attr "datatype" xml_obj)
+    method datatype = datatype
+    method print_class  = "inv"
+    method print_obj    = "\"" ^ self#print_class ^ "\": { " ^
+                          "\"name\":\"" ^ name ^ "\", " ^
+                          "\"datatype\":\"" ^ datatype ^ "\" }"
+    method body         = (get_datatype datatype) ^ " " ^ 
+                          self#name ^ " = 1 / ( " ^
+                          (List.hd inputs).name ^ " );"
+end;;
+
 (* Production point: inherits from binop_part, multiplication operation *)
 class compare xml_obj = object (self)
     inherit part xml_obj
@@ -450,6 +485,8 @@ let rec blockify xml_obj =
         | "XOR"     -> (new xor_gate    xml_obj :> base)
         | "SUM"     -> (new sum         xml_obj :> base)
         | "PROD"    -> (new prod        xml_obj :> base)
+        | "GAIN"    -> (new gain        xml_obj :> base)
+        | "INV"     -> (new inv         xml_obj :> base)
         | "COMPARE" -> (new compare     xml_obj :> base)
         (* CONNECTION blocks are not supported by this operation. 
          * See get_connection above *)
