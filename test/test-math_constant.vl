@@ -1,6 +1,7 @@
 <vl:BLOCK name="math_constant">
     <vl:INPUT name="in" datatype="single" scope="local" size="1"/>
     <vl:CONSTANT name="two" datatype="single" size="1" value="2"/>
+    
     <vl:SUM name="summer" datatype="single">
         <vl:CONNECTION to="input1" from="in"/>
         <vl:CONNECTION to="input2" from="two"/>
@@ -8,11 +9,32 @@
     <vl:OUTPUT name="sum_out" datatype="single" scope="local" size="1">
         <vl:CONNECTION to="sum_out" from="summer"/>
     </vl:OUTPUT>
+    
     <vl:PROD name="mult" datatype="single">
         <vl:CONNECTION to="input1" from="in"/>
         <vl:CONNECTION to="input2" from="two"/>
     </vl:PROD>
     <vl:OUTPUT name="mult_out" datatype="single" scope="local" size="1">
         <vl:CONNECTION to="mult_out" from="mult"/>
+    </vl:OUTPUT>
+    
+    <vl:GAIN name="gain" datatype="single" value="-1.000">
+        <vl:CONNECTION to="input" from="in"/>
+    </vl:GAIN>
+    <vl:OUTPUT name="gain_out" datatype="single" scope="local" size="1">
+        <vl:CONNECTION to="gain_out" from="gain"/>
+    </vl:OUTPUT>
+    
+    <!-- Add four to input to prevent DIV/0 fault -->
+    <vl:CONSTANT name="four" datatype="single" size="1" value="4"/>
+    <vl:SUM name="summer2" datatype="single">
+        <vl:CONNECTION to="input1" from="in"/>
+        <vl:CONNECTION to="input2" from="two"/>
+    </vl:SUM>
+    <vl:INV name="inv" datatype="single">
+        <vl:CONNECTION to="input" from="summer2"/>
+    </vl:INV>
+    <vl:OUTPUT name="inv_out" datatype="single" scope="local" size="1">
+        <vl:CONNECTION to="inv_out" from="inv"/>
     </vl:OUTPUT>
 </vl:BLOCK>
