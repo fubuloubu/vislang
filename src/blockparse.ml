@@ -119,7 +119,7 @@ let rec block_parse top =
        (List.filter (fun x -> (x :> base) #print_class = "output") (inner_objs obj)) 
      @ (List.filter (fun x -> (x :> base) #print_class = "memory") (inner_objs obj))
     (* function to detect and print code that existing in object before, but not now *)
-    and print_dead_code new_inner_objs obj =
+    (*and print_dead_code new_inner_objs obj =
         let dead_code = List.filter (fun x -> 
                             not (List.exists (fun y -> 
                                 (y :> base) #name = (x :> base) #name) 
@@ -131,7 +131,7 @@ let rec block_parse top =
             ("Removed the following unreachable blocks from " ^ 
                 (obj :> base) #name ^ ":\n" ^
                 (print_list dead_code) ^ "\n"
-            )
+            *)
      in
     (* Perform the same mutation operations for any inner blocks of top. 
      * Note: at this point, if an inner object was not used, it should not appear
@@ -144,7 +144,7 @@ let rec block_parse top =
         (List.map 
             (fun x -> let new_inner_objs = 
                             (trace_start (inner_objs x) (start_list x) [])
-                       in print_dead_code new_inner_objs x;
+                       in (*print_dead_code new_inner_objs x;*)
                           (x :> base) #set_inner_objs new_inner_objs
             )
             inner_block_list
@@ -153,7 +153,7 @@ let rec block_parse top =
      * result. Also print objects that will be removed. *)
     let new_inner_objs = (trace_start (inner_objs top) [] (start_list top))
      in
-    print_dead_code new_inner_objs top;
+    (*print_dead_code new_inner_objs top;*)
     top#set_inner_objs new_inner_objs;
     (* Return a list of blocks with properly configured inner objects
      * to be used for compilation. Note: we reverse the list here so that 
