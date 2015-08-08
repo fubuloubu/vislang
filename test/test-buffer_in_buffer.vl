@@ -1,0 +1,15 @@
+<vl:BLOCK name="buffer_in_buffer">
+    <vl:INPUT name="in" scope="local" datatype="uint32" size="auto"/>
+    <vl:BLOCK name="buffer">
+        <!-- 'from' in connection is scoped external
+             of block, 'to' is internal -->
+        <vl:CONNECTION to="in" from="in"/>
+        <vl:INPUT name="in" scope="local" datatype="uint32" size="auto"/>
+        <vl:OUTPUT name="out" datatype="uint32" scope="local" size="auto">
+            <vl:CONNECTION to="out" from="in"/>
+        </vl:OUTPUT>
+    </vl:BLOCK>
+    <vl:OUTPUT name="out" datatype="uint32" scope="local" size="auto">
+        <vl:CONNECTION to="out" from="buffer|out"/>
+    </vl:OUTPUT>
+</vl:BLOCK>
