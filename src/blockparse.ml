@@ -36,7 +36,7 @@ let rec block_parse top =
                            else current :: trace_list
           (* The above don't need to be in the list of blocks because
            * the block object will take care of them *)
-          | _ as blk    -> 
+          | _ as blk    ->
             (* If current object exists in the current trace loop,
              * this means there's a cyclic reference in the trace that
              * will not be possible to escape, e.g. algebraic loop *)
@@ -62,8 +62,7 @@ let rec block_parse top =
                                       | Ref ref -> 
                                             if ref.reftype = "NAME"
                                             then if ((List.length ref.reflist) = 1)
-                                                 then (ref.refroot ^ "_" ^ 
-                                                      (List.hd ref.reflist))
+                                                 then ref.refroot
                                                  else object_error
                                                     ("Cannot reference more " ^
                                                     "than 1 deep for blocks")
