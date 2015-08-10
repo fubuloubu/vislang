@@ -60,7 +60,12 @@ end;;
  * inherits from base, is a container for other blocks *)
 class block blockify xml_obj = object (self)
     inherit base xml_obj
-    val mutable inner_objs = List.map blockify xml_obj.inner_objs
+    val mutable inner_objs = List.map 
+                             blockify 
+                             (List.filter
+                                (fun x -> x.tagname <> "CONNECTION")
+                                xml_obj.inner_objs
+                             )
     method inner_objs   = List.rev inner_objs
     method set_inner_objs new_inner_objs = inner_objs <- new_inner_objs
     method inputs   = List.map
