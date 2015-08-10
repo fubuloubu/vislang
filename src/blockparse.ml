@@ -53,12 +53,65 @@ let rec block_parse top =
                  else if (blk = "memory") && ((List.length trace_list) > 0) 
                       then trace_list (* Terminate trace at memory block
                                        * if we are tracing and one is found *)
-                 else let input_names = 
+                 else
+                          (* First find and verify all inputs connected to current
+                           * block, matching them to the relevant blocks for further
+                           * recursion. Next, set names of current blocks to the 
+                           * outputs of those blocks correctly such that they can
+                           * be printed correctly in SSA form without error.
+                           * Note: need to handle blocks (function calls) separetely
+                           * using the REF type so that SSA works.
+                           * Note: In order to link current block to inputs, we
+                           * need to replace input names for current block with
+                           * the output names of the corresponding parts. E.g.
+                           * block name for basic parts and structured defs
+                           * for block and reference function calls. *)
+                    let new_inputs = [] 
+                     in let input_list = 
+                            List.map
+                            (fun x -> let input_name = 
+                                let ref = current#get_connection x.name 
+                                 in match ref with 
+                                        Name name -> new_inputs = name :: new_inputs;
+                                                     name
+                                      | Ref ref -> 
+                                        if ref.reftype = "NAME"
+                                        then if ((List.length ref.reflist) = 1)
+                                             then begin
+                                                  new_inputs = (ref.refroot ^
+                                                                "_outputs." ^ 
+                                                                (List.hd ref.reflist))
+                                                                :: new_inputs;
+                                                  ref.refroot
+                                                  end
+                                             else object_error
+                                                ("Cannot reference more " ^
+                                                "than 1 deep for blocks")
+                                        else object_error 
+                                            ("FILE reference type " ^
+                                            "not supported for ref " ^
+                                                (string_of_ref ref)
+                                            )
+                                      | _ as attr -> object_error 
+                                            ("Attribute " ^ 
+                                             (string_of_value attr) ^ 
+                                             " not supported.") 
+                                in List.find 
+                                    (fun x -> (x :> base) #name == input_name) 
+                                    block_list
+                            )
+                            ((current :> base) #inputs)
+                   in begin ((current :> base) #set_inputs new_inputs);
+                            trace_list = current :: trace_list;
+                            trace_split block_list prior_list trace_list input_list
+                      end
+                      (* Old Code *)
+                      (*and input_names = 
                             (List.map 
                                 (fun x ->
                                     let ref = current#get_connection x.name
                                      in match ref with
-                                        Name name -> name
+                                        Name name -> nam
                                       | Ref ref -> 
                                             if ref.reftype = "NAME"
                                             then if ((List.length ref.reflist) = 1)
@@ -79,7 +132,6 @@ let rec block_parse top =
                                 (current :> base) #inputs) 
                       and find_fun = (fun x -> List.find (compare_obj x) block_list)
                        in let input_list = (List.map find_fun input_names)
-                          and trace_list = current :: trace_list
                        in begin
                            (* Set input names to actual names *)
                            (current :> base) #set_inputs
@@ -87,9 +139,7 @@ let rec block_parse top =
                                 (fun i x -> { name = (List.nth input_names i); 
                                               datatype = x.datatype})
                                 ((current :> base) #inputs)
-                           );
-                          trace_split block_list prior_list trace_list input_list
-                          end
+                           );*)
     (* for each input of a block, trace out the list from that point on *)
     and trace_split block_list prior_list trace_list input_list =
         match input_list with
