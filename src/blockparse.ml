@@ -100,8 +100,7 @@ let rec block_parse top =
                                 )
                                 ((current :> base) #inputs)
                             )
-                      in print_endline ("Finding the following inputs for " ^ ((current :> base) #name) ^ ":\n" ^ (String.concat "\n" input_names) ^ "\nUsing List:\n" ^ (print_list block_list));
-                            let input_list =
+                      in let input_list =
                                 (List.map
                                     (fun x ->
                                         (List.find 
