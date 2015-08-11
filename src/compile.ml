@@ -12,7 +12,7 @@ let translate program =
      * ordered inner blocks in the body code method for each *)
     ^ String.concat "\n\n" (List.map 
                                 (fun x -> let obj = (x :> base) in 
-                                    obj#header ^ obj#body ^ obj#trailer
+                                    obj#header ^ obj#trailer
                                 ) 
                                 program
                            )
