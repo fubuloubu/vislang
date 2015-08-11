@@ -112,41 +112,6 @@ let rec block_parse top =
                             trace_list = current :: trace_list;
                             trace_split block_list prior_list trace_list input_list
                       end
-                      (* Old Code *)
-                      (*and input_names = 
-                            (List.map 
-                                (fun x ->
-                                    let ref = current#get_connection x.name
-                                     in match ref with
-                                        Name name -> nam
-                                      | Ref ref -> 
-                                            if ref.reftype = "NAME"
-                                            then if ((List.length ref.reflist) = 1)
-                                                 then ref.refroot
-                                                 else object_error
-                                                    ("Cannot reference more " ^
-                                                    "than 1 deep for blocks")
-                                            else object_error 
-                                                ("FILE reference type " ^
-                                                "not supported for ref " ^
-                                                    (string_of_ref ref)
-                                                )
-                                      | _ as attr -> object_error 
-                                            ("Attribute " ^ 
-                                             (string_of_value attr) ^ 
-                                             " not supported.")
-                                ) 
-                                (current :> base) #inputs) 
-                      and find_fun = (fun x -> List.find (compare_obj x) block_list)
-                       in let input_list = (List.map find_fun input_names)
-                       in begin
-                           (* Set input names to actual names *)
-                           (current :> base) #set_inputs
-                           (List.mapi
-                                (fun i x -> { name = (List.nth input_names i); 
-                                              datatype = x.datatype})
-                                ((current :> base) #inputs)
-                           );*)
     (* for each input of a block, trace out the list from that point on *)
     and trace_split block_list prior_list trace_list input_list =
         match input_list with
