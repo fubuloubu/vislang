@@ -66,41 +66,48 @@ let rec block_parse top =
                            * the output names of the corresponding parts. E.g.
                            * block name for basic parts and structured defs
                            * for block and reference function calls. *)
-                    let new_inputs = [] 
-                     in let input_list = 
-                            List.map
-                            (fun x -> let input_name = 
-                                let ref = current#get_connection x.name 
-                                 in match ref with 
-                                        Name name -> new_inputs = name :: new_inputs;
-                                                     name
-                                      | Ref ref -> 
-                                        if ref.reftype = "NAME"
-                                        then if ((List.length ref.reflist) = 1)
-                                             then begin
-                                                  new_inputs = (ref.refroot ^
-                                                                "_outputs." ^ 
-                                                                (List.hd ref.reflist))
-                                                                :: new_inputs;
-                                                  ref.refroot
-                                                  end
-                                             else object_error
-                                                ("Cannot reference more " ^
-                                                "than 1 deep for blocks")
-                                        else object_error 
-                                            ("FILE reference type " ^
-                                            "not supported for ref " ^
-                                                (string_of_ref ref)
-                                            )
-                                      | _ as attr -> object_error 
-                                            ("Attribute " ^ 
-                                             (string_of_value attr) ^ 
-                                             " not supported.") 
-                                in List.find 
-                                    (fun x -> (x :> base) #name == input_name) 
-                                    block_list
+                    let (new_inputs, input_names) = 
+                        List.split
+                            (List.map
+                                (fun x -> let ref = current#get_connection x.name 
+                                     in match ref with 
+                                            Name n -> ({
+                                                            name = n; 
+                                                            datatype = x.datatype
+                                                       }, 
+                                                       n)
+                                          | Ref r  -> 
+                                            if r.reftype = "NAME"
+                                            then if ((List.length r.reflist) = 1)
+                                                 then let cnx = (List.hd r.reflist)
+                                                   in ({ name = r.refroot ^ 
+                                                               "_outputs." ^ 
+                                                               cnx;
+                                                        datatype = x.datatype
+                                                     }, r.refroot)
+                                                 else object_error
+                                                    ("Cannot reference more " ^
+                                                    "than 1 deep for blocks")
+                                            else object_error 
+                                                ("FILE reference type " ^
+                                                "not supported for ref " ^
+                                                    (string_of_ref r)
+                                                )
+                                          | _ as attr -> object_error 
+                                                ("Attribute " ^ 
+                                                 (string_of_value attr) ^ 
+                                                 " not supported.") 
+                                )
+                                ((current :> base) #inputs)
                             )
-                            ((current :> base) #inputs)
+                      in let input_list = List.map
+                                            (fun x -> List.find 
+                                                        (fun y -> print_endline x;
+                                                            (y :> base) #name == x
+                                                        ) 
+                                                        block_list
+                                            )
+                                            input_names
                    in begin ((current :> base) #set_inputs new_inputs);
                             trace_list = current :: trace_list;
                             trace_split block_list prior_list trace_list input_list
