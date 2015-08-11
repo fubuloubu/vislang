@@ -17,6 +17,11 @@ let get_datatype dtype =
       | "single"    -> "float_t"
       | _ as d      -> d ^ "_t"
 
+let if_elements l printstr =
+    if (List.length l) > 0
+    then printstr
+    else ""
+
 (* Structure for returning input and output types *)
 type interface = {
     name     : string;
@@ -80,9 +85,9 @@ class block blockify xml_obj = object (self)
             (fun (x : base) -> ((x :> base) #print_class) = "output")
             inner_objs
         )
-    method set_inputs  a = object_error 
-                                ("Should not set inputs of " ^
-                                self#print_class ^ " object")
+    val mutable connected_inputs = []
+    method connected_inputs = connected_inputs
+    method set_inputs new_inputs = connected_inputs <- new_inputs 
     method set_outputs a = object_error (
                                 "Should not set outputs of " ^
                                 self#print_class ^ " object")
@@ -93,33 +98,46 @@ class block blockify xml_obj = object (self)
                               || c = "dt"
             )
             inner_objs
-    method print_static = String.concat 
+    method print_static = if_elements 
+                            self#static_blks
+                            (String.concat 
                                 "\n" 
                                 (List.map 
                                     (fun x -> (x :> base) #header)
                                     self#static_blks
                                 )
+                            )
     method print_class  = "block"
-    method input_type   = "struct " ^ name ^ "_in"
-    method output_type  = "struct " ^ name ^ "_out"
-    method input_struct = self#input_type ^ " {\n\t" ^
-                        (String.concat ";\n\t" 
-                            (List.map 
-                            (fun x -> (get_datatype x.datatype) ^ " " ^ x.name)
-                            self#inputs)
-                        ) ^ ";\n};\n\n" 
-    method output_struct = self#output_type ^ " {\n\t" ^
-                        (String.concat ";\n\t" 
-                            (List.map 
-                            (fun x -> (get_datatype x.datatype) ^ " " ^ x.name)
-                            self#outputs)
-                        ) ^ ";\n};\n\n"
+    method input_type   = if_elements self#inputs ("struct " ^ name ^ "_in")
+    method output_type  = if_elements self#inputs ("struct " ^ name ^ "_out")
+    method input_struct = if_elements
+                            self#inputs
+                            (self#input_type ^ " {\n\t" ^
+                                (String.concat ";\n\t" 
+                                    (List.map 
+                                    (fun x -> (get_datatype x.datatype) ^ " " ^ x.name)
+                                    self#inputs)
+                                ) ^ ";\n};\n\n"
+                            )
+    method output_struct = if_elements
+                            self#outputs
+                            (self#output_type ^ " {\n\t" ^
+                                (String.concat ";\n\t" 
+                                    (List.map 
+                                    (fun x -> (get_datatype x.datatype) ^ " " ^ x.name)
+                                    self#outputs)
+                                ) ^ ";\n};\n\n"
+                            )
     method header     = "/* I/O Structures for block " ^ name ^ " */\n" ^
                         self#input_struct ^ self#output_struct ^
                         "/* Initialize static variables */\n" ^
                         self#print_static ^ "\n\n" ^
                         "/* Begin block " ^ name ^ " */\n" ^
-                        self#output_type ^ " " ^ name ^ "(" ^ self#input_type ^ 
+                        (let out_struct = self#output_type in 
+                          if out_struct <> ""
+                          then out_struct
+                          else "void") ^ 
+                        " " ^ name ^ "(" ^ self#input_type ^ 
                         " inputs) {\n" ^ 
                         "\t/* Inputs for block " ^ name ^ " */\n\t" ^ 
                         (String.concat ";\n\t" 
@@ -128,8 +146,8 @@ class block blockify xml_obj = object (self)
                                 x.name ^ " = inputs." ^ x.name
                             ) 
                             self#inputs)
-                        ) ^ ";\n\n"
-    method body       = "\t/* Body for block " ^ name ^ " */\n\t" ^
+                        ) ^ ";\n\n" ^
+                        "\t/* Body for block " ^ name ^ " */\n\t" ^
                         (String.concat "\n\t" 
                             (List.map
                                 (fun x -> (x :> base) #body)
@@ -145,6 +163,22 @@ class block blockify xml_obj = object (self)
                                 )
                             )
                         ) ^ "\n\n"
+
+    method body       = self#input_type ^ " " ^ name ^ "_inputs = " ^ "{ " ^ 
+                        (String.concat 
+                                ", " 
+                                (List.map
+                                    (fun (x, y) -> "." ^ x.name ^ 
+                                                   " = " ^ y.name
+                                    )
+                                    (List.combine
+                                        self#inputs
+                                        self#connected_inputs
+                                    )
+                                )
+                            ) ^ " };\n\t" ^
+                        self#output_type ^ " " ^ name ^ "_outputs = " ^
+                        name ^ "(" ^ name ^ "_inputs);"
     method trailer    = "\t/* Outputs for block " ^ name ^" */\n\t" ^
                         self#output_type ^ " outputs;\n\t" ^
                         (String.concat ";\n\t" 
