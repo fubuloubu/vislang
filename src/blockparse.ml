@@ -100,18 +100,20 @@ let rec block_parse top =
                                 )
                                 ((current :> base) #inputs)
                             )
-                      in let input_list = List.map
-                                            (fun x -> List.find 
-                                                        (fun y -> print_endline x;
-                                                            (y :> base) #name == x
-                                                        ) 
-                                                        block_list
-                                            )
-                                            input_names
-                   in begin ((current :> base) #set_inputs new_inputs);
-                            trace_list = current :: trace_list;
-                            trace_split block_list prior_list trace_list input_list
-                      end
+                      in print_endline ("Finding the following inputs for " ^ ((current :> base) #name) ^ ":\n" ^ (String.concat "\n" input_names) ^ "\nUsing List:\n" ^ (print_list block_list));
+                            let input_list =
+                                (List.map
+                                    (fun x ->
+                                        (List.find 
+                                            (fun y -> ((y :> base) #name) == x) 
+                                            block_list
+                                        )
+                                    )
+                                    input_names
+                                )
+                   in ((current :> base) #set_inputs new_inputs);
+                      let trace_list = current :: trace_list
+                   in trace_split block_list prior_list trace_list input_list
     (* for each input of a block, trace out the list from that point on *)
     and trace_split block_list prior_list trace_list input_list =
         match input_list with
