@@ -105,7 +105,7 @@ let rec block_parse top =
                                 (List.map
                                     (fun x ->
                                         (List.find 
-                                            (fun y -> ((y :> base) #name) == x) 
+                                            (compare_obj x) 
                                             block_list
                                         )
                                     )
