@@ -100,16 +100,17 @@ class block blockify xml_obj = object (self)
             inner_objs
     method print_static = if_elements 
                             self#static_blks
-                            (String.concat 
+                            ("/* Initialize static variables */\n" ^
+                             String.concat 
                                 "\n" 
                                 (List.map 
                                     (fun x -> (x :> base) #header)
                                     self#static_blks
-                                )
+                                ) ^ "\n\n"
                             )
     method print_class  = "block"
     method input_type   = if_elements self#inputs ("struct " ^ name ^ "_in")
-    method output_type  = if_elements self#inputs ("struct " ^ name ^ "_out")
+    method output_type  = if_elements self#outputs ("struct " ^ name ^ "_out")
     method input_struct = if_elements
                             self#inputs
                             (self#input_type ^ " {\n\t" ^
@@ -130,23 +131,28 @@ class block blockify xml_obj = object (self)
                             )
     method header     = "/* I/O Structures for block " ^ name ^ " */\n" ^
                         self#input_struct ^ self#output_struct ^
-                        "/* Initialize static variables */\n" ^
-                        self#print_static ^ "\n\n" ^
+                        self#print_static ^
                         "/* Begin block " ^ name ^ " */\n" ^
                         (let out_struct = self#output_type in 
                           if out_struct <> ""
                           then out_struct
                           else "void") ^ 
-                        " " ^ name ^ "(" ^ self#input_type ^ 
-                        " inputs) {\n" ^ 
-                        "\t/* Inputs for block " ^ name ^ " */\n\t" ^ 
-                        (String.concat ";\n\t" 
+                        " " ^ name ^ "(" ^ 
+                        (let in_struct = self#input_type in
+                        if in_struct <> "" 
+                        then in_struct ^ " inputs"
+                        else "") ^ 
+                        ") {\n" ^ 
+                        (let input_blk = String.concat "\n\t" 
                             (List.map 
                             (fun x -> (get_datatype x.datatype) ^ " " ^ 
-                                x.name ^ " = inputs." ^ x.name
+                                x.name ^ " = inputs." ^ x.name ^ ";"
                             ) 
-                            self#inputs)
-                        ) ^ ";\n\n" ^
+                            self#inputs) in
+                        if input_blk <> ""
+                        then "\t/* Inputs for block " ^ name ^
+                             " */\n\t" ^ input_blk ^ "\n\n"
+                        else "") ^
                         "\t/* Body for block " ^ name ^ " */\n\t" ^
                         (String.concat "\n\t" 
                             (List.map
@@ -188,7 +194,7 @@ class block blockify xml_obj = object (self)
                         ) ^ ";\n\n" ^
                         "\treturn outputs;\n}\n" ^
                         "/* End block " ^ name ^ " */\n"
-    method print_obj  = "{\n  \"block\": {\n" ^
+    method print_obj  = "\"block\": {\n" ^
                         "    \"name\":\"" ^ name ^ "\"\n" ^
                         "    \"inner_objs\": [\n      " ^
                         (String.concat "\n      "
@@ -197,7 +203,7 @@ class block blockify xml_obj = object (self)
                                 self#inner_objs
                             )
                         ) ^ "\n    ]" ^ 
-                        "\n  }\n}\n"
+                        "\n}\n"
 end;;
 
 (* virtual I/O Part class: do all I/O Part attributes and checking *)
