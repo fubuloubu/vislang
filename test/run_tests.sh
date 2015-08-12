@@ -67,6 +67,12 @@ Check() {
 
     generatedfiles="$generatedfiles ${basename}.c" &&
     Run "$VLCC" "-c" $1 &&
+    referencedfiles="$(cat ${basename}.c | grep '#include \".*\.c\"' |
+        sed 's/\#include *\"//' | sed 's/\.c\"/.c/')" &&
+    generatedfiles="$generatedfiles $referencedfiles" &&
+    for file in $referencedfiles; do 
+        Run "$VLCC" "-c" "${file%.c}.vl";
+    done &&
     generatedfiles="$generatedfiles ${basename}.o" &&
     Run "$GCC" "-c -fPIC" ${basename}.c &&
     generatedfiles="$generatedfiles ${basename}.so" &&
