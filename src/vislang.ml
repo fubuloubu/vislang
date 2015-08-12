@@ -32,7 +32,7 @@ let _ =
      in match rwfile with
             File  -> output_string 
                         (open_out 
-                            (Str.global_replace (Str.regexp "\.vl") ".c" Sys.argv.(2))
+                            (Str.global_replace (Str.regexp "\\.vl") ".c" Sys.argv.(2))
                         )
                         listing
           | StdIO -> print_string listing
