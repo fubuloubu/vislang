@@ -68,7 +68,7 @@ Check() {
     generatedfiles="$generatedfiles ${basename}.c" &&
     Run "$VLCC" "-c" "<" $1 ">" ${basename}.c &&
     generatedfiles="$generatedfiles ${basename}.o" &&
-    Run "$GCC" "-c" ${basename}.c &&
+    Run "$GCC" "-c -fPIC" ${basename}.c &&
     generatedfiles="$generatedfiles ${basename}.so" &&
     Run "$GCC" "-shared -o" ${basename}.so ${basename}.o &&
     generatedfiles="$generatedfiles ${basename}.py" &&
