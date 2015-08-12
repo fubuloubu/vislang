@@ -125,6 +125,15 @@ class virtual blk_or_ref blockify xml_obj = object (self)
 end;;
 
 (* Parse referenced file for the referenced block and return it for down below *)
+let get_file xml_obj =
+    let r = (get_attr "ref" xml_obj)
+         in match r with
+               Ref r -> if r.reftype = "FILE"
+                        then r.refroot
+                        else object_error "Ref object only supports " ^
+                                          "file references"
+             | _     -> object_error "Incorrect Type for filename"
+
 let get_ref_blk xml_obj = 
     let rec get_inner_blk blk_list xml_obj = 
         match blk_list with
@@ -144,14 +153,7 @@ let get_ref_blk xml_obj =
                                               "referenced block")
                             else get_inner_blk tl (List.hd new_xml_obj)
                         end
-     in let file = 
-            let r = (get_attr "ref" xml_obj)
-             in match r with
-                   Ref r -> if r.reftype = "FILE"
-                            then r.refroot
-                            else object_error "Ref object only supports " ^
-                                              "file references"
-                 | _     -> object_error "Incorrect Type for filename"
+     in let file = get_file xml_obj 
      in let xml_obj = (Xparser.xml_tree Xscanner.token 
                                 (Lexing.from_channel (open_in file) )
                           ) (* Have to parse referenced 
@@ -177,7 +179,13 @@ class reference blockify xml_obj = object (self)
                             ("Should not try to set inner objects of " ^
                              self#print_class ^ " object: " ^ self#name ^ "")
     method print_class  = "reference"
-    method header       = ""
+    method header       = let vlfile = (get_file xml_obj)
+                           in let cfile = (Str.global_replace 
+                                            (Str.regexp "\\.vl") 
+                                            ".c" 
+                                            vlfile
+                                          )
+                           in "#include \"" ^ cfile ^"\""
     method trailer      = ""
 end;;
 
@@ -198,6 +206,7 @@ class block blockify xml_obj = object (self)
                                  c = "memory"
                               || c = "constant"
                               || c = "dt"
+                              || c = "reference"
             )
             inner_objs
     method print_static = if_elements 
