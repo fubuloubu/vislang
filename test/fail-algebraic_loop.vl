@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vl:BLOCK name="set_reset_latch">
+    <vl:INPUT name="set" datatype="boolean"/>
+    <vl:INPUT name="reset" datatype="boolean"/>
+    <vl:NOT name="not_reset">
+        <vl:CONNECTION to="input" from="reset"/>
+    </vl:NOT>
+    <vl:AND name="latch_and_not_reset">
+        <vl:CONNECTION to="input1" from="set_or_mem"/>
+        <vl:CONNECTION to="input2" from="not_reset"/>
+    </vl:AND>
+    <vl:OR name="set_or_mem">
+        <vl:CONNECTION to="input1" from="set"/>
+        <vl:CONNECTION to="input2" from="latch"/>
+    </vl:OR>
+    <vl:MEM name="latch_lp" datatype="boolean" ic="false">
+        <vl:CONNECTION to="current" from="latch_and_not_reset"/>
+    </vl:MEM>
+    <vl:OUTPUT name="latch" datatype="boolean">
+        <vl:CONNECTION to="latch" from="latch_and_not_reset"/>
+    </vl:OUTPUT>
+</vl:BLOCK>
