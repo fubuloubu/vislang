@@ -164,15 +164,6 @@ let rec block_parse top =
                             (fun x-> (x :> base) #print_class = "block") 
                             (inner_objs top)
      in
-    ignore
-        (List.map 
-            (fun x -> let new_inner_objs = 
-                            (trace_start (inner_objs x) (start_list x) [])
-                       in (*print_dead_code new_inner_objs x;*)
-                          (x :> base) #set_inner_objs new_inner_objs
-            )
-            inner_block_list
-        );
     (* Perform the trace operation and re-set the inner objects of top with the
      * result. Also print objects that will be removed. *)
     let new_inner_objs = (trace_start (inner_objs top) [] (start_list top))
@@ -182,4 +173,4 @@ let rec block_parse top =
     (* Return a list of blocks with properly configured inner objects
      * to be used for compilation. Note: we reverse the list here so that 
      * inner_blks are first to be compiled. *)
-    List.rev (top :: inner_block_list)
+    List.rev (top :: List.flatten (List.map block_parse inner_block_list))
