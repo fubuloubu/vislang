@@ -61,18 +61,9 @@ class virtual base xml_obj = object
                             )
 end;;
 
-(* Block class: BLOCK tag
- * inherits from base, is a container for other blocks *)
-class block blockify xml_obj = object (self)
+class virtual blk_or_ref blockify xml_obj = object (self)
     inherit base xml_obj
-    val mutable inner_objs = List.map 
-                             blockify 
-                             (List.filter
-                                (fun x -> x.tagname <> "CONNECTION")
-                                xml_obj.inner_objs
-                             )
-    method inner_objs   = List.rev inner_objs
-    method set_inner_objs new_inner_objs = inner_objs <- new_inner_objs
+    val mutable virtual inner_objs : base list
     method inputs   = List.map
         (fun x -> List.hd ((x :> base) #outputs))
         (List.filter 
@@ -91,6 +82,78 @@ class block blockify xml_obj = object (self)
     method set_outputs a = object_error (
                                 "Should not set outputs of " ^
                                 self#print_class ^ " object")
+    method virtual input_type   : string
+    method virtual output_type  : string
+    method body       = if_elements
+                            self#inputs
+                            (self#input_type ^ " " ^ name ^ "_inputs = " ^ "{ " ^ 
+                                (String.concat 
+                                    ", " 
+                                    (List.map
+                                        (fun (x, y) -> "." ^ x.name ^ 
+                                                       " = " ^ y.name
+                                        )
+                                        (List.combine
+                                            self#inputs
+                                            self#connected_inputs
+                                        )
+                                    )
+                                ) ^ " };\n\t"
+                            ) ^
+                        if_elements
+                            self#outputs
+                            (self#output_type ^ " " ^ name ^ "_outputs = ") ^
+                        name ^ "(" ^ 
+                        if_elements
+                            self#inputs
+                            (name ^ "_inputs") ^ 
+                        ");"
+    method print_obj  = "\"" ^ self#print_class ^ "\": {\n" ^
+                        "    \"name\":\"" ^ name ^ "\"\n" ^
+                        "    \"inner_objs\": [\n      " ^
+                        (String.concat "\n      "
+                            (List.map 
+                                (fun (x : base) -> (x :> base) #print_obj) 
+                                self#inner_objs
+                            )
+                        ) ^ "\n    ]" ^ 
+                        "\n}\n"
+end;;
+
+(* Reference class: REFERENCE tag )
+class reference blockify xml_obj = object (self)
+    inherit blk_or_ref blockify xml_obj
+    val file = let r = (get_attr "ref" xml_obj)
+                in if r.reftype = "FILE"
+                   then r.refroot
+                   else object_error "Ref object only supports file references"
+    val path_to_ref_blk = (get_attr "ref" xml_obj).reflist
+    method ref_blk      = List.hd (List.rev path_to_ref_blk)
+    method inner_objs   =
+    method set_inner_objs new_inner_objs = object_error
+                            ("Should not try to set inner objects of " ^
+                             self#print_class ^ " object: " ^ self#name ^ "")
+    method input_type   = let name = self#ref_blk in
+                            if_elements self#inputs ("struct " ^ name ^ "_in")
+    method output_type  = let name = self#ref_blk in
+                            if_elements self#outputs ("struct " ^ name ^ "_out")
+    method print_class  = "reference"
+    method header       = ""
+    method trailer      = ""
+end;;*)
+
+(* Block class: BLOCK tag
+ * inherits from base, is a container for other blocks *)
+class block blockify xml_obj = object (self)
+    inherit blk_or_ref blockify xml_obj
+    val mutable inner_objs = List.map 
+                             blockify 
+                             (List.filter
+                                (fun x -> x.tagname <> "CONNECTION")
+                                xml_obj.inner_objs
+                             )
+    method inner_objs   = List.rev inner_objs
+    method set_inner_objs new_inner_objs = inner_objs <- new_inner_objs
     method static_blks = List.filter 
             (fun (x : base) -> let c = ((x :> base) #print_class) in
                                  c = "memory"
@@ -173,30 +236,6 @@ class block blockify xml_obj = object (self)
                                 )
                             ) ^ "\n\n")
 
-    method body       = if_elements
-                            self#inputs
-                            (self#input_type ^ " " ^ name ^ "_inputs = " ^ "{ " ^ 
-                                (String.concat 
-                                    ", " 
-                                    (List.map
-                                        (fun (x, y) -> "." ^ x.name ^ 
-                                                       " = " ^ y.name
-                                        )
-                                        (List.combine
-                                            self#inputs
-                                            self#connected_inputs
-                                        )
-                                    )
-                                ) ^ " };\n\t"
-                            ) ^
-                        if_elements
-                            self#outputs
-                            (self#output_type ^ " " ^ name ^ "_outputs = ") ^
-                        name ^ "(" ^ 
-                        if_elements
-                            self#inputs
-                            (name ^ "_inputs") ^ 
-                        ");"
     method trailer    = if_elements
                             self#outputs
                             ("\t/* Outputs for block " ^ name ^" */\n\t" ^
@@ -207,16 +246,6 @@ class block blockify xml_obj = object (self)
                                 self#outputs)
                             ) ^ ";\n\n" ^
                             "\treturn outputs;") ^
-                        "\n}\n"
-    method print_obj  = "\"block\": {\n" ^
-                        "    \"name\":\"" ^ name ^ "\"\n" ^
-                        "    \"inner_objs\": [\n      " ^
-                        (String.concat "\n      "
-                            (List.map 
-                                (fun (x : base) -> (x :> base) #print_obj) 
-                                self#inner_objs
-                            )
-                        ) ^ "\n    ]" ^ 
                         "\n}\n"
 end;;
 
