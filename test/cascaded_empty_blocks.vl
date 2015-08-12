@@ -1,13 +1,13 @@
-<BLOCK name="empty_block">
-    <BLOCK name="empty_block1"/>
-    <BLOCK name="empty_block2"/>
-    <BLOCK name="empty_block3">
-        <BLOCK name="empty_block4"/>
-    </BLOCK>
-    <BLOCK name="empty_block5">
-        <BLOCK name="empty_block6"/>
-        <BLOCK name="empty_block7"/>
-    </BLOCK>
-    <BLOCK name="empty_block8"/>
-    <BLOCK name="empty_block9"/>
-</BLOCK>
+<vl:BLOCK name="empty_block">
+    <vl:BLOCK name="empty_block1"/>
+    <vl:BLOCK name="empty_block2"/>
+    <vl:BLOCK name="empty_block3">
+        <vl:BLOCK name="empty_block4"/>
+    </vl:BLOCK>
+    <vl:BLOCK name="empty_block5">
+        <vl:BLOCK name="empty_block6"/>
+        <vl:BLOCK name="empty_block7"/>
+    </vl:BLOCK>
+    <vl:BLOCK name="empty_block8"/>
+    <vl:BLOCK name="empty_block9"/>
+</vl:BLOCK>
