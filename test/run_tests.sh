@@ -66,7 +66,7 @@ Check() {
     generatedfiles=""
 
     generatedfiles="$generatedfiles ${basename}.c" &&
-    Run "$VLCC" "-c" "<" $1 ">" ${basename}.c &&
+    Run "$VLCC" "-c" $1 &&
     generatedfiles="$generatedfiles ${basename}.o" &&
     Run "$GCC" "-c -fPIC" ${basename}.c &&
     generatedfiles="$generatedfiles ${basename}.so" &&
@@ -112,7 +112,7 @@ CheckFail() {
     echo 1>&2
     echo "###### Testing $basename" 1>&2
 
-    RunFail "$VLCC" "-c" "<" $1
+    RunFail "$VLCC" "-c" $1
 
     # Report the status and clean up the generated files
     if [ $error -eq 0 ] ; then
@@ -140,7 +140,7 @@ CheckPass() {
     # Basically check if we can compile all of it, 
     # then stop short of any testing
     generatedfiles="$generatedfiles ${basename}.c" &&
-    Run "$VLCC" "-c" "<" $1 ">" ${basename}.c &&
+    Run "$VLCC" "-c" $1 &&
     generatedfiles="$generatedfiles ${basename}.o" &&
     Run "$GCC" "-c -fPIC" ${basename}.c &&
     generatedfiles="$generatedfiles ${basename}.so" &&
