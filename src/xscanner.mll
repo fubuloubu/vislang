@@ -7,12 +7,9 @@ let ws      = [' ' '\t']
 let nl      = ['\r' '\n']
 let tag     = ( "BLOCK" 
             |   "REFERENCE" 
-            |   "CONNECTION"
             |   "INPUT"
             |   "OUTPUT" 
             |   "CONSTANT" 
-            |   "SIGNAL" 
-            |   "CAST"
             |   "MEM"
             |   "DT"
             |   "NOT"
@@ -21,20 +18,13 @@ let tag     = ( "BLOCK"
             |   "NOR"
             |   "NAND"
             |   "XOR"
-            |   "BITWISE"
             |   "IF"
             |   "COMPARE"
             |   "SUM"
             |   "PROD"
             |   "GAIN"
             |   "INV"
-            |   "MUX"
-            |   "DEMUX"
-            |   "STRUCT"
-            |   "DESTRUCT"
-            |   "MAP"
-            |   "FILTER"
-            |   "REDUCE"
+            |   "CONNECTION"
             ) (* all accepted tags *)
 let attr    = ( "name"
             |   "ref"
@@ -52,7 +42,9 @@ let datatype= ( "auto"
             |   'u'? "int" ("8" | "16" | "32") (* all integer types *)
             (*|   name (* for structs *)*)
             )
+(* file names acceptable for referencing *)
 let file    = ( ".." | ".")? ("/" ['A'-'Z' 'a'-'z' '0'-'9' '_' '-' '.']+ )+ ".vl"
+(* Value literals. Used for CONSTANT, MEMORY, and GAIN blocks *)
 let sign    = ( "+" | "-")
 let boolean = ( "true" | "false")
 let digit   = [ '0' - '9' ]
@@ -67,7 +59,7 @@ rule token =
     parse
     (* Comments: Search for any of the following ignored tag openings, 
      * then jump to rule for parsing an ignore anything inside it. *) 
-        "<?"   | (* XML Declarator  *)
+        "<?"   | (* XML Declarators *)
         "<!--" | (* XML Comments    *)
         "<!["    (* DOCTYPE Markup  *)
         as ctype                        { comm ctype lexbuf }
@@ -76,7 +68,7 @@ rule token =
         | "<"  "vl:" (tag as t)         { O_ELEM( t )  }
         | "</" "vl:" (tag as t) ">"     { C_ELEM( t )  }
         | "/>"                          { E_ELEM       }
-        | ">"   (* No tag required *)   { token lexbuf }
+        | ">"   (* No token required *) { token lexbuf }
     (* Attributes: The following are tokens for different values
      * attributes might take on. *)
         | attr as a "="             { ATTR  ( a ) }
@@ -93,14 +85,6 @@ rule token =
         | "\"" ">=" "\""            { GEQ }
         | "\"" "<=" "\""            { LEQ }
         | "\"" "!=" "\""            { NEQ }
-        (* Bitwise Operators *)
-        | "\"" "or"   "\""          { OR   }
-        | "\"" "and"  "\""          { AND  }
-        | "\"" "not"  "\""          { NOT  }
-        | "\"" "xor"  "\""          { XOR  }
-        | "\"" "nor"  "\""          { NOR  }
-        | "\"" "nand" "\""          { NAND }
-        | "\"" "xnor" "\""          { XNOR }
         (* Literals *)
         | "\"" (boolean as b) "\""  { BOOL  ( b ) }
         | "\"" (flt_pt as f) "\""   { FLOAT ( f ) }
@@ -112,9 +96,8 @@ rule token =
         | ws                        { token lexbuf }
         | nl                        { Lexing.new_line lexbuf; 
                                       token lexbuf }
-        (* This is here to allow anything between attribute tags to work *)
-        | _                         { xml_warning lexbuf;
-                                      token lexbuf }
+    (* This allows anything unsupported to be ignored *)
+        | _                         { token lexbuf }
         | eof                       { EOF }
 (* Comment sub-rule: search for matching comment tag.
  * If a different comment tag type found, then continue,
