@@ -1,6 +1,6 @@
 <vl:BLOCK name="set_reset_latch">
-    <vl:INPUT name="set" scope="local" datatype="boolean" size="1"/>
-    <vl:INPUT name="reset" scope="local" datatype="boolean" size="1"/>
+    <vl:INPUT name="set" datatype="boolean"/>
+    <vl:INPUT name="reset" datatype="boolean"/>
     <vl:NOT name="not_reset">
         <vl:CONNECTION to="input" from="reset"/>
     </vl:NOT>
@@ -15,7 +15,7 @@
     <vl:MEM name="latch_lp" datatype="boolean" ic="false">
         <vl:CONNECTION to="current" from="latch_and_not_reset"/>
     </vl:MEM>
-    <vl:OUTPUT name="latch" datatype="boolean" scope="local" size="1">
+    <vl:OUTPUT name="latch" datatype="boolean">
         <vl:CONNECTION to="latch" from="latch_and_not_reset"/>
     </vl:OUTPUT>
 </vl:BLOCK>

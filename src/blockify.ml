@@ -231,7 +231,6 @@ class virtual io_part xml_obj = object (self)
                              self#print_class ^ " object: " ^ self#name ^ "")
     val datatype = Xst.string_of_value (get_attr "datatype" xml_obj)
     method datatype = datatype
-    val size     =                      get_attr "size"     xml_obj
     val mutable inputs   = [{ name = string_of_value (get_attr "name" xml_obj); 
                           datatype = string_of_value (get_attr "datatype" xml_obj)}]
     method inputs = inputs
@@ -243,7 +242,7 @@ class virtual io_part xml_obj = object (self)
     method print_obj    = "\"" ^ self#print_class ^ "\": { " ^
                           "\"name\":\"" ^ name ^ "\", " ^
                           "\"datatype\":\"" ^ datatype ^ "\", " ^
-                          "\"size\":\"" ^ Xst.string_of_value (size) ^ "\" }"
+                          " }"
     method header     = ""
     method body       = ""
     method trailer    = ""
@@ -281,7 +280,6 @@ class constant xml_obj = object (self)
     method print_obj    = "\"" ^ self#print_class ^ "\": { " ^
                           "\"name\":\"" ^ name ^ "\", " ^
                           "\"value\":\"" ^ value ^ "\", " ^
-                          "\"size\":\"" ^ Xst.string_of_value (size) ^ "\"" ^
                           " }"
 end;;
 

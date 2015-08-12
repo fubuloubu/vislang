@@ -5,11 +5,11 @@
          Outputs for utilization elsewhere in project. The
          reference will search the path for that file -->
     <!-- All Inputs do not have to be used and will be optimized out -->
-    <vl:INPUT scope="local" name="start" size="1" datatype="boolean"/>
-    <vl:INPUT scope="local" name="reset" size="1" datatype="boolean"/>
-    <vl:INPUT scope="local" name="time" size="1" datatype="single"/>
+    <vl:INPUT name="start" datatype="boolean"/>
+    <vl:INPUT name="reset" datatype="boolean"/>
+    <vl:INPUT name="time" datatype="single"/>
     <!-- Constants can be defined as a seperate block as well -->
-    <vl:CONSTANT name="zero_constant" size="1" datatype="single" value="0.000"/>
+    <vl:CONSTANT name="zero_constant" datatype="single" value="0.000"/>
     <!-- The DT block puts out the difference in time between
          successive passes of program. In a Soft RTOS, this
          would be a variable number. In a Hard RTOS, this
@@ -60,11 +60,11 @@
     </vl:MEM>
     <!-- All Outputs need to have a connection in the part,
          at least to a constant -->
-    <vl:OUTPUT scope="local" name="count_expired" size="1" datatype="boolean">
+    <vl:OUTPUT name="count_expired" datatype="boolean">
     <!-- Outputs of a subsystem need to have a connection specified -->
         <vl:CONNECTION to="count_expired" from="is_count_expired"/>
     </vl:OUTPUT>
-    <vl:OUTPUT scope="local" name="elapsed_time" size="1" datatype="single">
+    <vl:OUTPUT name="elapsed_time" datatype="single">
         <vl:CONNECTION to="elapsed_time" from="reset_switch"/>
     </vl:OUTPUT>
 </vl:BLOCK>

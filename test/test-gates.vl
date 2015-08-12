@@ -1,45 +1,45 @@
 <vl:BLOCK name="gates">
-    <vl:INPUT name="in1" scope="local" datatype="boolean" size="auto"/>
-    <vl:INPUT name="in2" scope="local" datatype="boolean" size="auto"/>
+    <vl:INPUT name="in1" datatype="boolean"/>
+    <vl:INPUT name="in2" datatype="boolean"/>
     <vl:NOT name="not">
         <vl:CONNECTION to="input" from="in1"/>
     </vl:NOT>
-    <vl:OUTPUT name="not_gate" datatype="boolean" scope="local" size="auto">
+    <vl:OUTPUT name="not_gate" datatype="boolean">
         <vl:CONNECTION to="not_gate" from="not"/>
     </vl:OUTPUT>
     <vl:OR name="or">
         <vl:CONNECTION to="input1" from="in1"/>
         <vl:CONNECTION to="input2" from="in2"/>
     </vl:OR>
-    <vl:OUTPUT name="or_gate" datatype="boolean" scope="local" size="auto">
+    <vl:OUTPUT name="or_gate" datatype="boolean">
         <vl:CONNECTION to="or_gate" from="or"/>
     </vl:OUTPUT>
     <vl:AND name="and">
         <vl:CONNECTION to="input1" from="in1"/>
         <vl:CONNECTION to="input2" from="in2"/>
     </vl:AND>
-    <vl:OUTPUT name="and_gate" datatype="boolean" scope="local" size="auto">
+    <vl:OUTPUT name="and_gate" datatype="boolean">
         <vl:CONNECTION to="and_gate" from="and"/>
     </vl:OUTPUT>
     <vl:NOR name="nor">
         <vl:CONNECTION to="input1" from="in1"/>
         <vl:CONNECTION to="input2" from="in2"/>
     </vl:NOR>
-    <vl:OUTPUT name="nor_gate" datatype="boolean" scope="local" size="auto">
+    <vl:OUTPUT name="nor_gate" datatype="boolean">
         <vl:CONNECTION to="nor_gate" from="nor"/>
     </vl:OUTPUT>
     <vl:NAND name="nand">
         <vl:CONNECTION to="input1" from="in1"/>
         <vl:CONNECTION to="input2" from="in2"/>
     </vl:NAND>
-    <vl:OUTPUT name="nand_gate" datatype="boolean" scope="local" size="auto">
+    <vl:OUTPUT name="nand_gate" datatype="boolean">
         <vl:CONNECTION to="nand_gate" from="nand"/>
     </vl:OUTPUT>
     <vl:XOR name="xor">
         <vl:CONNECTION to="input1" from="in1"/>
         <vl:CONNECTION to="input2" from="in2"/>
     </vl:XOR>
-    <vl:OUTPUT name="xor_gate" datatype="boolean" scope="local" size="auto">
+    <vl:OUTPUT name="xor_gate" datatype="boolean">
         <vl:CONNECTION to="xor_gate" from="xor"/>
     </vl:OUTPUT>
 </vl:BLOCK>

@@ -5,12 +5,12 @@
 
 %token E_ELEM EOF
 %token <string> O_ELEM C_ELEM ATTR
-%token <string> NAME FILE REF DTYPE SCOPE
+%token <string> NAME FILE REF DTYPE
 %token GRT LST EQT NEQ LEQ GEQ
 %token OR AND NOT XOR NAND NOR XNOR
 %token <string> BOOL FLOAT HEX DEC OCT BIN
 
-%left SCOPE DTYPE NAME FILE REF
+%left DTYPE NAME FILE REF
 %left BOOL FLOAT HEX DEC OCT BIN
 %left O_ELEM C_ELEM ELEM ATTR
 
@@ -56,7 +56,6 @@ value:
     | bitwopr           { Bitwopr   ($1) }
     | compopr           { Compopr   ($1) }
     | DTYPE             { Datatype  ($1) }
-    | SCOPE             { Scope     ($1) }
 
 ref:
       FILE ref_list     { { reftype = "FILE" ; 

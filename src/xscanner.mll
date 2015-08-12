@@ -38,9 +38,7 @@ let tag     = ( "BLOCK"
             ) (* all accepted tags *)
 let attr    = ( "name"
             |   "ref"
-            |   "scope"
             |   "datatype"
-            |   "size"
             |   "to"
             |   "from"
             |   "ic"
@@ -54,7 +52,6 @@ let datatype= ( "auto"
             |   'u'? "int" ("8" | "16" | "32") (* all integer types *)
             (*|   name (* for structs *)*)
             )
-let scope   = ( "global" | "local" )
 let file    = ( ".." | ".")? ("/" ['A'-'Z' 'a'-'z' '0'-'9' '_' '-' '.']+ )+ ".vl"
 let sign    = ( "+" | "-")
 let boolean = ( "true" | "false")
@@ -84,7 +81,6 @@ rule token =
      * attributes might take on. *)
         | attr as a "="             { ATTR  ( a ) }
         | "\"" (datatype as d) "\"" { DTYPE ( d ) }
-        | "\"" (scope as s) "\""    { SCOPE ( s ) }
         (* note: names and files are allowed to have references *)  
         | "\"" (name as n) "\""?    { NAME  ( n ) } (* TODO: this syntax allows a  *)
         | "\"" (file as f) "\""?    { FILE  ( f ) } (*   quote character inside it *)
