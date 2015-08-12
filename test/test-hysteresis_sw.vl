@@ -1,0 +1,21 @@
+<vl:BLOCK name="hysteresis_sw">
+    <vl:INPUT name="in" datatype="single"/>
+    <vl:CONSTANT name="hi" datatype="single" value="20.000"/>
+    <vl:CONSTANT name="lo" datatype="single" value="10.000"/>
+    <vl:COMPARE name="hi_cmp" operation=">=">
+        <vl:CONNECTION to="lhs" from="in"/> 
+        <vl:CONNECTION to="rhs" from="hi"/> 
+    </vl:COMPARE>
+    <vl:COMPARE name="lo_cmp" operation="<=">
+        <vl:CONNECTION to="lhs" from="in"/> 
+        <vl:CONNECTION to="rhs" from="lo"/> 
+    </vl:COMPARE>
+`   <vl:REFERENCE name="sr_latch"
+            ref="./test-set_reset_latch.vl|set_reset_latch">
+        <vl:CONNECTION to="set" from="hi_cmp"/>
+        <vl:CONNECTION to="reset" from="lo_cmp"/>
+    </vl:REFERENCE>
+    <vl:OUTPUT name="out" datatype="boolean">
+        <vl:CONNECTION to="out" from="sr_latch|latch"/>
+    </vl:OUTPUT>
+</vl:BLOCK>
