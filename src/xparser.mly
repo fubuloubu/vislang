@@ -7,7 +7,6 @@
 %token <string> O_ELEM C_ELEM ATTR
 %token <string> NAME FILE REF DTYPE
 %token GRT LST EQT NEQ LEQ GEQ
-%token OR AND NOT XOR NAND NOR XNOR
 %token <string> BOOL FLOAT HEX DEC OCT BIN
 
 %left DTYPE NAME FILE REF
@@ -53,7 +52,6 @@ value:
       ref               { Ref       ($1) }
     | NAME              { Name      ($1) }
     | literal           {           ($1) }
-    | bitwopr           { Bitwopr   ($1) }
     | compopr           { Compopr   ($1) }
     | DTYPE             { Datatype  ($1) }
 
@@ -77,19 +75,10 @@ literal:
     | OCT               { Int   (int_of_string   $1) }
     | BIN               { Int   (int_of_string   $1) }
 
-bitwopr:
-      OR                { Or    }
-    | AND               { And   } 
-    | NOT               { Not   }
-    | XOR               { Xor   }
-    | NAND              { Nand  }
-    | NOR               { Nor   }
-    | XNOR              { Xnor  }
-
 compopr:
-      GRT               { Grt   }
-    | LST               { Lst   } 
-    | EQT               { Eqt   }
-    | NEQ               { Neq   }
-    | LEQ               { Leq   }
-    | GEQ               { Geq   }
+      GRT               { Grt }
+    | LST               { Lst } 
+    | EQT               { Eqt }
+    | NEQ               { Neq }
+    | LEQ               { Leq }
+    | GEQ               { Geq }
