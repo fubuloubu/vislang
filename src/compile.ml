@@ -16,7 +16,7 @@ let translate program =
                                 ) 
                                 program
                            )
-    ^ "\n/*Generated using VLCC */\n"
+    ^ "\n/* Generated using VLCC */\n"
 (* Generate python script for processing in files and sending it through the
  * compiled binary and printing the results as it is running *)
 let gen_debug_code program =
