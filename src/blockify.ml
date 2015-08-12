@@ -129,10 +129,11 @@ class block blockify xml_obj = object (self)
                                     self#outputs)
                                 ) ^ ";\n};\n\n"
                             )
-    method header     = "/* I/O Structures for block " ^ name ^ " */\n" ^
+    method header     = if_elements
+                            (self# inputs @ self#outputs)
+                            ("/* I/O Structures for block " ^ name ^ " */\n") ^
                         self#input_struct ^ self#output_struct ^
                         self#print_static ^
-                        "/* Begin block " ^ name ^ " */\n" ^
                         (let out_struct = self#output_type in 
                           if out_struct <> ""
                           then out_struct
@@ -153,47 +154,60 @@ class block blockify xml_obj = object (self)
                         then "\t/* Inputs for block " ^ name ^
                              " */\n\t" ^ input_blk ^ "\n\n"
                         else "") ^
-                        "\t/* Body for block " ^ name ^ " */\n\t" ^
-                        (String.concat "\n\t" 
-                            (List.map
-                                (fun x -> (x :> base) #body)
-                                (* Skip parts block takes care of *)
-                                (List.filter
-                                    (fun x -> let c = (x :> base) #print_class in
-                                        not (   c = "input" 
-                                             || c = "dt"    
-                                             || c = "constant"
-                                            )
-                                    )
-                                    self#inner_objs
-                                )
-                            )
-                        ) ^ "\n\n"
-
-    method body       = self#input_type ^ " " ^ name ^ "_inputs = " ^ "{ " ^ 
-                        (String.concat 
-                                ", " 
+                        if_elements
+                            self#inner_objs
+                            ("\t/* Body for block " ^ name ^ " */\n\t" ^
+                            (String.concat "\n\t" 
                                 (List.map
-                                    (fun (x, y) -> "." ^ x.name ^ 
-                                                   " = " ^ y.name
-                                    )
-                                    (List.combine
-                                        self#inputs
-                                        self#connected_inputs
+                                    (fun x -> (x :> base) #body)
+                                    (* Skip parts block takes care of *)
+                                    (List.filter
+                                        (fun x -> let c = (x :> base) #print_class in
+                                            not (   c = "input" 
+                                                 || c = "dt"    
+                                                 || c = "constant"
+                                                )
+                                        )
+                                        self#inner_objs
                                     )
                                 )
-                            ) ^ " };\n\t" ^
-                        self#output_type ^ " " ^ name ^ "_outputs = " ^
-                        name ^ "(" ^ name ^ "_inputs);"
-    method trailer    = "\t/* Outputs for block " ^ name ^" */\n\t" ^
-                        self#output_type ^ " outputs;\n\t" ^
-                        (String.concat ";\n\t" 
-                            (List.map 
-                            (fun x -> "outputs." ^ x.name ^ " = " ^ x.name) 
-                            self#outputs)
-                        ) ^ ";\n\n" ^
-                        "\treturn outputs;\n}\n" ^
-                        "/* End block " ^ name ^ " */\n"
+                            ) ^ "\n\n")
+
+    method body       = if_elements
+                            self#inputs
+                            (self#input_type ^ " " ^ name ^ "_inputs = " ^ "{ " ^ 
+                                (String.concat 
+                                    ", " 
+                                    (List.map
+                                        (fun (x, y) -> "." ^ x.name ^ 
+                                                       " = " ^ y.name
+                                        )
+                                        (List.combine
+                                            self#inputs
+                                            self#connected_inputs
+                                        )
+                                    )
+                                ) ^ " };\n\t"
+                            ) ^
+                        if_elements
+                            self#outputs
+                            (self#output_type ^ " " ^ name ^ "_outputs = ") ^
+                        name ^ "(" ^ 
+                        if_elements
+                            self#inputs
+                            (name ^ "_inputs") ^ 
+                        ");"
+    method trailer    = if_elements
+                            self#outputs
+                            ("\t/* Outputs for block " ^ name ^" */\n\t" ^
+                            self#output_type ^ " outputs;\n\t" ^
+                            (String.concat ";\n\t" 
+                                (List.map 
+                                (fun x -> "outputs." ^ x.name ^ " = " ^ x.name) 
+                                self#outputs)
+                            ) ^ ";\n\n" ^
+                            "\treturn outputs;") ^
+                        "\n}\n"
     method print_obj  = "\"block\": {\n" ^
                         "    \"name\":\"" ^ name ^ "\"\n" ^
                         "    \"inner_objs\": [\n      " ^
