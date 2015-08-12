@@ -2,11 +2,11 @@
     <vl:INPUT name="in" datatype="single"/>
     <vl:CONSTANT name="hi" datatype="single" value="20.000"/>
     <vl:CONSTANT name="lo" datatype="single" value="10.000"/>
-    <vl:COMPARE name="hi_cmp" operation=">=">
+    <vl:COMPARE name="hi_cmp" datatype="single" operation=">=">
         <vl:CONNECTION to="lhs" from="in"/> 
         <vl:CONNECTION to="rhs" from="hi"/> 
     </vl:COMPARE>
-    <vl:COMPARE name="lo_cmp" operation="<=">
+    <vl:COMPARE name="lo_cmp" datatype="single" operation="<=">
         <vl:CONNECTION to="lhs" from="in"/> 
         <vl:CONNECTION to="rhs" from="lo"/> 
     </vl:COMPARE>
