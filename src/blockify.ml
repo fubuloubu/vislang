@@ -4,9 +4,11 @@ open Errors
 let get_attr attribute xml_obj = 
     let attr = List.filter (fun x -> x.aname = attribute) xml_obj.attributes in
         match attr with
-            []      -> object_error ("No attribute named " ^ attribute )
+            []      -> object_error ("No attribute named " ^ attribute ^
+                                     " in:\n" ^ (string_of_xml xml_obj))
           | [a]     -> a.avalue
-          | _ :: _  -> object_error ("Too many attributes named " ^ attribute)
+          | _ :: _  -> object_error ("Too many attributes named " ^ attribute ^
+                                     " in:\n" ^ (string_of_xml xml_obj))
 
 let get_datatype dtype =
     match dtype with
@@ -31,7 +33,7 @@ type interface = {
 (* virtual Base class all blocks inherit from. All methods here
  * will be utilized by upstream utilities *)
 class virtual base xml_obj = object
-    val name : string   = Xst.string_of_value (get_attr "name" xml_obj)
+    val name : string   = string_of_value (get_attr "name" xml_obj)
     method name         = name
     method virtual inputs       : interface list
     method virtual set_inputs   : interface list -> unit
@@ -52,12 +54,12 @@ class virtual base xml_obj = object
             match input_from with
                 []      -> object_error
                             ("No connections found for " ^ 
-                                Xst.string_of_value (get_attr "name" xml_obj)
+                                string_of_value (get_attr "name" xml_obj)
                             )
               | [cnx]   -> get_attr "from" cnx
               | _ :: _  -> object_error 
                             ("Too many connections defined for " ^ 
-                                Xst.string_of_value (get_attr "name" xml_obj)
+                                string_of_value (get_attr "name" xml_obj)
                             )
 end;;
 
@@ -86,7 +88,7 @@ class virtual blk_or_ref blockify xml_obj = object (self)
     method virtual output_type  : string
     method body       = if_elements
                             self#inputs
-                            (self#input_type ^ " " ^ name ^ "_inputs = " ^ "{ " ^ 
+                            (self#input_type ^ " " ^ self#name ^ "_inputs = " ^ "{ " ^ 
                                 (String.concat 
                                     ", " 
                                     (List.map
@@ -102,11 +104,11 @@ class virtual blk_or_ref blockify xml_obj = object (self)
                             ) ^
                         if_elements
                             self#outputs
-                            (self#output_type ^ " " ^ name ^ "_outputs = ") ^
-                        name ^ "(" ^ 
+                            (self#output_type ^ " " ^ self#name ^ "_outputs = ") ^
+                        self#name ^ "(" ^ 
                         if_elements
                             self#inputs
-                            (name ^ "_inputs") ^ 
+                            (self#name ^ "_inputs") ^ 
                         ");"
     method print_obj  = "\"" ^ self#print_class ^ "\": {\n" ^
                         "    \"name\":\"" ^ name ^ "\"\n" ^
@@ -120,27 +122,58 @@ class virtual blk_or_ref blockify xml_obj = object (self)
                         "\n}\n"
 end;;
 
-(* Reference class: REFERENCE tag )
+let rec get_ref_blk blklist xml_obj = 
+    match blklist with
+        [] -> xml_obj
+      | hd :: tl -> let new_xml_obj =
+                                (List.filter
+                                    (fun x -> string_of_value 
+                                                (get_attr "name" x) = hd)
+                                     (List.filter
+                                        (fun x -> x.tagname <> "CONNECTION")
+                                        (xml_obj :: xml_obj.inner_objs)
+                                     )
+                                )
+                     in if (List.length new_xml_obj) <> 1
+                        then object_error ("Did not find exactly one " ^
+                                          "referenced block")
+                        else get_ref_blk tl (List.hd new_xml_obj)
+
+(* Reference class: REFERENCE tag *)
 class reference blockify xml_obj = object (self)
     inherit blk_or_ref blockify xml_obj
     val file = let r = (get_attr "ref" xml_obj)
-                in if r.reftype = "FILE"
-                   then r.refroot
-                   else object_error "Ref object only supports file references"
-    val path_to_ref_blk = (get_attr "ref" xml_obj).reflist
-    method ref_blk      = List.hd (List.rev path_to_ref_blk)
-    method inner_objs   =
-    method set_inner_objs new_inner_objs = object_error
-                            ("Should not try to set inner objects of " ^
-                             self#print_class ^ " object: " ^ self#name ^ "")
-    method input_type   = let name = self#ref_blk in
-                            if_elements self#inputs ("struct " ^ name ^ "_in")
-    method output_type  = let name = self#ref_blk in
-                            if_elements self#outputs ("struct " ^ name ^ "_out")
+                in match r with
+                       Ref r -> if r.reftype = "FILE"
+                                then r.refroot
+                                else object_error "Ref object only supports " ^
+                                                  "file references"
+                     | _     -> object_error "Incorrect Type for filename"
+    method ref_blk      = let xml_obj = (Xparser.xml_tree Xscanner.token 
+                                            (Lexing.from_channel (open_in file) )
+                                        ) (* Have to parse referenced 
+                                           * file to get block *)
+                          and blklist = let r = (get_attr "ref" xml_obj)
+                                         in match r with
+                                                Ref r -> r.reflist
+                                              | _     -> object_error 
+                                                    "Incorrect Type for block ref"
+                           in get_ref_blk blklist xml_obj
+    method name = string_of_value (get_attr "name" self#ref_blk)
+    val mutable inner_objs   = []
+    method inner_objs = List.map 
+                             blockify 
+                             (List.filter
+                                (fun x -> x.tagname <> "CONNECTION")
+                                (self#ref_blk).inner_objs
+                             )
+    method set_inner_objs a = inner_objs <- self#inner_objs
+    method input_type   = if_elements self#inputs ("struct " ^ self#name ^ "_in")
+    method output_type  = if_elements self#outputs ("struct " ^ self#name ^ "_out")
     method print_class  = "reference"
     method header       = ""
     method trailer      = ""
-end;;*)
+end;;
 
 (* Block class: BLOCK tag
  * inherits from base, is a container for other blocks *)
@@ -152,6 +185,7 @@ class block blockify xml_obj = object (self)
                                 (fun x -> x.tagname <> "CONNECTION")
                                 xml_obj.inner_objs
                              )
+    method name = name
     method inner_objs   = List.rev inner_objs
     method set_inner_objs new_inner_objs = inner_objs <- new_inner_objs
     method static_blks = List.filter 
@@ -258,7 +292,7 @@ class virtual io_part xml_obj = object (self)
     method set_inner_objs new_inner_objs = object_error
                             ("Should not try to set inner objects of " ^
                              self#print_class ^ " object: " ^ self#name ^ "")
-    val datatype = Xst.string_of_value (get_attr "datatype" xml_obj)
+    val datatype = string_of_value (get_attr "datatype" xml_obj)
     method datatype = datatype
     val mutable inputs   = [{ name = string_of_value (get_attr "name" xml_obj); 
                           datatype = string_of_value (get_attr "datatype" xml_obj)}]
@@ -300,7 +334,7 @@ end;;
 class constant xml_obj = object (self)
     inherit input xml_obj (* A constant acts like an input, except it has 
                            * a value and doesn't interact with block I/O *)
-    val value    = Xst.string_of_value (get_attr "value"    xml_obj)
+    val value    = string_of_value (get_attr "value"    xml_obj)
     method value = value
     method header     = (* overriden for block#header*)
                         "static " ^ (get_datatype self#datatype) ^ " " ^
@@ -330,7 +364,7 @@ class dt xml_obj = object (self)
                                 "Should not set outputs of " ^
                                 self#print_class ^ " object")
     method datatype = "single"
-    val init_cond       = Xst.string_of_value (get_attr "ic" xml_obj)
+    val init_cond       = string_of_value (get_attr "ic" xml_obj)
     method header     = "static " ^ (get_datatype self#datatype) ^ " " ^
                         self#name ^ " = " ^ init_cond ^ ";"
     method body         = ""
@@ -365,10 +399,10 @@ end;;
 (* Memory class: MEM tag*)
 class memory xml_obj = object (self)
     inherit part xml_obj
-    val init_cond       = Xst.string_of_value (get_attr "ic" xml_obj)
+    val init_cond       = string_of_value (get_attr "ic" xml_obj)
     val mutable inputs   = [{ name = "current"; datatype = "auto" }]
     val mutable outputs  = [{ name = "stored"; datatype = "auto" }]
-    val datatype = Xst.string_of_value (get_attr "datatype" xml_obj)
+    val datatype = string_of_value (get_attr "datatype" xml_obj)
     method datatype = datatype
     method init_cond = init_cond
     method print_class  = "memory"
@@ -508,7 +542,7 @@ end;;
 class sum xml_obj = object (self)
     inherit binop_part xml_obj
     val operation = "+"
-    val datatype = Xst.string_of_value (get_attr "datatype" xml_obj)
+    val datatype = string_of_value (get_attr "datatype" xml_obj)
     method datatype = datatype
     method print_class = "sum"
     val mutable inputs  = get_cnx_list xml_obj "auto"
@@ -519,7 +553,7 @@ end;;
 class prod xml_obj = object (self)
     inherit binop_part xml_obj
     val operation = "*"
-    val datatype = Xst.string_of_value (get_attr "datatype" xml_obj)
+    val datatype = string_of_value (get_attr "datatype" xml_obj)
     method datatype = datatype
     method print_class = "prod"
     val mutable inputs  = get_cnx_list xml_obj "auto"
@@ -531,9 +565,9 @@ class gain xml_obj = object (self)
     inherit part xml_obj
     val mutable inputs  = [{ name = "input"; datatype = "auto" }]
     val mutable outputs = [{ name = "output"; datatype = "auto" }]
-    val datatype = Xst.string_of_value (get_attr "datatype" xml_obj)
+    val datatype = string_of_value (get_attr "datatype" xml_obj)
     method datatype = datatype
-    val value    = Xst.string_of_value (get_attr "value"    xml_obj)
+    val value    = string_of_value (get_attr "value"    xml_obj)
     method value = value
     method print_class  = "gain"
     method print_obj    = "\"" ^ self#print_class ^ "\": { " ^
@@ -550,7 +584,7 @@ class inv xml_obj = object (self)
     inherit part xml_obj
     val mutable inputs  = [{ name = "input"; datatype = "auto" }]
     val mutable outputs = [{ name = "output"; datatype = "auto" }]
-    val datatype = Xst.string_of_value (get_attr "datatype" xml_obj)
+    val datatype = string_of_value (get_attr "datatype" xml_obj)
     method datatype = datatype
     method print_class  = "inv"
     method print_obj    = "\"" ^ self#print_class ^ "\": { " ^
@@ -564,8 +598,8 @@ end;;
 (* Compare Part: compares two inputs using operation *)
 class compare xml_obj = object (self)
     inherit part xml_obj
-    val operation = Xst.string_of_value (get_attr "operation" xml_obj)
-    val datatype = Xst.string_of_value (get_attr "datatype" xml_obj)
+    val operation = string_of_value (get_attr "operation" xml_obj)
+    val datatype = string_of_value (get_attr "datatype" xml_obj)
     method datatype = datatype
     method print_class = "compare"
     val mutable inputs  = [{ name = "lhs"; datatype = "auto" }; 
@@ -586,7 +620,7 @@ end;;
 (* If part: if control is true, pass true input, else false input *)
 class if_sw xml_obj = object (self)
     inherit part xml_obj
-    val datatype = Xst.string_of_value (get_attr "datatype" xml_obj)
+    val datatype = string_of_value (get_attr "datatype" xml_obj)
     method datatype = datatype
     method print_class = "if"
     val mutable inputs  = [{ name = "control"; datatype = "boolean" }; 
@@ -607,26 +641,27 @@ end;;
 (* Blockify goes through and matches the tagname to the appropiate object *)
 let rec blockify xml_obj = 
     match xml_obj.tagname with
-          "BLOCK"   -> (new block blockify xml_obj :> base)
-          (* Note: passing blockify into block instantiation because it can't 
+          "BLOCK"       -> (new block blockify xml_obj :> base)
+        | "REFERENCE"   -> (new reference blockify xml_obj :> base)
+          (* Note: passing blockify into block/ref instantiation because they can't 
            * see at compile time what the function blockify is referring to *)
-        | "INPUT"   -> (new input       xml_obj :> base)
-        | "OUTPUT"  -> (new output      xml_obj :> base)
-        | "CONSTANT"-> (new constant    xml_obj :> base)
-        | "DT"      -> (new dt          xml_obj :> base)
-        | "MEM"     -> (new memory      xml_obj :> base)
-        | "NOT"     -> (new not_gate    xml_obj :> base)
-        | "AND"     -> (new and_gate    xml_obj :> base)
-        | "OR"      -> (new or_gate     xml_obj :> base)
-        | "NAND"    -> (new nand_gate   xml_obj :> base)
-        | "NOR"     -> (new nor_gate    xml_obj :> base)
-        | "XOR"     -> (new xor_gate    xml_obj :> base)
-        | "SUM"     -> (new sum         xml_obj :> base)
-        | "PROD"    -> (new prod        xml_obj :> base)
-        | "GAIN"    -> (new gain        xml_obj :> base)
-        | "INV"     -> (new inv         xml_obj :> base)
-        | "COMPARE" -> (new compare     xml_obj :> base)
-        | "IF"      -> (new if_sw       xml_obj :> base)
+        | "INPUT"       -> (new input       xml_obj :> base)
+        | "OUTPUT"      -> (new output      xml_obj :> base)
+        | "CONSTANT"    -> (new constant    xml_obj :> base)
+        | "DT"          -> (new dt          xml_obj :> base)
+        | "MEM"         -> (new memory      xml_obj :> base)
+        | "NOT"         -> (new not_gate    xml_obj :> base)
+        | "AND"         -> (new and_gate    xml_obj :> base)
+        | "OR"          -> (new or_gate     xml_obj :> base)
+        | "NAND"        -> (new nand_gate   xml_obj :> base)
+        | "NOR"         -> (new nor_gate    xml_obj :> base)
+        | "XOR"         -> (new xor_gate    xml_obj :> base)
+        | "SUM"         -> (new sum         xml_obj :> base)
+        | "PROD"        -> (new prod        xml_obj :> base)
+        | "GAIN"        -> (new gain        xml_obj :> base)
+        | "INV"         -> (new inv         xml_obj :> base)
+        | "COMPARE"     -> (new compare     xml_obj :> base)
+        | "IF"          -> (new if_sw       xml_obj :> base)
         (* CONNECTION blocks are not supported by this operation. 
          * See get_connection above *)
         | _ as name -> object_error ("Tag " ^ name ^ " not supported.")
