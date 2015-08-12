@@ -66,6 +66,7 @@ end;;
 class virtual blk_or_ref blockify xml_obj = object (self)
     inherit base xml_obj
     val mutable virtual inner_objs : base list
+    method inner_objs = List.rev inner_objs
     method inputs   = List.map
         (fun x -> List.hd ((x :> base) #outputs))
         (List.filter 
@@ -84,8 +85,9 @@ class virtual blk_or_ref blockify xml_obj = object (self)
     method set_outputs a = object_error (
                                 "Should not set outputs of " ^
                                 self#print_class ^ " object")
-    method virtual input_type   : string
-    method virtual output_type  : string
+    method input_type   = if_elements self#inputs ("struct " ^ self#func ^ "_in")
+    method output_type  = if_elements self#outputs ("struct " ^ self#func ^ "_out")
+    method virtual func : string
     method body       = if_elements
                             self#inputs
                             (self#input_type ^ " " ^ self#name ^ "_inputs = " ^ "{ " ^ 
@@ -105,7 +107,7 @@ class virtual blk_or_ref blockify xml_obj = object (self)
                         if_elements
                             self#outputs
                             (self#output_type ^ " " ^ self#name ^ "_outputs = ") ^
-                        self#name ^ "(" ^ 
+                        self#func ^ "(" ^ 
                         if_elements
                             self#inputs
                             (self#name ^ "_inputs") ^ 
@@ -122,10 +124,13 @@ class virtual blk_or_ref blockify xml_obj = object (self)
                         "\n}\n"
 end;;
 
-let rec get_ref_blk blklist xml_obj = 
-    match blklist with
-        [] -> xml_obj
-      | hd :: tl -> let new_xml_obj =
+(* Parse referenced file for the referenced block and return it for down below *)
+let get_ref_blk xml_obj = 
+    let rec get_inner_blk blk_list xml_obj = 
+        match blk_list with
+            [] -> xml_obj
+          | hd :: tl -> begin
+                        let new_xml_obj =
                                 (List.filter
                                     (fun x -> string_of_value 
                                                 (get_attr "name" x) = hd)
@@ -134,42 +139,43 @@ let rec get_ref_blk blklist xml_obj =
                                         (xml_obj :: xml_obj.inner_objs)
                                      )
                                 )
-                     in if (List.length new_xml_obj) <> 1
-                        then object_error ("Did not find exactly one " ^
-                                          "referenced block")
-                        else get_ref_blk tl (List.hd new_xml_obj)
+                         in if (List.length new_xml_obj) <> 1
+                            then object_error ("Did not find exactly one " ^
+                                              "referenced block")
+                            else get_inner_blk tl (List.hd new_xml_obj)
+                        end
+     in let file = 
+            let r = (get_attr "ref" xml_obj)
+             in match r with
+                   Ref r -> if r.reftype = "FILE"
+                            then r.refroot
+                            else object_error "Ref object only supports " ^
+                                              "file references"
+                 | _     -> object_error "Incorrect Type for filename"
+     in let xml_obj = (Xparser.xml_tree Xscanner.token 
+                                (Lexing.from_channel (open_in file) )
+                          ) (* Have to parse referenced 
+                             * file to get block *)
+        and blk_list = 
+            let r = (get_attr "ref" xml_obj)
+                in match r with
+                       Ref r -> r.reflist
+                     | _     -> object_error "Incorrect Type for block ref"
+         in get_inner_blk blk_list xml_obj
 
 (* Reference class: REFERENCE tag *)
 class reference blockify xml_obj = object (self)
     inherit blk_or_ref blockify xml_obj
-    val file = let r = (get_attr "ref" xml_obj)
-                in match r with
-                       Ref r -> if r.reftype = "FILE"
-                                then r.refroot
-                                else object_error "Ref object only supports " ^
-                                                  "file references"
-                     | _     -> object_error "Incorrect Type for filename"
-    method ref_blk      = let xml_obj = (Xparser.xml_tree Xscanner.token 
-                                            (Lexing.from_channel (open_in file) )
-                                        ) (* Have to parse referenced 
-                                           * file to get block *)
-                          and blklist = let r = (get_attr "ref" xml_obj)
-                                         in match r with
-                                                Ref r -> r.reflist
-                                              | _     -> object_error 
-                                                    "Incorrect Type for block ref"
-                           in get_ref_blk blklist xml_obj
-    method name = string_of_value (get_attr "name" self#ref_blk)
-    val mutable inner_objs   = []
-    method inner_objs = List.map 
-                             blockify 
-                             (List.filter
-                                (fun x -> x.tagname <> "CONNECTION")
-                                (self#ref_blk).inner_objs
-                             )
-    method set_inner_objs a = inner_objs <- self#inner_objs
-    method input_type   = if_elements self#inputs ("struct " ^ self#name ^ "_in")
-    method output_type  = if_elements self#outputs ("struct " ^ self#name ^ "_out")
+    method func = string_of_value (get_attr "name" (get_ref_blk xml_obj))
+    val mutable inner_objs   = List.map 
+                                 blockify 
+                                 (List.filter
+                                    (fun x -> x.tagname <> "CONNECTION")
+                                    (get_ref_blk xml_obj).inner_objs
+                                 )
+    method set_inner_objs new_inner_objs = object_error
+                            ("Should not try to set inner objects of " ^
+                             self#print_class ^ " object: " ^ self#name ^ "")
     method print_class  = "reference"
     method header       = ""
     method trailer      = ""
@@ -185,8 +191,7 @@ class block blockify xml_obj = object (self)
                                 (fun x -> x.tagname <> "CONNECTION")
                                 xml_obj.inner_objs
                              )
-    method name = name
-    method inner_objs   = List.rev inner_objs
+    method func = name
     method set_inner_objs new_inner_objs = inner_objs <- new_inner_objs
     method static_blks = List.filter 
             (fun (x : base) -> let c = ((x :> base) #print_class) in
@@ -206,8 +211,6 @@ class block blockify xml_obj = object (self)
                                 ) ^ "\n\n"
                             )
     method print_class  = "block"
-    method input_type   = if_elements self#inputs ("struct " ^ name ^ "_in")
-    method output_type  = if_elements self#outputs ("struct " ^ name ^ "_out")
     method input_struct = if_elements
                             self#inputs
                             (self#input_type ^ " {\n\t" ^
