@@ -1,6 +1,5 @@
 (* Abstract Syntax Tree Definition *)
 type copr = Grt | Lst | Eqt | Neq | Leq | Geq           (* Comparison operators     *)
-type bopr = Or | And | Not | Xor | Nand | Nor | Xnor    (* Bitwise operators        *)
 
 type ref  = {
     reftype     :  string;
@@ -16,7 +15,6 @@ type value =
     | Bool      of bool             (* Standard boolean type                        *)
     | Datatype  of string           (* datatype from set of types                   *)
     | Compopr   of copr             (* Comparision operator                         *)
-    | Bitwopr   of bopr             (* Bitwise operator                             *)
 
 type attr = {
     aname       :  string;          (* Attribute Name                               *)
@@ -30,15 +28,6 @@ type xml_obj = {
 }
 
 (* Helper functions for printing XML AST *)
-let string_of_bitw_opr v = match v with
-      Or    -> "or"
-    | And   -> "and"
-    | Not   -> "not"
-    | Xor   -> "xor"
-    | Nand  -> "nand"
-    | Nor   -> "nor"
-    | Xnor  -> "xnor"
-
 let string_of_comp_opr v = match v with
       Grt   -> ">"
     | Lst   -> "<"
@@ -58,7 +47,6 @@ let string_of_value value = match value with
     | Bool     v -> string_of_bool v
     | Datatype v -> v
     | Compopr  v -> string_of_comp_opr v
-    | Bitwopr  v -> string_of_bitw_opr v
 
 let string_of_attr (a) =
     a.aname ^ ": " ^ string_of_value a.avalue
