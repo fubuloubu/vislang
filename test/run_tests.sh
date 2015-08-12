@@ -124,6 +124,42 @@ CheckFail() {
     fi
 }
 
+CheckPass() {
+    error=0
+    basename=`echo $1 | sed 's/.*\\///
+                             s/.vl//'`
+    reffile=`echo $1 | sed 's/.vl$//'`
+    basedir="`echo $1 | sed 's/\/[^\/]*$//'`/."
+
+    echo -n "$basename..."
+
+    echo 1>&2
+    echo "###### Testing $basename" 1>&2
+    
+    generatedfiles=""
+    # Basically check if we can compile all of it, 
+    # then stop short of any testing
+    generatedfiles="$generatedfiles ${basename}.c" &&
+    Run "$VLCC" "-c" "<" $1 ">" ${basename}.c &&
+    generatedfiles="$generatedfiles ${basename}.o" &&
+    Run "$GCC" "-c -fPIC" ${basename}.c &&
+    generatedfiles="$generatedfiles ${basename}.so" &&
+    Run "$GCC" "-shared -o" ${basename}.so ${basename}.o
+
+    # Report the status and clean up the generated files
+
+    if [ $error -eq 0 ] ; then
+        if [ $keep -eq 0 ] ; then
+            rm -f $generatedfiles
+        fi
+        echo "OK"
+        echo "###### SUCCESS" 1>&2
+    else
+        echo "###### FAILED" 1>&2
+        globalerror=$error
+    fi
+}
+
 while getopts kdpsh c; do
     case $c in
         k) # Keep intermediate files
