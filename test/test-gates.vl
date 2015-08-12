@@ -25,6 +25,7 @@
     <vl:NOR name="nor">
         <vl:CONNECTION to="input1" from="in1"/>
         <vl:CONNECTION to="input2" from="in2"/>
+        <vl:CONNECTION to="input3" from="and"/>
     </vl:NOR>
     <vl:OUTPUT name="nor_gate" datatype="boolean">
         <vl:CONNECTION to="nor_gate" from="nor"/>
@@ -32,6 +33,7 @@
     <vl:NAND name="nand">
         <vl:CONNECTION to="input1" from="in1"/>
         <vl:CONNECTION to="input2" from="in2"/>
+        <vl:CONNECTION to="input3" from="not"/>
     </vl:NAND>
     <vl:OUTPUT name="nand_gate" datatype="boolean">
         <vl:CONNECTION to="nand_gate" from="nand"/>
@@ -39,6 +41,7 @@
     <vl:XOR name="xor">
         <vl:CONNECTION to="input1" from="in1"/>
         <vl:CONNECTION to="input2" from="in2"/>
+        <vl:CONNECTION to="input3" from="nor"/>
     </vl:XOR>
     <vl:OUTPUT name="xor_gate" datatype="boolean">
         <vl:CONNECTION to="xor_gate" from="xor"/>
