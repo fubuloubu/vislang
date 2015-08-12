@@ -17,7 +17,7 @@ MAIN_OBJS = xst.cmo errors.cmo xscanner.cmo xparser.cmo \
 			blockify.cmo blockparse.cmo compile.cmo vislang.cmo
 vlcc : $(MAIN_OBJS)
 	@echo "$(OCAMLC) -o vlcc"
-	@$(OCAMLC) -o $@ $(OCAMLFLAGS) $^
+	@$(OCAMLC) -o $@ $(OCAMLFLAGS) str.cma $^
 
 # Lexxer rules
 %.ml : %.mll
