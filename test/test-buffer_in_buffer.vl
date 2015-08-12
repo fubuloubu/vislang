@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <vl:BLOCK name="buffer_in_buffer">
     <vl:INPUT name="in" datatype="uint32"/>
     <vl:BLOCK name="buffer">

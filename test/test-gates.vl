@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <vl:BLOCK name="gates">
     <vl:INPUT name="in1" datatype="boolean"/>
     <vl:INPUT name="in2" datatype="boolean"/>

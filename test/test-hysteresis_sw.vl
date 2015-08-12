@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <vl:BLOCK name="hysteresis_sw">
     <vl:INPUT name="in" datatype="single"/>
     <vl:CONSTANT name="hi" datatype="single" value="20.000"/>

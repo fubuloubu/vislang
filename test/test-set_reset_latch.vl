@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <vl:BLOCK name="set_reset_latch">
     <vl:INPUT name="set" datatype="boolean"/>
     <vl:INPUT name="reset" datatype="boolean"/>
