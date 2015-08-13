@@ -31,7 +31,8 @@ let rec block_parse top =
           | "constant"
           | "dt"        -> if List.exists (compare_obj current#name) prior_list
                            || List.exists (compare_obj current#name) trace_list
-                           (* If terminating block exists in EITHER list, exclude *)
+                           (* If terminating block exists in EITHER
+                            * list, exclude *)
                            then trace_list
                            else current :: trace_list
           | _ as blk    ->
@@ -67,7 +68,7 @@ let rec block_parse top =
                     let (new_inputs, input_names) = 
                         List.split
                             (List.map
-                                (fun x -> let ref = current#get_connection x.name 
+                                (fun x -> let ref = current#get_connection x.name
                                      in match ref with 
                                             Name n -> ({
                                                             name = n; 
@@ -81,7 +82,7 @@ let rec block_parse top =
                                           | Ref r  -> 
                                             if r.reftype = "NAME"
                                             then if ((List.length r.reflist) = 1)
-                                                 then let cnx = (List.hd r.reflist)
+                                               then let cnx = (List.hd r.reflist)
                                                    in ({ name = r.refroot ^ 
                                                                "_outputs." ^ 
                                                                cnx;
@@ -121,7 +122,8 @@ let rec block_parse top =
     and trace_split block_list prior_list trace_list input_list =
         match input_list with
             []          -> trace_list
-          | hd :: tl    -> let trace_list = (trace block_list prior_list trace_list hd)
+          | hd :: tl    -> let trace_list = 
+                                (trace block_list prior_list trace_list hd)
                             in trace_split block_list prior_list trace_list tl
             
     (* trace_start function: this function is the wrapper used to call the
@@ -144,8 +146,14 @@ let rec block_parse top =
     let inner_objs obj = (obj :> base) #inner_objs
      in
     let start_list obj = 
-       (List.filter (fun x -> (x :> base) #print_class = "output") (inner_objs obj)) 
-     @ (List.filter (fun x -> (x :> base) #print_class = "memory") (inner_objs obj))
+       (List.filter 
+            (fun x -> (x :> base) #print_class = "output")
+            (inner_objs obj)
+       ) 
+     @ (List.filter
+            (fun x -> (x :> base) #print_class = "memory")
+            (inner_objs obj)
+       )
      in
     (* Perform the same mutation operations for any inner blocks of top. 
      * Note: at this point, if an inner object was not used, it should not appear

@@ -64,7 +64,8 @@ rule token =
         "<!["    (* DOCTYPE Markup  *)
         as ctype                        { comm ctype lexbuf }
     (* Elements: Scan for supported blocks and link to parsing stage. 
-     * If an unsupported block is found, note it as information for compilation *)
+     * If an unsupported block is found, note it as information for 
+     * compilation *)
         | "<"  "vl:" (tag as t)         { O_ELEM( t )  }
         | "</" "vl:" (tag as t) ">"     { C_ELEM( t )  }
         | "/>"                          { E_ELEM       }
@@ -74,10 +75,10 @@ rule token =
         | attr as a "="             { ATTR  ( a ) }
         | "\"" (datatype as d) "\"" { DTYPE ( d ) }
         (* note: names and files are allowed to have references *)  
-        | "\"" (name as n) "\""?    { NAME  ( n ) } (* TODO: this syntax allows a  *)
-        | "\"" (file as f) "\""?    { FILE  ( f ) } (*   quote character inside it *)
+        | "\"" (name as n) "\""?    { NAME  ( n ) }
+        | "\"" (file as f) "\""?    { FILE  ( f ) }
         (* note: a reference always appears as a suffix to a name or file *)
-        | "|"  (name as r) "\""?    { REF   ( r ) } (* need some method to denote end*)
+        | "|"  (name as r) "\""?    { REF   ( r ) }
         (* Comparision Operators *)
         | "\"" "==" "\""            { EQT }
         | "\"" ">"  "\""            { GRT }

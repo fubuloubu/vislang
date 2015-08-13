@@ -1,5 +1,5 @@
 (* Abstract Syntax Tree Definition *)
-type copr = Grt | Lst | Eqt | Neq | Leq | Geq           (* Comparison operators     *)
+type copr = Grt | Lst | Eqt | Neq | Leq | Geq (* Comparison operators *)
 
 type ref  = {
     reftype     :  string;
@@ -8,23 +8,24 @@ type ref  = {
 }
 
 type value = 
-      Ref       of ref              (* List of strings leading to a block           *)
-    | Name      of string           (* Name of a block                              *)
-    | Int       of int              (* Standard int type                            *)
-    | Float     of float            (* Standard float type                          *)
-    | Bool      of bool             (* Standard boolean type                        *)
-    | Datatype  of string           (* datatype from set of types                   *)
-    | Compopr   of copr             (* Comparision operator                         *)
+      Ref       of ref              (* List of strings leading to a block      *)
+    | Name      of string           (* Name of a block                         *)
+    | Int       of int              (* Standard int type                       *)
+    | Float     of float            (* Standard float type                     *)
+    | Bool      of bool             (* Standard boolean type                   *)
+    | Datatype  of string           (* datatype from set of types              *)
+    | Compopr   of copr             (* Comparision operator                    *)
 
 type attr = {
-    aname       :  string;          (* Attribute Name                               *)
-    avalue      :  value;           (* Attrbiute Value                              *)
+    aname       :  string;          (* Attribute Name                          *)
+    avalue      :  value;           (* Attrbiute Value                         *)
 }
 
 type xml_obj = {
-    tagname     :  string;          (* Block Name                                   *)
-    attributes  :  attr list;       (* Dictionary of attribute names and values     *)
-    inner_objs  :  xml_obj list;    (* List of contained XML objects (can be empty) *)
+    tagname     :  string;          (* Block Name                              *)
+    attributes  :  attr list;       (* Dictionary of attribute names and values*)
+    inner_objs  :  xml_obj list;    (* List of contained XML objects 
+                                     * (can be empty) *)
 }
 
 (* Helper functions for printing XML AST *)
@@ -37,7 +38,8 @@ let string_of_comp_opr v = match v with
     | Geq   -> ">="
 
 let string_of_ref (v) =
-      v.refroot ^ "|" ^ String.concat "|" (v.reflist) ^ " (" ^ v.reftype ^ " REF)"
+      v.refroot ^ "|" ^ String.concat "|" (v.reflist) ^ 
+      " (" ^ v.reftype ^ " REF)"
 
 let string_of_value value = match value with
       Ref      v -> string_of_ref v

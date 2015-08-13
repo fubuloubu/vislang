@@ -48,11 +48,12 @@ class virtual base xml_obj = object
     method virtual header       : string
     method virtual body         : string
     method virtual trailer      : string
-    (* Function used in trace algorithm in order to find connection from an input *)
+    (* Function used in trace algorithm in order to find
+     * connection from an input *)
     method get_connection input_to =
         let input_from = List.filter (fun x -> (get_attr "to" x) = Name input_to)
-            (List.filter (fun x -> x.tagname = "CONNECTION") xml_obj.inner_objs) in
-            match input_from with
+            (List.filter (fun x -> x.tagname = "CONNECTION") xml_obj.inner_objs)
+         in match input_from with
                 []      -> object_error
                             ("No connections found for " ^ 
                                 string_of_value (get_attr "name" xml_obj)
@@ -91,13 +92,18 @@ class virtual blk_or_ref blockify xml_obj = object (self)
     method set_outputs a = object_error (
                                 "Should not set outputs of " ^
                                 self#print_class ^ " object")
-    method input_type   = if_elements self#inputs ("struct " ^ self#func ^ "_in")
-    method output_type  = if_elements self#outputs ("struct " ^ self#func ^ "_out")
-    method virtual func : string (* Used because block cannot have a different name, 
-                                  * but reference can *)
+    method input_type   = if_elements
+                            self#inputs
+                            ("struct " ^ self#func ^ "_in")
+    method output_type  = if_elements
+                            self#outputs
+                            ("struct " ^ self#func ^ "_out")
+    method virtual func : string (* Used because block cannot have
+                                  * a different name, but reference can *)
     method body       = if_elements (* Create code for setting input structure *)
                             self#inputs
-                            (self#input_type ^ " " ^ self#name ^ "_inputs = " ^ "{ " ^ 
+                            (self#input_type ^ " " ^ 
+                             self#name ^ "_inputs = " ^ "{ " ^ 
                                 (String.concat 
                                     ", " 
                                     (List.map
@@ -111,9 +117,9 @@ class virtual blk_or_ref blockify xml_obj = object (self)
                                     )
                                 ) ^ " };\n\t"
                             ) ^
-                        if_elements (* Create code for setting output structure *)
+                        if_elements (* Create code for setting output struct *)
                             self#outputs
-                            (self#output_type ^ " " ^ self#name ^ "_outputs = ") ^
+                           (self#output_type ^ " " ^ self#name ^ "_outputs = ") ^
                         self#func ^ "(" ^ (* function call *)
                         if_elements (* Only apply inputs if block has inputs *)
                             self#inputs
@@ -179,7 +185,9 @@ class block blockify xml_obj = object (self)
                             (self#input_type ^ " {\n\t" ^
                                 (String.concat ";\n\t" 
                                     (List.map 
-                                    (fun x -> (get_datatype x.datatype) ^ " " ^ x.name)
+                                    (fun x -> (get_datatype x.datatype) ^ 
+                                              " " ^ x.name
+                                    )
                                     self#inputs)
                                 ) ^ ";\n};\n\n"
                             )
@@ -188,7 +196,9 @@ class block blockify xml_obj = object (self)
                             (self#output_type ^ " {\n\t" ^
                                 (String.concat ";\n\t" 
                                     (List.map 
-                                    (fun x -> (get_datatype x.datatype) ^ " " ^ x.name)
+                                    (fun x -> (get_datatype x.datatype) ^
+                                              " " ^ x.name
+                                    )
                                     self#outputs)
                                 ) ^ ";\n};\n\n"
                             )
@@ -233,11 +243,13 @@ class block blockify xml_obj = object (self)
                                     (fun x -> (x :> base) #body)
                                     (* Skip parts block takes care of *)
                                     (List.filter
-                                        (fun x -> let c = (x :> base) #print_class in
-                                            not (   c = "input" 
-                                                 || c = "dt"    
-                                                 || c = "constant"
-                                                )
+                                        (fun x -> let c = 
+                                                    (x :> base) #print_class
+                                                   in
+                                                    not (   c = "input" 
+                                                         || c = "dt"    
+                                                         || c = "constant"
+                                                        )
                                         )
                                         self#inner_objs
                                     )
@@ -336,8 +348,11 @@ class virtual io_part xml_obj = object (self)
                              self#print_class ^ " object: " ^ self#name ^ "")
     val datatype = string_of_value (get_attr "datatype" xml_obj)
     method datatype = datatype
-    val mutable inputs   = [{ name = string_of_value (get_attr "name" xml_obj); 
-                          datatype = string_of_value (get_attr "datatype" xml_obj)}]
+    val mutable inputs   = [{ name = string_of_value 
+                                            (get_attr "name" xml_obj); 
+                          datatype = string_of_value 
+                                            (get_attr "datatype" xml_obj)
+                            }]
     method inputs = inputs
     method set_inputs new_inputs = inputs <- new_inputs
     method outputs  = [{ name = self#name; datatype = self#datatype }]
@@ -489,7 +504,8 @@ let get_cnx_list xml_obj set_type=
          in let idx_name = "input" ^ (string_of_int idx)
          in match idx with
                 0 -> cnx_list
-              | _ -> let cnx_list = {name = idx_name; datatype = set_type} :: cnx_list
+              | _ -> let cnx_list = 
+                            {name = idx_name; datatype = set_type} :: cnx_list
                     in create_cnx_list num_cnx cnx_list
      in create_cnx_list num_cnx []
     (* inputs for binop parts are named input1 through inputN 
@@ -690,8 +706,8 @@ let rec blockify xml_obj =
     match xml_obj.tagname with
           "BLOCK"       -> (new block blockify xml_obj :> base)
         | "REFERENCE"   -> (new reference blockify xml_obj :> base)
-          (* Note: passing blockify into block/ref instantiation because they can't 
-           * see at compile time what the function blockify is referring to *)
+          (* Note: passing blockify into block/ref instantiation because they
+           * can't see at compile time what the function blockify refers to *)
         | "INPUT"       -> (new input       xml_obj :> base)
         | "OUTPUT"      -> (new output      xml_obj :> base)
         | "CONSTANT"    -> (new constant    xml_obj :> base)
@@ -718,4 +734,5 @@ let rec blockify xml_obj =
 let parse_xml_tree xml_obj = 
     match xml_obj.tagname with
           "BLOCK"   -> blockify xml_obj
-        | _ as name -> object_error ("Tag " ^ name ^ " cannot be top level block")
+        | _ as name -> object_error
+                            ("Tag " ^ name ^ " cannot be top level block")
