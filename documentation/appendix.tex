@@ -1,2 +1,35 @@
 \appendix
-\section{Appendix A: Code Listing}
+\section{Code Listing}
+\subsection{VLCC Source Code}
+
+\inputminted[frame=single,linenos,fontsize=\footnotesize]{ocaml}{../src/vislang.ml}
+\captionof{listing}
+    {vislang/src/vislang.ml\label{src:top}: Top Level}
+
+\inputminted[frame=single,linenos,fontsize=\footnotesize]{ocaml}{../src/xscanner.mll}
+\captionof{listing}
+    {XML Scanner: vislang/src/xscanner.mll\label{src:scan}}
+
+\inputminted[frame=single,linenos,fontsize=\footnotesize]{ocaml}{../src/xparser.mly}
+\captionof{listing}
+    {XML Parser: vislang/src/xparser.mly\label{src:parse}}
+
+\inputminted[frame=single,linenos,fontsize=\footnotesize]{ocaml}{../src/xst.ml}
+\captionof{listing}
+    {XML Syntax Tree: vislang/src/xst.ml\label{src:xst}}
+
+\inputminted[frame=single,linenos,fontsize=\footnotesize]{ocaml}{../src/blockify.ml}
+\captionof{listing}
+    {XML Object to Block Object Converter: vislang/src/blockify.ml\label{src:blockify}}
+
+\inputminted[frame=single,linenos,fontsize=\footnotesize]{ocaml}{../src/blockparse.ml}
+\captionof{listing}
+    {Block Object Ordering and Optimization: vislang/src/blockparse.ml\label{src:xst}}
+
+\inputminted[frame=single,linenos,fontsize=\footnotesize]{ocaml}{../src/compile.ml}
+\captionof{listing}
+    {Code Generation: vislang/src/compile.ml\label{src:xst}}
+
+\inputminted[frame=single,linenos,fontsize=\footnotesize]{ocaml}{../src/errors.ml}
+\captionof{listing}
+    {VisLang Errors: vislang/src/errors.ml\label{src:xst}}
