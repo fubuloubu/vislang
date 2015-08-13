@@ -6,3 +6,4 @@
 
 clean:
 	rm -f *.pyg
+	rm -f ~/Downloads/final-report.*
