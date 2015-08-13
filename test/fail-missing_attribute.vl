@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vl:BLOCK>
+    <vl:INPUT name="in" datatype="uint32"/>
+    <vl:OUTPUT name="out" datatype="uint32">
+        <vl:CONNECTION to="out" from="in"/>
+    </vl:OUTPUT>
+</vl:BLOCK>
