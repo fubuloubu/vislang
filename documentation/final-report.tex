@@ -1,3 +1,4 @@
+% !TEX TS-program = lualatex
 \documentclass[titlepage]{article}
 \usepackage[a5paper,margin=0.5in]{geometry}
 
@@ -32,12 +33,6 @@
 %% Items
 \usepackage{enumitem}
 
-% new command \replace{string}{substring}{replacestring}
-\def\replace#1#2#3{%
-    \def\tmp##1#2{##1#3\tmp}%
-        \tmp#1\stopreplace#2\stopreplace}
-\def\stopreplace#1\stopreplace{}
-
 %% Code Listings
 \usepackage{minted}
 \usepackage{listings}
@@ -46,14 +41,16 @@
 \usepackage{caption}
 
 % Custom macro for code listings from files
+% #1 - language e.g. ocaml
+% #2 - filename e.g. ../src/vislang.ml
+% #3 - label e.g. src/top
+% #4 - description e.g. Top Level
+% note: filename will be pretty printed as vislang/src/*
+%       instead of ../src/*
 \newcommand{\srccode}[4]{
-    \inputminted[frame=single,linenos,fontsize=\footnotesize]
-        {#1}                    % language e.g. ocaml
-        {#2}                    % filename e.g. ../src/vislang.ml
-    \captionof{listing}
-        {\replace{#2}{../}{vislang/} % replaces ../src/* with vislang/src/*
-            \label{#3}          % label e.g. src:top
-            : #4}               % description e.g. Top Level
+    \inputminted[frame=single,linenos,fontsize=\footnotesize]{#1}{#2}
+    \captionof{listing}{\label{#3}#4: #2}
+    \pagebreak
 }
 
 % Custom language for XML
@@ -95,7 +92,7 @@
 \newcommand{\includecode}[1]{\lstinputlisting[caption=#1]{#1}}
 
 % For title page
-\title{VisLang: A visual language specification}
+\title{VisLang: A Visual Language\\Final Report}
 \author{Bryant Eisenbach (UNI: bje2113)}
 \date{Date: \today}
 
