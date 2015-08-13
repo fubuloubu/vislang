@@ -1,4 +1,3 @@
-% TODO
 \section{Introduction}
 
 VisLang is a block diagram language designed to allow fast and
@@ -15,24 +14,25 @@ small group of fundamental (or atomic) blocks that will be understood by the Vis
 compiler. Other blocks will be constructed as groupings of these atomic blocks, and can
 be referenced in other files. Libraries of useful function blocks can be constructed
 from these atomic blocks containing common parts such as timers, latches, etc. The 
-ability to include libraries and other blocks is a standard feature of the language.
+ability to include blocks from libraries and other programs is a standard feature of
+the language.
 
 The syntax of VisLang leverages standard XML, giving the language a well-formed and 
 machine readable backbone. As noted previously, the point of leveraging XML is so that
 3rd party programs can manipulate the file format in an easy way, and so that external
 programs can add additional elements (e.g. visual information for display) and attributes
 (e.g. location information) to the existing set of elements and attributes defined by
-the language. Those tags (including XML comment tags) not included in the list of
-recognized elements/attributes will be ignored by the compiler as a valid program is only
-defined as a series of well-connected blocks. All parts require their necessary
-attributes, and all connections require the source to exist. This creates a natural
-flow to interpreting the language, such that any errors should be raised by the compiler
-during compilation.
+the language. Those additional tags not included in the list of recognized elements/
+attributes will be ignored by the compiler as a valid program is only defined as a series
+of well-connected blocks. All parts have a set of necessary attributes, and all connections
+require the source to exist. This creates a natural flow to interpreting the language, such
+that only functional errors should be raised by the compiler during compilation.
 
-\subsection{Code Generation}
-
-The VisLang Compiler will parse all of the parts specified in the input file and generate
-a C source file that can be used in combination with other generated and manually created
-C source files to generate fully functional programs for embedded devices. Each generated
-file contains code that is completely reusable as the code generated has standard interfaces
-and does not rely on global definitions.
+The VisLang Compiler will parse and check the specified input file and generate a viable
+C source file that can be used in combination with other generated and manually created
+C source files to combine into fully functional programs for embedded devices. Each
+generated file contains code that is completely reusable as the generated code has standard
+interfaces and does not rely on global definitions. Some manual coding will still be
+necessary to link into different types of embedded devices, the point is to create good
+intermediate code such that linking to I/O devices and dealing with the nuances of an
+arbitrary embedded device can be minimized.
