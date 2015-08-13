@@ -6,10 +6,8 @@
  OCAMLLEX=ocamllex 
 OCAMLYACC=ocamlyacc
 
-.SECONDARY:
-	
-
 # main compilation
+.SECONDARY:
 MAIN_OBJS = xst.cmo errors.cmo xscanner.cmo xparser.cmo \
 			blockify.cmo blockparse.cmo compile.cmo vislang.cmo
 vlcc : $(MAIN_OBJS)
@@ -24,10 +22,6 @@ vlcc : $(MAIN_OBJS)
 %.ml %.mli : %.mly
 	$(OCAMLYACC)    $<
 
-# Rule to make interface files
-%.mli: %.ml
-	$(OCAMLC) -i $< > $@
-
 # Common rules
 .SUFFIXES: .ml .mli .cmo .cmi .cmx
 
@@ -40,12 +34,10 @@ vlcc : $(MAIN_OBJS)
 .ml.cmx:
 	$(OCAMLOPT) -c $<
 
-# Clean up
 clean:
-	@echo "Cleaning Directory..."
-	@rm -f vlcc
-	@rm -f xscanner.ml xparser.ml xparser.mli
-	@rm -f *.cm[iox]
+	rm -f vlcc
+	rm -f xscanner.ml xparser.ml xparser.mli
+	rm -f *.cm[iox]
 
 # Dependencies
 depend:
