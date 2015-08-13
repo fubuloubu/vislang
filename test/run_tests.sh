@@ -188,15 +188,13 @@ done
 
 shift `expr $OPTIND - 1`
 
-# Date and Time stamp for user log
-echo "Test started at $(date '+%H:%M:%S on %m/%d/%y')" 2>> $globallog
-
 if [ $# -ge 1 ]
 then
     files=$@
 else
     files="./fail-*.vl ./pass-*.vl ./test-*.vl"
 fi
+
 
 for file in $files
 do
@@ -215,6 +213,8 @@ do
             globalerror=1
         ;;
     esac
+    # Date and Time stamp for user log
+    echo "Test completed at $(date '+%H:%M:%S on %m/%d/%y')" 1>> $globallog
 done
 
 exit $globalerror
