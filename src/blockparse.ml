@@ -6,8 +6,8 @@ let print_list program = String.concat "\n\n"
     (List.map (fun x -> (x :> base) #print_obj) program)
 
 (* Block Parse intelligently traces through the objects inside a block from
- * output to input and finds an appropiate path through the program such
- * that when the bytecode is extracted in the order obtained here,
+ * output to input and finds an appropiate path through the block such
+ * that when the code is extracted from the order obtained here,
  * the program is consistent and no runtimes issues occur. *)
 let rec block_parse top =
     (* Algorithm: 
@@ -18,10 +18,10 @@ let rec block_parse top =
      * will continue until either: an input is found (terminate that branch),
      * a memory block is found (terminate that branch, and add memory's input
      * to the list of traversals), a traversal is made to an object on the list
-     * of prior traversals (see below), or an algebraic loop is detected (raise
+     * of priors (terminate branch), or an algebraic loop is detected (raise
      * error if the next traversal is already in the list of traversals made).
      * At the termination of a traversal for an output, all of the objects
-     * detected are blockified and the entire list of objects is added to the
+     * detected are consistent and the entire list of objects is added to the
      * list of priors. This process continues until all output and memory
      * blocks successfully traverse back to inputs or priors branches. *)
     let rec trace block_list prior_list trace_list current =
@@ -30,12 +30,10 @@ let rec block_parse top =
             "input"
           | "constant"
           | "dt"        -> if List.exists (compare_obj current#name) prior_list
-                           (* If terminating block exists in EITHER list, exclude *)
                            || List.exists (compare_obj current#name) trace_list
+                           (* If terminating block exists in EITHER list, exclude *)
                            then trace_list
                            else current :: trace_list
-          (* The above don't need to be in the list of blocks because
-           * the block object will take care of them *)
           | _ as blk    ->
             (* If current object exists in the current trace loop,
              * this means there's a cyclic reference in the trace that
@@ -52,20 +50,20 @@ let rec block_parse top =
                   * in current object's list of inputs *)
                  else if (blk = "memory") && ((List.length trace_list) > 0) 
                       then trace_list (* Terminate trace at memory block
-                                       * if we are tracing and one is found *)
+                                       * if one is found as an input *)
                  else
-                          (* First find and verify all inputs connected to current
-                           * block, matching them to the relevant blocks for further
-                           * recursion. Next, set names of current blocks to the 
-                           * outputs of those blocks correctly such that they can
-                           * be printed correctly in SSA form without error.
-                           * Note: need to handle blocks (function calls) separetely
-                           * using the REF type so that SSA works.
-                           * Note: In order to link current block to inputs, we
-                           * need to replace input names for current block with
-                           * the output names of the corresponding parts. E.g.
-                           * block name for basic parts and structured defs
-                           * for block and reference function calls. *)
+                  (* First find and verify all inputs connected to current
+                   * block, matching them to the relevant blocks for further
+                   * recursion. Next, set names of current blocks to the 
+                   * outputs of those blocks correctly such that they can
+                   * be printed correctly in SSA form without error.
+                   * Note: need to handle blocks (function calls) separetely
+                   * using the REF type so that SSA works.
+                   * Note: In order to link current block to inputs, we
+                   * need to replace input names for current block with
+                   * the output names of the corresponding parts. E.g.
+                   * block name for basic parts and structured defs
+                   * for block and reference function calls. *)
                     let (new_inputs, input_names) = 
                         List.split
                             (List.map
@@ -76,6 +74,10 @@ let rec block_parse top =
                                                             datatype = x.datatype
                                                        }, 
                                                        n)
+                                          (* When a reference is found, assume
+                                           * the function call completed and we
+                                           * are extracting the relevant output 
+                                           * to that block here. *)
                                           | Ref r  -> 
                                             if r.reftype = "NAME"
                                             then if ((List.length r.reflist) = 1)
@@ -100,6 +102,8 @@ let rec block_parse top =
                                 )
                                 ((current :> base) #inputs)
                             )
+                      (* Compute the list of inputs to the current block 
+                       * to split path and continue traversal *)
                       in let input_list =
                                 (List.map
                                     (fun x ->
@@ -135,27 +139,13 @@ let rec block_parse top =
 
     (* start_list: the list of objects in the top block used to prime the trace 
      * algorithm. All outputs and memory blocks are added to the start list
-     * because *)
+     * because they are the termination of the code the block will generate *)
      in 
     let inner_objs obj = (obj :> base) #inner_objs
      in
     let start_list obj = 
        (List.filter (fun x -> (x :> base) #print_class = "output") (inner_objs obj)) 
      @ (List.filter (fun x -> (x :> base) #print_class = "memory") (inner_objs obj))
-    (* function to detect and print code that existing in object before, but not now *)
-    (*and print_dead_code new_inner_objs obj =
-        let dead_code = List.filter (fun x -> 
-                            not (List.exists (fun y -> 
-                                (y :> base) #name = (x :> base) #name) 
-                                new_inner_objs)
-                            )
-                            (inner_objs obj)
-         in if (List.length dead_code) > 0
-         then print_endline 
-            ("Removed the following unreachable blocks from " ^ 
-                (obj :> base) #name ^ ":\n" ^
-                (print_list dead_code) ^ "\n"
-            *)
      in
     (* Perform the same mutation operations for any inner blocks of top. 
      * Note: at this point, if an inner object was not used, it should not appear
@@ -168,7 +158,6 @@ let rec block_parse top =
      * result. Also print objects that will be removed. *)
     let new_inner_objs = (trace_start (inner_objs top) [] (start_list top))
      in
-    (*print_dead_code new_inner_objs top;*)
     top#set_inner_objs new_inner_objs;
     (* Return a list of blocks with properly configured inner objects
      * to be used for compilation. Note: we reverse the list here so that 
