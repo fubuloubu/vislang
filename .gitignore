@@ -7,6 +7,7 @@ test/*.c*
 test/*.py*
 test/*.o
 test/*.so
+example/**/*.c
 *.swp
 *.log
 *.aux
