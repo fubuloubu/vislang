@@ -1,19 +1,8 @@
-% TODO
 \section{VisLang Compiler Architecture}
 
-%The architecture for vislang is as follows:
-%xml syntax -> xml scanning -> xml parsing -> xml syntax tree 
-%  -> blockification -> block object tree 
-%  -> runtime -> bytecode 
-%  -> compilation
-%
-%the xml syntax tree is the literal representation of the incoming xml syntax
-%the block object tree is the literal translation of the block objects
-%bytecode is the translation of the BOT through the runtime into a stack-based representation of the program
-%compilation produces a valid c program from bytecode
-
-\begin{figure}[!htb]
-\begin{tikzpicture}[auto]
+\begin{wrapfigure}[25]{r}[-1.2cm]{0.25\textwidth}
+  \centering
+  \begin{tikzpicture}[auto]
     \node [block]                   (source)  {Source File (XML)};
     \node [block,below of=source]   (xmltok)  {XML Tokens};
     \node [block,below of=xmltok]   (xmlobj)  {XML Object Tree};
@@ -26,7 +15,31 @@
     \draw[->] (xmlobj) -- node{blockify.ml}     (blkobj);
     \draw[->] (blkobj) -- node{blockparse.ml}   (optblk);
     \draw[->] (optblk) -- node{compile.ml}      (gencod);
-\end{tikzpicture}
-\caption{VLCC Architecture}
-\label{arch:vlcc}
-\end{figure}
+  \end{tikzpicture}
+  \caption{VLCC Architecture}
+  \label{arch:vlcc}
+\end{wrapfigure}
+
+The architecture of VisLang has two distinct stages of operation from source file to
+target file. The scanning and parsing stages of the front end essentially implement
+read the XML elements of interest and skip through parsing any unrecognized tokens.
+After a correctly formed XML Object Tree has been formed, the next step is to translate
+that tree of XML Objects (an XML Object has a tag, a list of attributes and a list of
+inner objects, if any) into a block tree where each block can verify and access the
+necessary attributes it should have. Each object can also see the list of connections
+assigned to it when it was parsed, which is important when verifying the program is
+well-formed. That block tree is then taken and re-organized such that the inner objects
+of a block are in Static Single Assignment form, e.g. each block can be computed using
+the outputs of previous blocks in the list for that containing block.
+\par
+In the process of reorganizing the inner blocks, the Block Parse algorithm will also
+perform the check that the inner blocks align (e.g. they call blocks that are properly
+assigned, they match in datatype, etc.) and that only inner blocks which are used to
+compute the output are in the calculation. Any blocks which do not align will raise an
+error (datatype mismatch, incorrectly attributes for that object, etc.), any blocks
+which reference other blocks in a circular fashion will raise an error (algebraic loop),
+and any blocks that are not necessary to compute an output will be optimized away. The
+end result is that the remaining optimized block tree is a suitable candidate to be
+directly translated into generated code as that generated code will have the property
+of minimal side-effects: all computations are computed either from inputs or derived
+from inputs.
