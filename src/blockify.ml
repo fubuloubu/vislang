@@ -12,12 +12,9 @@ let get_attr attribute xml_obj =
 
 let get_datatype dtype =
     match dtype with
-        "auto"      -> object_error ("Datatype not interpreted. " ^
-                                     "Please ensure all inputs and outputs " ^
-                                     "of this block have correct datatypes.")
-      | "boolean"   -> "bool"
+        "boolean"   -> "bool"
       | "single"    -> "float_t"
-      | _ as d      -> d ^ "_t"
+      | _ as d      -> d ^ "_t" (* e.g. uint32_t, int8_t, etc. *)
 
 let if_elements l printstr =
     if (List.length l) > 0
@@ -35,19 +32,23 @@ type interface = {
 class virtual base xml_obj = object
     val name : string   = string_of_value (get_attr "name" xml_obj)
     method name         = name
+    (* Block-specific functionality *)
     method virtual inputs       : interface list
-    method virtual set_inputs   : interface list -> unit
     method virtual outputs      : interface list
-    method virtual set_outputs  : interface list -> unit
     method virtual inner_objs   : base list
     (* Potentially dangerous, but only used in context of 
      * getting inner objects first *)
+    method virtual set_inputs   : interface list -> unit
+    method virtual set_outputs  : interface list -> unit
     method virtual set_inner_objs : base list -> unit
+    (* Used for general purposes and to distinguish blocks *)
     method virtual print_class  : string
     method virtual print_obj    : string
+    (* Code generation functions *)
     method virtual header       : string
     method virtual body         : string
     method virtual trailer      : string
+    (* Function used in trace algorithm in order to find connection from an input *)
     method get_connection input_to =
         let input_from = List.filter (fun x -> (get_attr "to" x) = Name input_to)
             (List.filter (fun x -> x.tagname = "CONNECTION") xml_obj.inner_objs) in
@@ -63,10 +64,12 @@ class virtual base xml_obj = object
                             )
 end;;
 
+(* Intermediate class used by both block and reference classes *)
 class virtual blk_or_ref blockify xml_obj = object (self)
     inherit base xml_obj
     val mutable virtual inner_objs : base list
     method inner_objs = List.rev inner_objs
+    (* Get input/output objects inside this object *)
     method inputs   = List.map
         (fun x -> List.hd ((x :> base) #outputs))
         (List.filter 
@@ -79,6 +82,9 @@ class virtual blk_or_ref blockify xml_obj = object (self)
             (fun (x : base) -> ((x :> base) #print_class) = "output")
             inner_objs
         )
+    (* Since this object has a set of inputs we want to keep immutable
+     * use the following construct such that we can print what the body
+     * code needs without modifying the block's list of inputs/outputs *)
     val mutable connected_inputs = []
     method connected_inputs = connected_inputs
     method set_inputs new_inputs = connected_inputs <- new_inputs 
@@ -87,8 +93,9 @@ class virtual blk_or_ref blockify xml_obj = object (self)
                                 self#print_class ^ " object")
     method input_type   = if_elements self#inputs ("struct " ^ self#func ^ "_in")
     method output_type  = if_elements self#outputs ("struct " ^ self#func ^ "_out")
-    method virtual func : string
-    method body       = if_elements
+    method virtual func : string (* Used because block cannot have a different name, 
+                                  * but reference can *)
+    method body       = if_elements (* Create code for setting input structure *)
                             self#inputs
                             (self#input_type ^ " " ^ self#name ^ "_inputs = " ^ "{ " ^ 
                                 (String.concat 
@@ -104,11 +111,11 @@ class virtual blk_or_ref blockify xml_obj = object (self)
                                     )
                                 ) ^ " };\n\t"
                             ) ^
-                        if_elements
+                        if_elements (* Create code for setting output structure *)
                             self#outputs
                             (self#output_type ^ " " ^ self#name ^ "_outputs = ") ^
-                        self#func ^ "(" ^ 
-                        if_elements
+                        self#func ^ "(" ^ (* function call *)
+                        if_elements (* Only apply inputs if block has inputs *)
                             self#inputs
                             (self#name ^ "_inputs") ^ 
                         ");"
@@ -124,73 +131,7 @@ class virtual blk_or_ref blockify xml_obj = object (self)
                         "\n}\n"
 end;;
 
-(* Parse referenced file for the referenced block and return it for down below *)
-let get_file xml_obj =
-    let r = (get_attr "ref" xml_obj)
-         in match r with
-               Ref r -> if r.reftype = "FILE"
-                        then r.refroot
-                        else object_error "Ref object only supports " ^
-                                          "file references"
-             | _     -> object_error "Incorrect Type for filename"
-
-let get_ref_blk xml_obj = 
-    let rec get_inner_blk blk_list xml_obj = 
-        match blk_list with
-            [] -> xml_obj
-          | hd :: tl -> begin
-                        let new_xml_obj =
-                                (List.filter
-                                    (fun x -> string_of_value 
-                                                (get_attr "name" x) = hd)
-                                     (List.filter
-                                        (fun x -> x.tagname <> "CONNECTION")
-                                        (xml_obj :: xml_obj.inner_objs)
-                                     )
-                                )
-                         in if (List.length new_xml_obj) <> 1
-                            then object_error ("Did not find exactly one " ^
-                                              "referenced block")
-                            else get_inner_blk tl (List.hd new_xml_obj)
-                        end
-     in let file = get_file xml_obj 
-     in let xml_obj = (Xparser.xml_tree Xscanner.token 
-                                (Lexing.from_channel (open_in file) )
-                          ) (* Have to parse referenced 
-                             * file to get block *)
-        and blk_list = 
-            let r = (get_attr "ref" xml_obj)
-                in match r with
-                       Ref r -> r.reflist
-                     | _     -> object_error "Incorrect Type for block ref"
-         in get_inner_blk blk_list xml_obj
-
-(* Reference class: REFERENCE tag *)
-class reference blockify xml_obj = object (self)
-    inherit blk_or_ref blockify xml_obj
-    method func = string_of_value (get_attr "name" (get_ref_blk xml_obj))
-    val mutable inner_objs   = List.map 
-                                 blockify 
-                                 (List.filter
-                                    (fun x -> x.tagname <> "CONNECTION")
-                                    (get_ref_blk xml_obj).inner_objs
-                                 )
-    method set_inner_objs new_inner_objs = object_error
-                            ("Should not try to set inner objects of " ^
-                             self#print_class ^ " object: " ^ self#name ^ "")
-    method print_class  = "reference"
-    method header       = let vlfile = (get_file xml_obj)
-                           in let cfile = (Str.global_replace 
-                                            (Str.regexp "\\.vl") 
-                                            ".c" 
-                                            vlfile
-                                          )
-                           in "#include \"" ^ cfile ^"\""
-    method trailer      = ""
-end;;
-
-(* Block class: BLOCK tag
- * inherits from base, is a container for other blocks *)
+(* Block class: BLOCK tag, is a container for other blocks *)
 class block blockify xml_obj = object (self)
     inherit blk_or_ref blockify xml_obj
     val mutable inner_objs = List.map 
@@ -201,12 +142,25 @@ class block blockify xml_obj = object (self)
                              )
     method func = name
     method set_inner_objs new_inner_objs = inner_objs <- new_inner_objs
+    method ref_blks = List.filter 
+            (fun (x : base) -> let c = ((x :> base) #print_class) in
+                                 c = "reference"
+            )
+            inner_objs
+    method print_inc = if_elements
+                            self#ref_blks
+                            (String.concat 
+                                "\n" 
+                                (List.map 
+                                    (fun x -> (x :> base) #header)
+                                    self#ref_blks
+                                ) ^ "\n\n"
+                            )
     method static_blks = List.filter 
             (fun (x : base) -> let c = ((x :> base) #print_class) in
                                  c = "memory"
                               || c = "constant"
                               || c = "dt"
-                              || c = "reference"
             )
             inner_objs
     method print_static = if_elements 
@@ -238,11 +192,17 @@ class block blockify xml_obj = object (self)
                                     self#outputs)
                                 ) ^ ";\n};\n\n"
                             )
-    method header     = if_elements
+    method header     = (* Include statements for referenced files*)
+                        self#print_inc ^ 
+                        (* Structure definition for block *)
+                        if_elements
                             (self# inputs @ self#outputs)
                             ("/* I/O Structures for block " ^ name ^ " */\n") ^
-                        self#input_struct ^ self#output_struct ^
+                        self#input_struct ^
+                        self#output_struct ^
+                        (* Initialize static constants and parameters *)
                         self#print_static ^
+                        (* Function definition *)
                         (let out_struct = self#output_type in 
                           if out_struct <> ""
                           then out_struct
@@ -253,6 +213,7 @@ class block blockify xml_obj = object (self)
                         then in_struct ^ " inputs"
                         else "") ^ 
                         ") {\n" ^ 
+                        (* Unpack inputs *)
                         (let input_blk = String.concat "\n\t" 
                             (List.map 
                             (fun x -> (get_datatype x.datatype) ^ " " ^ 
@@ -263,6 +224,7 @@ class block blockify xml_obj = object (self)
                         then "\t/* Inputs for block " ^ name ^
                              " */\n\t" ^ input_blk ^ "\n\n"
                         else "") ^
+                        (* Code for inner objects in SSA form *)
                         if_elements
                             self#inner_objs
                             ("\t/* Body for block " ^ name ^ " */\n\t" ^
@@ -282,7 +244,8 @@ class block blockify xml_obj = object (self)
                                 )
                             ) ^ "\n\n")
 
-    method trailer    = if_elements
+    method trailer    = (* Pack up outputs *)
+                         if_elements
                             self#outputs
                             ("\t/* Outputs for block " ^ name ^" */\n\t" ^
                             self#output_type ^ " outputs;\n\t" ^
@@ -291,8 +254,75 @@ class block blockify xml_obj = object (self)
                                 (fun x -> "outputs." ^ x.name ^ " = " ^ x.name) 
                                 self#outputs)
                             ) ^ ";\n\n" ^
+                            (* terminate function *)
                             "\treturn outputs;") ^
                         "\n}\n"
+end;;
+
+(* Parse referenced file for the referenced block and return it for down below *)
+let get_file xml_obj =
+    let r = (get_attr "ref" xml_obj)
+         in match r with
+               Ref r -> if r.reftype = "FILE"
+                        then r.refroot
+                        else object_error "Ref object only supports " ^
+                                          "file references"
+             | _     -> object_error "Incorrect Type for filename"
+
+(* Get the referenced block in the right file for the given reference object *)
+let get_ref_blk xml_obj = 
+    let rec get_inner_blk blk_list xml_obj = 
+        match blk_list with
+            [] -> xml_obj
+          | hd :: tl -> begin
+                        let new_xml_obj =
+                                (List.filter
+                                    (fun x -> string_of_value 
+                                                (get_attr "name" x) = hd)
+                                     (List.filter
+                                        (fun x -> x.tagname <> "CONNECTION")
+                                        (xml_obj :: xml_obj.inner_objs)
+                                     )
+                                )
+                         in if (List.length new_xml_obj) <> 1
+                            then object_error ("Did not find exactly one " ^
+                                              "referenced block")
+                            else get_inner_blk tl (List.hd new_xml_obj)
+                        end
+     in let file = get_file xml_obj 
+     in let xml_obj = (Xparser.xml_tree Xscanner.token 
+                                (Lexing.from_channel (open_in file) )
+                          ) (* Have to parse referenced 
+                             * file to get block *)
+        and blk_list = 
+            let r = (get_attr "ref" xml_obj)
+                in match r with
+                       Ref r -> r.reflist
+                     | _     -> object_error "Incorrect Type for block ref"
+         in get_inner_blk blk_list xml_obj
+
+(* Reference class: REFERENCE tag, references a block in another file *)
+class reference blockify xml_obj = object (self)
+    inherit blk_or_ref blockify xml_obj
+    method func = string_of_value (get_attr "name" (get_ref_blk xml_obj))
+    val mutable inner_objs   = List.map 
+                                 blockify 
+                                 (List.filter
+                                    (fun x -> x.tagname <> "CONNECTION")
+                                    (get_ref_blk xml_obj).inner_objs
+                                 )
+    method set_inner_objs new_inner_objs = object_error
+                            ("Should not try to set inner objects of " ^
+                             self#print_class ^ " object: " ^ self#name ^ "")
+    method print_class  = "reference"
+    method header       = let vlfile = (get_file xml_obj)
+                           in let cfile = (Str.global_replace 
+                                            (Str.regexp "\\.vl") 
+                                            ".c" 
+                                            vlfile
+                                          )
+                           in "#include \"" ^ cfile ^"\""
+    method trailer      = ""
 end;;
 
 (* virtual I/O Part class: do all I/O Part attributes and checking *)
@@ -388,7 +418,7 @@ class dt xml_obj = object (self)
                           " }"
 end;;
 
-(* All parts inherit from this one *)
+(* All other parts inherit from this one *)
 class virtual part xml_obj = object (self)
     inherit base xml_obj
     method inner_objs = object_error 
@@ -443,6 +473,8 @@ class not_gate xml_obj = object (self)
                           (List.hd inputs).name ^ ");"
 end;;
 
+(* Helper functions for binary operation parts, which can have an arbitrary
+ * number of inputs, so long as there is at least 2. *)
 let get_num_connections xml_obj =
     let inputs = List.filter
                  (fun x -> x.tagname = "CONNECTION")
@@ -538,11 +570,11 @@ end;;
 (* XOR gate: inherits from binary_gate_part, logical XOR operation *)
 class xor_gate xml_obj = object (self)
     inherit gate xml_obj as super
-    val operation = "" (* overriden body, operation is NEQ of NOT-ed inputs *)
+    val operation = "" (* overriden body, operation is NEQ of each input *)
     method print_class = "xor"
     method body         = (get_datatype self#datatype) ^ " " ^ 
-                          self#name ^ " = !(" ^ String.concat 
-                                (") != !(")
+                          self#name ^ " = (" ^ String.concat 
+                                (") != (")
                                 (List.map 
                                     (fun x -> x.name) 
                                     self#inputs
@@ -602,9 +634,12 @@ class inv xml_obj = object (self)
     method print_obj    = "\"" ^ self#print_class ^ "\": { " ^
                           "\"name\":\"" ^ name ^ "\", " ^
                           "\"datatype\":\"" ^ datatype ^ "\" }"
-    method body         = (get_datatype datatype) ^ " " ^ 
-                          self#name ^ " = 1 / ( " ^
-                          (List.hd inputs).name ^ " );"
+    method body         = let input = (List.hd inputs).name in
+                          (get_datatype datatype) ^ " " ^ 
+                          self#name ^ " = " ^ 
+                          (* Divide by zero protection *)
+                          "(abs(" ^ input ^ ") >= FLT_MIN) ?\n\t\t" ^ 
+                          "(1 / ( " ^ input ^ " )) : (0.000f);"
 end;;
 
 (* Compare Part: compares two inputs using operation *)
