@@ -13,7 +13,7 @@ pyg-link:
 git-log:
 	@cd ../ && git log > git.log
 
-final-report.pdf: git-log pyg-link
+final-report.pdf: git-log
 
 status:
 	@for file in *.tex; do grep "TODO" $$file && echo "$$file"; done
