@@ -1,0 +1,71 @@
+\documentclass[dvips,10pt]{article}
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\evensidemargin}{0.1in}
+\setlength{\textwidth}{6.5in}
+\setlength{\topmargin}{0in}
+\setlength{\textheight}{8.5in}
+% These force using more of the margins that is the default style
+
+\usepackage{longtable}
+
+\usepackage{listings}
+\usepackage{color} % for colored solution
+\usepackage[svgnames]{xcolor}
+
+% Custom colors for XML
+\definecolor{maroon}{rgb}{0.5,0,0}
+\definecolor{darkgreen}{rgb}{0,0.5,0}
+\lstdefinelanguage{XML}
+{
+    basicstyle=\ttfamily\footnotesize,
+    morestring=[b]",
+    moredelim=[s][\bfseries\color{Maroon}]{<}{\ },
+    moredelim=[s][\bfseries\color{Maroon}]{</}{>},
+    moredelim=[l][\bfseries\color{Maroon}]{/>},
+    moredelim=[l][\bfseries\color{Maroon}]{>},
+    morecomment=[s]{<?}{?>},
+    morecomment=[s]{<!--}{-->},
+    commentstyle=\color{DarkOliveGreen},
+    stringstyle=\color{blue},
+    identifierstyle=\color{red}
+    %morekeywords={name,type,scope,address,value,to,from,
+    %              initial\_condition,reference}
+}
+\lstset
+{
+    language=XML,
+    basicstyle=\footnotesize\ttfamily,
+    tabsize=4,
+    keepspaces=false,
+    keywordstyle=\color{red},
+    identifierstyle=\color{blue},
+    commentstyle=\color{green},
+    frame=single,
+    captionpos=t%, % sets the caption-position to top
+    %morestring=[s]{"}{"},
+    %morecomment=[s]{!--}{--},
+    %morekeywords={name,type,scope,address,value,to,from,
+    %              initial\_condition,reference}
+}
+
+\newcommand{\includecode}[1]{\lstinputlisting[caption=#1]{#1}}
+
+\begin{document}
+
+\title{VisLang: A graphical programming language}
+\author{Bryant Eisenbach}
+\date{\today}
+\maketitle
+% This command causes the title to be created in the document
+
+\input{introduction}
+\input{tutorial}
+\input{lang-ref}
+\input{project-plan}
+\input{architecture}
+\input{test-plan}
+\input{conclusion}
+\input{appendix}
+
+\end{document}
