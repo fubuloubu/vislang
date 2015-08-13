@@ -29,10 +29,18 @@ let _ =
               BlockTree -> Blockparse.print_list program
             | Compile   -> Compile.translate program
             | DebugCode -> Compile.gen_debug_code program
-     in match rwfile with
-            File  -> output_string 
-                        (open_out 
-                            (Str.global_replace (Str.regexp "\\.vl") ".c" Sys.argv.(2))
-                        )
-                        listing
-          | StdIO -> print_string listing
+    in let write_out_with_ext ext = output_string 
+                                        (open_out 
+                                            (Str.global_replace 
+                                                (Str.regexp "\\.vl") 
+                                                ext 
+                                                Sys.argv.(2)
+                                            )
+                                        )
+    in match (rwfile, action) with
+        (* Only print out to a new file if we are compiling or making debug
+         * code with an input file, else print to screen if standard input
+         * is used or we are printing the blocktree *)
+            (File, Compile)   -> write_out_with_ext ".c"  listing
+          | (File, DebugCode) -> write_out_with_ext ".py" listing
+          | ( _ , _ )         -> print_string listing
