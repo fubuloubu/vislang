@@ -188,6 +188,9 @@ done
 
 shift `expr $OPTIND - 1`
 
+# Date and Time stamp for user log
+echo "Test started at $(date '+%H:%M:%S on %m/%d/%y')" 2>> $globallog
+
 if [ $# -ge 1 ]
 then
     files=$@
