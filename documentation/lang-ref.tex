@@ -1,40 +1,3 @@
-\documentclass[titlepage]{article}
-\usepackage[a5paper,margin=0.5in]{geometry}
-
-%% Header
-\usepackage{fancyhdr,lastpage}
-\usepackage[mmddyyyy]{datetime}
-\renewcommand{\dateseparator}{/}
-\fancypagestyle{plain}{
-    \fancyhf{} %Clear Everything.
-    \rhead{ Page \thepage\ of \pageref{LastPage} }
-    \setlength{\headheight}{24pt}
-    \setlength{\footskip}{24pt}
-    \renewcommand{\headrulewidth}{1pt} %0pt for no rule, 2pt thicker etc...
-    \renewcommand{\footrulewidth}{0pt}
-}
-\pagestyle{plain}
-\usepackage{indentfirst}
-
-%% Code Listings
-\usepackage{minted}
-
-% Tables 
-\usepackage{longtable}
-\newcommand{\specialcell}[2][l]{%
-      \begin{tabular}[#1]{@{}c@{}}#2\end{tabular}
-}
-
-% Items
-\usepackage{enumitem}
-
-\title{VisLang: A visual language specification}
-\author{Bryant Eisenbach (UNI: bje2113)}
-\date{Date: \today}
-\begin{document}
-\maketitle
-\tableofcontents
-\pagebreak
 \section{Overview}
 VisLang is a block diagram language designed to allow fast and easy prototyping of programs for embedded processors.
 The language is created with a graphical editor in mind, and the core language is designed to be extensible so that any graphical editor can add additional elements or attributes for graphical display or other features.
@@ -334,4 +297,3 @@ The way REDUCE works is that the referenced block must have two inputs and one o
 It is intended that the referenced block be a way of combining the elements of that array into a single value and achieves that by recursively applying referenced block to the elements of that array (from beginning to end, or input1 to inputN).
 The value returned by the referenced block is applied as the second input to the next recursion using the next element of the array, and the element will return the final output value when the recursion is completed.
 \end{itemize}
-\end{document}

@@ -1,4 +1,5 @@
-\documentclass[dvips,10pt]{article}
+\documentclass[titlepage]{article}
+\usepackage[a5paper,margin=0.5in]{geometry}
 
 \setlength{\oddsidemargin}{0.1in}
 \setlength{\evensidemargin}{0.1in}
@@ -51,12 +52,42 @@
 
 \newcommand{\includecode}[1]{\lstinputlisting[caption=#1]{#1}}
 
+%% Header
+\usepackage{fancyhdr,lastpage}
+\usepackage[mmddyyyy]{datetime}
+\renewcommand{\dateseparator}{/}
+\fancypagestyle{plain}{
+    \fancyhf{} %Clear Everything.
+    \rhead{ Page \thepage\ of \pageref{LastPage} }
+    \setlength{\headheight}{24pt}
+    \setlength{\footskip}{24pt}
+    \renewcommand{\headrulewidth}{1pt} %0pt for no rule, 2pt thicker etc...
+    \renewcommand{\footrulewidth}{0pt}
+}
+\pagestyle{plain}
+\usepackage{indentfirst}
+
+%% Code Listings
+\usepackage{minted}
+
+% Tables 
+\usepackage{longtable}
+\newcommand{\specialcell}[2][l]{%
+      \begin{tabular}[#1]{@{}c@{}}#2\end{tabular}
+}
+
+% Items
+\usepackage{enumitem}
+
 \begin{document}
 
-\title{VisLang: A graphical programming language}
-\author{Bryant Eisenbach}
-\date{\today}
+\title{VisLang: A visual language specification}
+\author{Bryant Eisenbach (UNI: bje2113)}
+\date{Date: \today}
+\begin{document}
 \maketitle
+\tableofcontents
+\pagebreak
 % This command causes the title to be created in the document
 
 \input{introduction}
