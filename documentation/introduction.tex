@@ -1,3 +1,4 @@
+% TODO
 \section{Introduction}
 
 VisLang is a block diagram language designed to allow fast and
@@ -6,91 +7,32 @@ with a graphical editor in mind, and the core language is designed to be extensi
 so that any graphical editor can add additional elements or attributes for graphical
 display or other features.
 
-\section{Key Language Features}
+\subsection{Key Language Features}
 
 The language itself is based on the idea of blocks: small parts that can be grouped
-together into ever larger blocks and re-used across a program or programs. A small
-group of fundamental (or atomic) blocks will be defined that will be understood by the
-compiler for this language. Other blocks will be constructed as configurations of
-these atomic blocks. A standard library of useful functions will be constructed
-from these atomic blocks containing common parts such as timers, latches, etc. However,
-this standard library is not required, and the ability to include parts libraries and
-other blocks is a standard feature of the language.
+together into ever larger blocks and re-used across different programs. VisLang has a
+small group of fundamental (or atomic) blocks that will be understood by the VisLang
+compiler. Other blocks will be constructed as groupings of these atomic blocks, and can
+be referenced in other files. Libraries of useful function blocks can be constructed
+from these atomic blocks containing common parts such as timers, latches, etc. The 
+ability to include libraries and other blocks is a standard feature of the language.
 
-Side effects in the produced code will be minimized by the combination of a strong
-type system and bounded code execution. The type system of VisLang supports common
-datatypes such as boolean, single, double, signed and unsigned integers, as well as
-static arrays and structures of these simple datatypes. Bounded code execution is
-guarenteed through the restriction of array operations to use a static size. This
-works well with embedded processors as programs should only need to parse through
-large buffers such as those implemented for I/O using digital busses, whose buffers
-are typically defined as being a static size. The language will contain
-implementations of the popular methods map, filter, and reduce to enable operating
-on arrays. This will allow VisLang to have methods for working with digital message
-structures and parsing those structures into the signals that can used by the program.
-Some standard implementations for parsing both packet-based (e.g. Ethernet) and word-based
-(e.g. RS232) buffer data will be provided by the standard library.
-
-Lastly, time variance will be something provided fundamentally by the language.
-The time-step between subsequent iterations will be maintained in every VisLang program
-and provided to the user as needed as a atomic part. Most of the atomic parts will be
-time-invariant as they are pure functions, but this language feature will provide users
-with the ability to create dynamic parts that will care about time as a measured quantity
-to create parts such as digital filters, derivatives, integrators, etc.
-
-\section{Syntax}
-
-The syntax of VisLang leverages standard XML, giving the language a well-formed and machine
-readable backbone. As noted previously, the point of leveraging XML is so that 3rd party
-programs can manipulate the file format in an easy way, and so that those programs can add
-additional elements (e.g. visual comment blocks) and attributes (e.g. location information)
-to the existing set of elements and attributes defined by the language. Those tags (including
-XML comment tags) not included in the list of recognized elements/attributes will be 
-ignored by the compiler, however this decision should have minimal impact on ambigious
-errors when compiling programs due to the restriction that all parts require their necessary
-attributes, and that all connections require the source to exist. This creates a natural
+The syntax of VisLang leverages standard XML, giving the language a well-formed and 
+machine readable backbone. As noted previously, the point of leveraging XML is so that
+3rd party programs can manipulate the file format in an easy way, and so that external
+programs can add additional elements (e.g. visual information for display) and attributes
+(e.g. location information) to the existing set of elements and attributes defined by
+the language. Those tags (including XML comment tags) not included in the list of
+recognized elements/attributes will be ignored by the compiler as a valid program is only
+defined as a series of well-connected blocks. All parts require their necessary
+attributes, and all connections require the source to exist. This creates a natural
 flow to interpreting the language, such that any errors should be raised by the compiler
-during compilation. 
+during compilation.
 
-Below is the list of standard elements supported by the language, and their attributes:
-\begin{longtable}[c]{ |c|c|c|c| } 
-    \hline
-    element & input(s) & outputs & attributes [optional]  \\ 
-    \hline\hline
-    INPUT & none & provides 'name' & scope, size, name, type, [address] \\ 
-    OUTPUT & provides 'name' & none & scope, size, name, type, [address] \\ 
-    CONSTANT & none & provides 'name' & size, name, type, value \\ 
-    SIGNAL & provides 'name' & provides 'name' & scope, size, name, type \\ 
-    \hline
-    PROGRAM & device inputs & device, global outputs & name \\ 
-    BLOCK & as defined & as defined & name, [reference] \\ 
-    CONNECTION & none & none & to, from \\
-    \hline
-    CAST & input & output & name, type \\
-    MEM & current & stored & name, initial\_condition \\
-    DT & none & dt & name \\
-    NOT & input & output & name \\
-    AND & input\# (\# $>$ 1) & output & name \\
-    OR & input\# (\# $>$ 1) & output & name \\
-    NOR & input\# (\# $>$ 1) & output & name \\
-    NAND & input\# (\# $>$ 1) & output & name \\
-    XOR & input\# (\# $>$ 1) & output & name \\
-    BITWISE & input\# (\# $>$ 0) & output & name, operation, [mask] \\
-    IF & control, true, false & output & name \\
-    COMPARE & lhs, rhs  & output & name, operation \\
-    SUM & input\# (\# $>$ 1) & output & name \\
-    PROD & input\# (\# $>$ 1) & output & name \\
-    GAIN & input & output & name, value \\
-    INV & input & output & name \\
-    \hline
-    MUX & input\# (\# $>$ 1) & provides 'array' & name, type, [address] \\
-    DEMUX & array & output\# (\# $>$ 1) & name, type, [address] \\
-    STRUCT & none & provides 'struct' & name, member\# (\# $>$ 0) \\
-    CONSTRUCT & by definition & provides 'name' & name, definition \\
-    DESTRUCT & struct & by definition & name, definition \\
-    \hline
-    MAP & input (array) & output (array) & name, func (SISO block ref) \\
-    FILTER & input (array) & output & name, size, func (SIBO block ref) \\
-    REDUCE & input (array) & output & name, initial\_value, func (MISO block ref) \\
-    \hline
-\end{longtable}
+\subsection{Code Generation}
+
+The VisLang Compiler will parse all of the parts specified in the input file and generate
+a C source file that can be used in combination with other generated and manually created
+C source files to generate fully functional programs for embedded devices. Each generated
+file contains code that is completely reusable as the code generated has standard interfaces
+and does not rely on global definitions.
