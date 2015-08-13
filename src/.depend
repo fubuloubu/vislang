@@ -1,6 +1,6 @@
 xparser.cmi : xst.cmo
-blockify.cmo : xst.cmo errors.cmo
-blockify.cmx : xst.cmx errors.cmx
+blockify.cmo : xst.cmo xscanner.cmo xparser.cmi errors.cmo
+blockify.cmx : xst.cmx xscanner.cmx xparser.cmx errors.cmx
 blockparse.cmo : xst.cmo errors.cmo blockify.cmo
 blockparse.cmx : xst.cmx errors.cmx blockify.cmx
 compile.cmo : blockparse.cmo blockify.cmo
