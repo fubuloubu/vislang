@@ -5,9 +5,6 @@
  OCAMLDEP=ocamldep 
  OCAMLLEX=ocamllex 
 OCAMLYACC=ocamlyacc
-INCLUDES=                 # all relevant -I options here
-OCAMLFLAGS=$(INCLUDES)    # add other options for ocamlc here
-OCAMLOPTFLAGS=$(INCLUDES) # add other options for ocamlopt here
 
 .SECONDARY:
 	
@@ -17,7 +14,7 @@ MAIN_OBJS = xst.cmo errors.cmo xscanner.cmo xparser.cmo \
 			blockify.cmo blockparse.cmo compile.cmo vislang.cmo
 vlcc : $(MAIN_OBJS)
 	@echo "$(OCAMLC) -o vlcc"
-	@$(OCAMLC) -o $@ $(OCAMLFLAGS) str.cma $^
+	@$(OCAMLC) -o $@ str.cma $^
 
 # Lexxer rules
 %.ml : %.mll
