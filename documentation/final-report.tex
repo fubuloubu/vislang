@@ -15,6 +15,7 @@
 \renewcommand{\dateseparator}{/}
 \fancypagestyle{plain}{
     \fancyhf{} %Clear Everything.
+    \lhead{ VisLang Final Report }
     \rhead{ Page \thepage\ of \pageref{LastPage} }
     \setlength{\headheight}{24pt}
     \setlength{\footskip}{24pt}
@@ -51,6 +52,18 @@
     \inputminted[frame=single,linenos,fontsize=\footnotesize]{#1}{#2}
     \captionof{listing}{\label{#3}#4: #2}
     \pagebreak
+}
+
+%% Diagrams
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows}
+\tikzset{
+    block/.style = {draw, 
+                    rectangle, 
+                    minimum height=2em, 
+                    minimum width=12em,
+                    node distance=1.5cm
+    }
 }
 
 % Custom language for XML

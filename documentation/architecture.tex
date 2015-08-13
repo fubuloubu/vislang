@@ -1,13 +1,32 @@
 % TODO
-\section{Vislang Compiler Architecture}
+\section{VisLang Compiler Architecture}
 
-The architecture for vislang is as follows:
-xml syntax -> xml scanning -> xml parsing -> xml syntax tree 
-  -> blockification -> block object tree 
-  -> runtime -> bytecode 
-  -> compilation
+%The architecture for vislang is as follows:
+%xml syntax -> xml scanning -> xml parsing -> xml syntax tree 
+%  -> blockification -> block object tree 
+%  -> runtime -> bytecode 
+%  -> compilation
+%
+%the xml syntax tree is the literal representation of the incoming xml syntax
+%the block object tree is the literal translation of the block objects
+%bytecode is the translation of the BOT through the runtime into a stack-based representation of the program
+%compilation produces a valid c program from bytecode
 
-the xml syntax tree is the literal representation of the incoming xml syntax
-the block object tree is the literal translation of the block objects
-bytecode is the translation of the BOT through the runtime into a stack-based representation of the program
-compilation produces a valid c program from bytecode
+\begin{figure}[!htb]
+\begin{tikzpicture}[auto]
+    \node [block]                   (source)  {Source File (XML)};
+    \node [block,below of=source]   (xmltok)  {XML Tokens};
+    \node [block,below of=xmltok]   (xmlobj)  {XML Object Tree};
+    \node [block,below of=xmlobj]   (blkobj)  {Block Object Tree};
+    \node [block,below of=blkobj]   (optblk)  {Optimized Block Tree};
+    \node [block,below of=optblk]   (gencod)  {Auto-generated Code};
+
+    \draw[->] (source) -- node{xscanner.mll}    (xmltok);
+    \draw[->] (xmltok) -- node{xparser.mly}     (xmlobj);
+    \draw[->] (xmlobj) -- node{blockify.ml}     (blkobj);
+    \draw[->] (blkobj) -- node{blockparse.ml}   (optblk);
+    \draw[->] (optblk) -- node{compile.ml}      (gencod);
+\end{tikzpicture}
+\caption{VLCC Architecture}
+\label{arch:vlcc}
+\end{figure}

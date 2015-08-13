@@ -1,17 +1,17 @@
 % TODO
-\section{Overview}
+\section{Language Reference Manual}
 VisLang is a block diagram language designed to allow fast and easy prototyping of programs for embedded processors.
 The language is created with a graphical editor in mind, and the core language is designed to be extensible so that any graphical editor can add additional elements or attributes for graphical display or other features.
 It is designed to produce code that can be linked into projects easily, so existing build tools and libraries can be used.
 Currently, the C language is the preferred code generation target.
-\section{Lexical Convention}
+\subsection{Lexical Convention}
 VisLang uses standard XML syntax for its file specification.
 Several built-in elements, called Parts, are defined that make up the core of the language.
 The elements have a list of required attributes that must be defined using the correct type that attribute expects.
  All Parts have a name attribute that should be globally unique in the program to be compiled and can be used as a named reference using CONNECTION elements to specify connections between different parts and blocks.
 Parts can be grouped into containers called Blocks using the BLOCK element, and that Block can be referenced internally or externally (using the REFERENCE element).
 Each project file must contain one, and only one, top level BLOCK element, but a block element can contain any number or level of additional block elements or built-in parts.
-\subsection{XML Elements and Attributes}
+\subsubsection{XML Elements and Attributes}
 Users of VisLang should be comfortable with how XML syntax works, but the following is a quick overview of how VisLang uses standard XML.
 XML elements are defined using the start tag $"<"$ and end tag $">"$.
 The element identifier immediately follows the beginning "$<$" character of a tag and is a valid Name matching any alphanumeric characters and the underscore character, completing at the next character of whitespace.
@@ -27,7 +27,7 @@ VisLang Block elements can contain any elements inside it including Parts and ot
 However, basic Parts cannot contain other Parts inside them, only ignored XML elements.
 All Parts and Blocks must contain their corresponding CONNECTION elements inside them if they are to be connected.
 Additionally, the CONNECTION element must be the first contained elements in a BLOCK definition (excluding comments).
-\subsection{Accepted Elements and Attributes}
+\subsubsection{Accepted Elements and Attributes}
 VisLang only accepts a limited amount of elements and attributes to be used for compiling purposes, so by design all other elements and attributes not matching this set will be ignored.
 This decision allows developers to define programs that utilize VisLang as a base language.
 The list of accepted elements (Parts) is defined below, but broadly Vislang only accepts elements with identifiers that are capitalized.
@@ -35,7 +35,7 @@ The scanning and parsing stage of the compiler will accept any amount of attribu
 ws+ attribute="value" ws+) where the identifier for the attribute is only in the set of lowercase letters, and the value is in the set of accepted types.
 Any attributes not matching this specification will be ignored.
 As described above, either syntax of closing tag for an element is accepted, however any elements contained within an element (besides BLOCK) will be ignored.
-\subsection{Accepted Types}
+\subsubsection{Accepted Types}
 Attributes in vislang can only contain values matching the primative types accepted by the language.
 The scanning stage of the compiler will ignore any attributes whose values don't comply with this rule.
 This means that additional attributes to an accepted element can be defined, but VisLang will raise an error at in a later stage if a required attribute is missing.
@@ -52,7 +52,7 @@ The list of accepted types for attribute values are as follows:
     reference & "$|$block$|$block$|$etc" & ("$|$" name)+ \\
     \hline
 \end{longtable}
-\subsection{Comments}
+\subsubsection{Comments}
 Although the usage scenario for VisLang is for developers to use the language specification as a baseline for further customizations, the VisLang compiler will accept XML-style comments.
 XML style comments start with the tag "$<!--$", and end with the tag "$-->$".
 The scanner stage of the compiler will ignore any character between the opening and closing part of a comment.
@@ -63,8 +63,8 @@ Additionally, the XML specification describes several special tags for the Prolo
 VisLang will accept and ignore these elements through the same mechanism as the comments.
 Therefore, any XML element starting with "$<?$" or "$<![$" and ending with "$?>$" and "$]>$" respectively will have all of it's contents ignored.
 Please follow the W3C XML specification for the full list of characters that should be avoided for this situation.
-\section{Constructing Programs}
-\subsection{Built-In Parts}
+\subsection{Constructing Programs}
+\subsubsection{Built-In Parts}
 As discussed previously, VisLang has built-in Parts that are natively understood by the compiler.
 These parts have specific attributes and special properties that for using them, including a list of inputs that must be used.
 \par
@@ -139,7 +139,7 @@ Below is the list of standard elements supported by the language, and their requ
     REDUCE & input (array) & output & name, start, ref \\
     \hline
 \end{longtable}
-\subsection{Using Built-In Parts}
+\subsubsection{Using Built-In Parts}
 % what each block does
 % recursive parts
 \subsubsection{Basic Language Elements}

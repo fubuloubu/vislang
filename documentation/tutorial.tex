@@ -138,7 +138,7 @@ structure literals can be created using the braces operator (e.g. \{0x10, \{1, f
 Any attribute that accepts a literal can also take a reference to a named value,
 in a similar way that block references are defined (e.g. "/path/to/file.vs$\vert$path$\vert$to$\vert$value").
 
-\section{Example Program}
+\subsection{Example Program}
 
 The following program illustrates some of the major features of the language. The
 program itself takes a Digital Input on the target device, reads it, and starts a
@@ -146,7 +146,8 @@ timer when the input is enabled. When the timer counts up to the target time, it
 will set a Digital Output true and reset the timer, creating a fast-blinking light
 with a period of 2 seconds.
 
-\includecode{../example/timed-blinking-light/timed-blinking-light.vl}
+\srccode{xml}{../example/timed-blinking-light/timed-blinking-light.vl}
+    {example:top}{Example Top Level}
 
 As noted, the above file contained a reference to another part called timer defined
 in timer.vs in the same directory. Any references must take place on a relative path
@@ -158,4 +159,5 @@ other unused outputs will be disregarded. The following file displays the target
 file, complete with the relevant inputs and outputs as specified/required by the
 previous file.
 
-\includecode{../example/timed-blinking-light/timer.vl}
+\srccode{xml}{../example/timed-blinking-light/timer.vl}
+    {exmaple:timer}{Example Referenced Block}
