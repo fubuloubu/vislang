@@ -2,11 +2,46 @@
 <vl:BLOCK name="compare">
     <vl:INPUT name="in" datatype="single"/>
     <vl:CONSTANT name="ten" datatype="single" value="10.000"/>
-    <vl:COMPARE name="compare" datatype="single" operation=">">
+    <vl:COMPARE name="grt" datatype="single" operation=">">
         <vl:CONNECTION to="lhs" from="in"/>
         <vl:CONNECTION to="rhs" from="ten"/>
     </vl:COMPARE>
-    <vl:OUTPUT name="out" datatype="boolean">
-        <vl:CONNECTION to="out" from="compare"/>
+    <vl:OUTPUT name="grt_out" datatype="boolean">
+        <vl:CONNECTION to="grt_out" from="grt"/>
+    </vl:OUTPUT>
+    <vl:COMPARE name="lst" datatype="single" operation="<">
+        <vl:CONNECTION to="lhs" from="in"/>
+        <vl:CONNECTION to="rhs" from="ten"/>
+    </vl:COMPARE>
+    <vl:OUTPUT name="lst_out" datatype="boolean">
+        <vl:CONNECTION to="lst_out" from="lst"/>
+    </vl:OUTPUT>
+    <vl:COMPARE name="geq" datatype="single" operation=">=">
+        <vl:CONNECTION to="lhs" from="in"/>
+        <vl:CONNECTION to="rhs" from="ten"/>
+    </vl:COMPARE>
+    <vl:OUTPUT name="geq_out" datatype="boolean">
+        <vl:CONNECTION to="geq_out" from="geq"/>
+    </vl:OUTPUT>
+    <vl:COMPARE name="leq" datatype="single" operation="<=">
+        <vl:CONNECTION to="lhs" from="in"/>
+        <vl:CONNECTION to="rhs" from="ten"/>
+    </vl:COMPARE>
+    <vl:OUTPUT name="leq_out" datatype="boolean">
+        <vl:CONNECTION to="leq_out" from="leq"/>
+    </vl:OUTPUT>
+    <vl:COMPARE name="eq" datatype="single" operation="==">
+        <vl:CONNECTION to="lhs" from="in"/>
+        <vl:CONNECTION to="rhs" from="ten"/>
+    </vl:COMPARE>
+    <vl:OUTPUT name="eq_out" datatype="boolean">
+        <vl:CONNECTION to="eq_out" from="eq"/>
+    </vl:OUTPUT>
+    <vl:COMPARE name="neq" datatype="single" operation="!=">
+        <vl:CONNECTION to="lhs" from="in"/>
+        <vl:CONNECTION to="rhs" from="ten"/>
+    </vl:COMPARE>
+    <vl:OUTPUT name="neq_out" datatype="boolean">
+        <vl:CONNECTION to="neq_out" from="neq"/>
     </vl:OUTPUT>
 </vl:BLOCK>
