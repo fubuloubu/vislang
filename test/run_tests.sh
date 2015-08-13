@@ -22,10 +22,8 @@ Usage() {
 }
 
 SignalError() {
-    if [ $error -eq 0 ] ; then
-        echo "FAILED"
-        error=1
-    fi
+    echo "FAILED"
+    error=1
     echo "  $1"
 }
 
@@ -46,7 +44,7 @@ Compare() {
 Run() {
     echo $* 1>&2
     eval $* || {
-        SignalError "$1 failed on $*"
+        SignalError "failure: $*"
         return 1
     }
 }
@@ -78,7 +76,7 @@ Check() {
     generatedfiles="$generatedfiles ${basename}.so" &&
     Run "$GCC" "-shared -o" ${basename}.so ${basename}.o &&
     generatedfiles="$generatedfiles ${basename}.py" &&
-    Run "$VLCC" "-d" "<" $1 ">" ${basename}.py &&
+    Run "$VLCC" "-d" $1 &&
     generatedfiles="$generatedfiles ${basename}.c.out" &&
     Run "$PYTHON" ${basename}.py ${basename}.in > ${basename}.c.out && 
     Compare ${basename}.c.out ${reffile}.out ${basename}.c.diff
@@ -89,39 +87,6 @@ Check() {
         if [ $keep -eq 0 ] ; then
             rm -f $generatedfiles
         fi
-        echo "OK"
-        echo "###### SUCCESS" 1>&2
-    else
-        echo "###### FAILED" 1>&2
-        globalerror=$error
-    fi
-}
-
-# RunFail <args>
-# Report the command, run it, and report any errors
-RunFail() {
-    echo $* 1>&2
-    eval $* || {
-        return 0
-    }
-}
-
-CheckFail() {
-    error=0
-    basename=`echo $1 | sed 's/.*\\///
-                             s/.vl//'`
-    reffile=`echo $1 | sed 's/.vl$//'`
-    basedir="`echo $1 | sed 's/\/[^\/]*$//'`/."
-
-    echo -n "$basename..."
-
-    echo 1>&2
-    echo "###### Testing $basename" 1>&2
-
-    RunFail "$VLCC" "-c" $1
-
-    # Report the status and clean up the generated files
-    if [ $error -eq 0 ] ; then
         echo "OK"
         echo "###### SUCCESS" 1>&2
     else
@@ -149,8 +114,6 @@ CheckPass() {
     Run "$VLCC" "-c" $1 &&
     generatedfiles="$generatedfiles ${basename}.o" &&
     Run "$GCC" "-c -fPIC" ${basename}.c &&
-    generatedfiles="$generatedfiles ${basename}.so" &&
-    Run "$GCC" "-shared -o" ${basename}.so ${basename}.o
 
     # Report the status and clean up the generated files
 
@@ -159,6 +122,52 @@ CheckPass() {
             rm -f $generatedfiles
         fi
         echo "OK"
+        echo "###### SUCCESS" 1>&2
+    else
+        echo "###### FAILED" 1>&2
+        globalerror=$error
+    fi
+}
+
+SignalPass() {
+    if [ $error -eq 1 ] ; then
+        echo "OK"
+        error=0
+    fi
+}
+
+# RunFail <args>
+# Report the command, run it, and report any errors
+RunFail() {
+    echo $* 1>&2
+    eval $* && {
+        SignalError "uncaught: $*" 
+        return 1
+    } || {
+        SignalPass
+        return 0
+    }
+}
+
+CheckFail() {
+    error=1
+    basename=`echo $1 | sed 's/.*\\///
+                             s/.vl//'`
+    reffile=`echo $1 | sed 's/.vl$//'`
+    basedir="`echo $1 | sed 's/\/[^\/]*$//'`/."
+
+    echo -n "$basename..."
+
+    echo 1>&2
+    echo "###### Testing $basename" 1>&2
+
+    RunFail "$VLCC" "-c" $1
+
+    # Report the status and clean up the generated files
+    if [ $error -eq 0 ] ; then
+        if [ $keep -eq 0 ] ; then
+            rm -f $generatedfiles
+        fi
         echo "###### SUCCESS" 1>&2
     else
         echo "###### FAILED" 1>&2
