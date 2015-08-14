@@ -58,6 +58,21 @@
     \pagebreak
 }
 
+% custom language for log files
+\lstset{%
+    basicstyle=\ttfamily\scriptsize,
+    keywordstyle=\color{blue}\ttfamily,
+    stringstyle=\color{red}\ttfamily,
+    commentstyle=\color{green}\ttfamily
+}
+
+% Custom macro for printing log file
+% #1 - log filename
+\newcommand{\inputlog}[1]{
+    \lstinputlisting[nolol=true,language={}]{#1}
+    \pagebreak
+}
+
 %% Diagrams
 \usepackage{tikz}
 \usetikzlibrary{shapes,arrows}

@@ -6,7 +6,8 @@
 	@pdflatex -shell-escape -output-directory ~/Downloads $<
 
 git-log:
-	@cd ../ && git log --pretty=format:"%ad %w(68,1,12)%s" --date=short > git.log		
+	@cd ../ && git log --after="2015-5-28" \
+		--pretty=format:"%ad %w(68,1,12)%s" --date=short > git.log		
 
 final-report.pdf: git-log
 

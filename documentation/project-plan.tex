@@ -1,5 +1,30 @@
-% TODO
 \section{Project Plan}
+
+Since I was working on this project alone, there was more autonomy in creating the
+language. This actually led to be a bit of a problem as my initial ideas for what
+I wanted to accomplish were unrealistic and I was more willing to slide on the schedule
+I set for myself since there were no other group members to act in the project manager
+role to keep things on schedule, nor were any group members available to ensure that
+project goals were reasonable. Regardless, after an initial development period of over
+a month a working front end was developed leveraging the XML specification available
+online with the planned tags and attributes I had at the time. It was eventually decided
+that adding my own namespace for XML tags would be necessary to reduce the processing
+load in the scanner and parser section to work with other elements. This is right around
+the time the XML Abstract Syntax Tree was fully developed and work started on the backend
+of the compiler.
+\par
+At this point, there was little testing in existance since I was just attempting to parse
+the example program, so testing had to be approached. It was decided I was going to
+leverage to bash testing script from the MicroC example language provided in class, and
+have additional python scripts be created leveraging the Ctypes module to test the
+functionality of each test case. Once this was decided, the first MWE test case was
+developed (the buffer test case) and more work was done to get that to pass. More
+complicated test cases led to a decision to add a complete block parsing algorithm in
+order to be able to produce a correctly formatted program for code generation. After
+some development, this algorithm allowed more test cases to pass and work to continue
+on integrating block group and referencing functionality. Once this was completed, the
+initial draft of VisLang was considered feature complete, and several other planned
+features were descoped due to time constraints on the project.
 
 \subsection{Software Development Environment}
 
@@ -7,18 +32,39 @@ Development for the project took place entirely on an Asus Chromebook C720 using
 to enable a full linux environment. The tools used for this project are listed below:
 
 \begin{itemize}
-\item linux 3.10.18
-\item ubuntu 14.04.2 LTS
-\item git 1.9.1
-\item vim 7.4.52
+\item ubuntu 14.04.2 LTS (Operating system environment)
+\item git 1.9.1 (source code, test, and documentation configuration management)
+\item vim 7.4.52 (general purpose text editor)
 \item ocaml 4.01.0 (including ocamlyacc and ocamllex)
-\item gcc 4.8.2
-\item python 2.7.6
+\item gcc 4.8.2 (compiling generated code)
+\item python 2.7.6 (scripting language for testing compiled C objects)
 \end{itemize}
 
 \subsection{Project Timeline}
 
-% figure out timeline
+\begin{itemize}
+\item 2015-05-27  Decided on Simulink-like block language, using XML syntax
+\item 2015-05-31  Created example program
+\item 2015-06-12  Proposal Submitted
+\item 2015-06-21  First draft of scanner
+\item 2015-06-26  First draft of parser
+\item 2015-06-30  Scanner working for all attributes and tags
+\item 2015-07-04  LRM Submitted
+\item 2015-07-08  Parser working for new ast
+\item 2015-07-09  Added top level
+\item 2015-07-10  Moved errors to their own module
+\item 2015-07-14  XML ast working
+\item 2015-07-17  Integrated blockification function
+\item 2015-07-24  Removed interpreter
+\item 2015-07-27  Simplified blockification process
+\item 2015-07-28  Moved trace algorithm from blockify to it's own module
+\item 2015-08-05  Working Code Generation for all atomic parts
+\item 2015-08-12  Got blocks completely working end-to-end
+\item 2015-08-12  Updated blockification for Reference part
+\item 2015-08-13  Began working on paper
+\item 2015-08-14  Submitted paper
+\item 2015-08-15  Celebrated from Canada
+\end{itemize}
 
 \subsection{Project Log}
-\srccode{pypylog}{../git.log}{prj:log}{Project Log}
+\inputlog{../git.log}
