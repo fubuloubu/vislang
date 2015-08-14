@@ -28,11 +28,8 @@
          incrementing the input specifiers "input1", "input2",
          "input3", etc. -->
         <vl:CONNECTION to="input1" from="not_di_1"/>
-        <!-- The "block/output_name" syntax is how to create a connection 
-             directly without an intermediate signal -->
+        <!-- Use the block name directly if it is an atomic part  -->
         <vl:CONNECTION to="input2" from="count_expired_lp"/>
-        <!-- The | operator on a reference denotes a member of the referenced
-             file or library -->
     </vl:OR>
     <vl:REFERENCE name="timer_instance_1" ref="./timer.vl|timer">
         <!-- Reference block references a block in an external file as
@@ -44,10 +41,6 @@
              However for a Connection to work, one and only one of "to" or
              "from" attributes must be an input/output of the part. -->
         <vl:CONNECTION to="reset" from="reset_blink"/>
-        <!-- You can plug in hardcoded constants as inputs to blocks
-             directly. Literal Constants for singles have decimal points
-             (e.g. 2.000). Literal Constants for doubles have "L" as a
-             suffix (e.g. 2.00L) -->
         <vl:CONNECTION to="time" from="time"/>
     </vl:REFERENCE>
     <vl:OUTPUT name="digital_output_1" datatype="boolean">

@@ -39,7 +39,7 @@
     <!-- Additionally, the PROD part exists for taking the PI
          product of a set of inputs, and the INV command for taking
          the recipicral of a number (divide by zero runtime error
-         possible) -->
+         is partially mitgated, but unexpected operation may occur) -->
         <vl:CONNECTION to="input1" from="increment_value"/>
         <vl:CONNECTION to="input2" from="elapsed_time_lp"/>
     </vl:SUM>
