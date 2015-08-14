@@ -20,7 +20,8 @@ status:
 	@for file in *.tex; do grep "TODO" $$file && echo "$$file"; done
 
 clean:
-	rm -f *.pyg
-	rm -f ../git.log
-	rm -f ../example/time*.c
-	rm -f ~/Downloads/final-report.*
+	@rm -f *.pyg
+	@rm -f ../git.log
+	@rm -f ../example/time*.c
+	@rm -f ~/Downloads/final-report.*
+	@cd ../ && make clean
