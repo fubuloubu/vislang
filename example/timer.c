@@ -21,7 +21,9 @@ static float_t elapsed_time_lp = 0.;
 static float_t zero_constant = 0.;
 static float_t time_since_last_pass = 0.1;
 
-struct timer_out timer(struct timer_in inputs) {
+struct timer_out
+/* Function def */ timer(struct timer_in inputs)
+{
 	/* Inputs for block timer */
 	bool reset = inputs.reset;
 	bool start = inputs.start;
@@ -36,8 +38,8 @@ struct timer_out timer(struct timer_in inputs) {
 	float_t elapsed_time = reset_switch;
 	bool is_count_expired = (elapsed_time >= time);
 	bool count_expired = is_count_expired;
-	elapsed_time_lp = elapsed_time; /* Update for next pass */
-	count_expired_lp = count_expired; /* Update for next pass */
+	elapsed_time_lp = elapsed_time;
+	count_expired_lp = count_expired;
 
 	/* Outputs for block timer */
 	struct timer_out outputs;
