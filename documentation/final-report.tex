@@ -45,6 +45,8 @@
     \mathcode`_="8000
 }
 % TODO: _ works in \inputminted but gets displayed in #2 as `
+% TODO: don't print file name in list of listings
+% TODO: put title of listing above code, not below it
 % Custom macro for code listings from files
 % #1 - language e.g. ocaml
 % #2 - filename e.g. ../src/vislang.ml
@@ -53,7 +55,7 @@
 % note: filename will be pretty printed as vislang/src/*
 %       instead of ../src/*
 \newcommand{\srccode}[4]{
-    \inputminted[frame=single,linenos,fontsize=\footnotesize]{#1}{#2}
+    \inputminted[linenos,fontsize=\footnotesize]{#1}{#2}
     \captionof{listing}{\label{#3}#4: #2}
     \pagebreak
 }
