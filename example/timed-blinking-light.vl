@@ -43,7 +43,7 @@
         <!-- Input and output connections to blocks are partially ambigious.
              However for a Connection to work, one and only one of "to" or
              "from" attributes must be an input/output of the part. -->
-        <vl:CONNECTION to="reset" from="reset_blink|output"/>
+        <vl:CONNECTION to="reset" from="reset_blink"/>
         <!-- You can plug in hardcoded constants as inputs to blocks
              directly. Literal Constants for singles have decimal points
              (e.g. 2.000). Literal Constants for doubles have "L" as a

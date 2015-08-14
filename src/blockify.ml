@@ -103,9 +103,9 @@ class virtual blk_or_ref blockify xml_obj = object (self)
     method body       = if_elements (* Create code for setting input structure *)
                             self#inputs
                             (self#input_type ^ " " ^ 
-                             self#name ^ "_inputs = " ^ "{ " ^ 
+                             self#name ^ "_inputs = " ^ "{\n\t\t" ^ 
                                 (String.concat 
-                                    ", " 
+                                    ",\n\t\t" 
                                     (List.map
                                         (fun (x, y) -> "." ^ x.name ^ 
                                                        " = " ^ y.name
@@ -115,11 +115,12 @@ class virtual blk_or_ref blockify xml_obj = object (self)
                                             self#connected_inputs
                                         )
                                     )
-                                ) ^ " };\n\t"
+                                ) ^ "\n\t};\n\t"
                             ) ^
                         if_elements (* Create code for setting output struct *)
                             self#outputs
-                           (self#output_type ^ " " ^ self#name ^ "_outputs = ") ^
+                           (self#output_type ^ " " ^
+                            self#name ^ "_outputs =\n\t\t") ^
                         self#func ^ "(" ^ (* function call *)
                         if_elements (* Only apply inputs if block has inputs *)
                             self#inputs
@@ -217,12 +218,12 @@ class block blockify xml_obj = object (self)
                           if out_struct <> ""
                           then out_struct
                           else "void") ^ 
-                        " " ^ name ^ "(" ^ 
+                        "\n/* Function def */ " ^ name ^ "(" ^ 
                         (let in_struct = self#input_type in
                         if in_struct <> "" 
                         then in_struct ^ " inputs"
                         else "") ^ 
-                        ") {\n" ^ 
+                        ")\n{\n" ^ 
                         (* Unpack inputs *)
                         (let input_blk = String.concat "\n\t" 
                             (List.map 
@@ -471,7 +472,7 @@ class memory xml_obj = object (self)
                         "static " ^ (get_datatype self#datatype) ^ " " ^
                         self#name ^ " = " ^ init_cond ^ ";"
     method body         = self#name ^ " = " ^ 
-                          (List.hd inputs).name ^ "; /* Update for next pass */"
+                          (List.hd inputs).name ^ ";"
 end;;
 
 (* NOT Gate Part class: unary NOT operation *)
