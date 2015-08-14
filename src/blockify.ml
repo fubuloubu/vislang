@@ -693,8 +693,8 @@ class if_sw xml_obj = object (self)
     val mutable outputs = [{ name = "output"; datatype = "auto" }]
     method body         = (get_datatype datatype) ^ " " ^ 
                           self#name ^ " = (" ^ (List.nth self#inputs 0).name ^
-                          ") ? (" ^ (List.nth self#inputs 1).name ^
-                          ") : (" ^ (List.nth self#inputs 2).name ^
+                          ") ?\n\t\t(" ^ (List.nth self#inputs 1).name ^
+                          ") :\n\t\t(" ^ (List.nth self#inputs 2).name ^
                           ");"
     method print_obj    = "\"" ^ self#print_class ^ "\": { " ^
                           "\"name\":\"" ^ name ^ "\", " ^
