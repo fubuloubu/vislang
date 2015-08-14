@@ -1,4 +1,5 @@
 \section{Language Reference Manual}
+
 \subsection{Lexical Convention}
 VisLang uses standard XML syntax for its file specification.
 Several built-in elements, called Parts, are defined that make up the core of the language.
@@ -6,6 +7,7 @@ The elements have a list of required attributes that must be defined using the c
  All Parts have a name attribute that should be globally unique in the program to be compiled and can be used as a named reference using CONNECTION elements to specify connections between different parts and blocks.
 Parts can be grouped into containers called Blocks using the BLOCK element, and that Block can be referenced internally or externally (using the REFERENCE element).
 Each project file must contain one, and only one, top level BLOCK element, but a block element can contain any number or level of additional block elements or built-in parts.
+
 \subsubsection{XML Elements and Attributes}
 Users of VisLang should be comfortable with how XML syntax works, but the following is a quick overview of how VisLang uses standard XML.
 XML elements are defined using the start tag $"<"$ and end tag $">"$.
@@ -22,6 +24,7 @@ VisLang Block elements can contain any elements inside it including Parts and ot
 However, basic Parts cannot contain other Parts inside them, only ignored XML elements.
 All Parts and Blocks must contain their corresponding CONNECTION elements inside them if they are to be connected.
 Additionally, the CONNECTION element must be the first contained elements in a BLOCK definition (excluding comments).
+
 \subsubsection{Accepted Elements and Attributes}
 VisLang only accepts a limited amount of elements and attributes to be used for compiling purposes, so by design all other elements and attributes not matching this set will be ignored.
 This decision allows developers to define programs that utilize VisLang as a base language.
@@ -30,6 +33,7 @@ The scanning and parsing stage of the compiler will accept any amount of attribu
 ws+ attribute="value" ws+) where the identifier for the attribute is only in the set of lowercase letters, and the value is in the set of accepted types.
 Any attributes not matching this specification will be ignored.
 As described above, either syntax of closing tag for an element is accepted, however any elements contained within an element (besides BLOCK) will be ignored.
+
 \subsubsection{Accepted Types}
 Attributes in vislang can only contain values matching the primative types accepted by the language.
 The scanning stage of the compiler will ignore any attributes whose values don't comply with this rule.
@@ -77,8 +81,8 @@ Additionally, the XML specification describes several special tags for the Prolo
 VisLang will accept and ignore these elements through the same mechanism as the comments.
 Therefore, any XML element starting with "$<?$" or "$<![$" and ending with "$?>$" and "$]>$" respectively will have all of it's contents ignored.
 Please follow the W3C XML specification for the full list of characters that should be avoided for this situation.
-\subsection{Constructing Programs}
-\subsubsection{Built-In Parts}
+
+\subsection{Built-In Parts}
 As discussed previously, VisLang has built-in Parts that are natively understood by the compiler.
 These parts have specific attributes and special properties that for using them, including a list of inputs that must be used.
 \par
@@ -134,7 +138,8 @@ Below is the list of standard elements supported by the language, and their requ
     INV & input & 'name' & name, datatype \\
     \hline
 \end{longtable}
-\subsubsection{Using Built-In Parts}
+
+\subsection{Using Built-In Parts}
 \subsubsection{Basic Language Elements}
 \begin{itemize}[label={}]
     \item BLOCK:
@@ -174,8 +179,9 @@ The OUTPUT element is very similar to the INPUT element, the two differences are
 All of the rules relating to the attributes of INPUT block apply here as well.
 The "type" attribute of the OUTPUT element is where the compiler first begins it's type checking, so as it traces the connections made from the OUTPUT element all the way back to some INPUT element(s), the corresponding types must match between any intermediary Parts or Block Outputs.
 \end{itemize}
-\subsubsection{Built-In Parts}
-Note: All Built-in Parts have a "name" attribute to use as an identifier for making connections to other parts. Unless otherwise specified, the default name for input to a signal input Part is "input" and the default name for an output is "output". All Parts are single output.
+\subsubsection{Atomic Parts}
+Note: All Atomic Parts have a "name" attribute to use as an identifier for making connections to other parts. Unless otherwise specified, the default name for input to a signal input Part is "input" and the default name for an output is "output". All Parts are single output.
+
 \begin{itemize}[label={}]
     \item MEM:
 The memory block creates a unit-delayed signal that can be reused inside the current Block, usually to solve an algebraic loop concerning the connection of a block.
