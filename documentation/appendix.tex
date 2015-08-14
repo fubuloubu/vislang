@@ -1,7 +1,6 @@
 \appendix
-\section{Code Listing}
 
-\subsection{VLCC Source Code}
+\section{VLCC Source Code}
 \srccode{ocaml}{../src/vislang.ml}{src:top}{Top Level}
 \srccode{ocaml}{../src/xscanner.mll}{src:scan}{XML Scanner}
 \srccode{ocaml}{../src/xparser.mly}{src:parse}{XML Parser}
@@ -11,6 +10,38 @@
 \srccode{ocaml}{../src/compile.ml}{src:compile}{Code Generation}
 \srccode{ocaml}{../src/errors.ml}{src:errors}{VisLang Errors}
 
-\subsection{VLCC Utilities}
+\section{VLCC Utilities}
 \srccode{make}{../src/Makefile}{util:make}{Automated Build Script}
 \srccode{bash}{../test/run\_tests.sh}{test:script}{Automated Testing Script}
+
+\section{VLCC Test Cases}
+\srccode{xml}{../test/fail-algebraic\_loop.vl}
+    {test:failal}{Algebraic Loop Failure Case}
+\srccode{xml}{../test/fail-bad\_connection.vl}
+    {test:failbc}{Bad Connection Failure Case}
+\srccode{xml}{../test/fail-missing\_attribute.vl}
+    {test:failma}{Missing Attribute Failure Case}
+\srccode{xml}{../test/fail-unended\_block.vl}
+    {test:failub}{Unended Block Failure Case}
+\srccode{xml}{../test/pass-cascaded\_empty\_blocks.vl}
+    {test:failceb}{Cascaded Empty Blocks Completion Case}
+\srccode{xml}{../test/pass-empty\_block.vl}
+    {test:passeb}{Empty Block Completion Case}
+\srccode{xml}{../test/test-buffer.vl}
+    {test:testb}{Buffer Value Test Case}
+\srccode{xml}{../test/test-buffer\_in\_buffer.vl}
+    {test:testbib}{Buffer in Buffer Value Test Case}
+\srccode{xml}{../test/test-compare.vl}
+    {test:testc}{Comparision Operation Test Case}
+\srccode{xml}{../test/test-gates.vl}
+    {test:testg}{Logical Gate Test Case}
+\srccode{xml}{../test/test-hysteresis\_sw.vl}
+    {test:tesths}{Reference Block Test Case}
+\srccode{xml}{../test/test-math\_constant.vl}
+    {test:testmc}{Math Operations Test Case}
+\srccode{xml}{../test/test-memory.vl}
+    {test:testm}{Memory Block Test Case}
+\srccode{xml}{../test/test-set\_reset\_latch.vl}
+    {test:testsrl}{SR Latch Complexity Test Case}
+\srccode{xml}{../test/test-timer.vl}
+    {test:testt}{Timer Complexity Test Case}
