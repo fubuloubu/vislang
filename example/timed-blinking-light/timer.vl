@@ -14,10 +14,10 @@
          successive passes of program. In a Soft RTOS, this
          would be a variable number. In a Hard RTOS, this
          would be a constant number. Here, we are saying the
-         module will run around 1000Hz, or 1ms (0.001 s).
+         module will run around 10Hz, or 100ms (0.1 s).
          The DT module needs an initializer to guess the value
          on the first pass, but will be updated every pass afterwards -->
-    <vl:DT name="time_since_last_pass" ic="0.001"/>
+    <vl:DT name="time_since_last_pass" ic="0.100"/>
     <vl:NOT name="count_not_expired">
         <vl:CONNECTION to="input" from="count_expired_lp"/>
     </vl:NOT>
