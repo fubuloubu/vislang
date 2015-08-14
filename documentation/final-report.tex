@@ -28,10 +28,6 @@
     citecolor={blue!50!black},
     urlcolor={blue!80!black}
 }
-% Needed to use \autoref with listings from minted
-\providecommand*{\listingautorefname}{Listing}
-% Command for referencing listings
-\newcommand*{\listingref}[1]{\nameref*{#1} (\hyperref[{#1}]{\autoref*{#1}})}
 
 %% Tables 
 \usepackage{longtable}
@@ -50,6 +46,13 @@
 \usepackage{listings}
 \usepackage{color} % for colored solution
 \usepackage{caption}
+\renewcommand{\listoflistingscaption}{List of Code Listings}
+\setlength{\belowcaptionskip}{10pt plus 5pt minus 0pt}
+
+% Needed to use \autoref with listings from minted
+\providecommand*{\listingautorefname}{Listing}
+% Command for referencing listings
+\newcommand*{\listingref}[1]{\specialcell[r]{\nameref*{#1} \\ Source Code: \hyperref[{#1}]{\autoref*{#1}}}}
 
 % This will allow us to use file names with
 % underscores in below
@@ -59,9 +62,6 @@
     \lowercase{\endgroup\let~}\sb
     \mathcode`_="8000
 }
-% TODO: _ works in \inputminted but gets displayed in #2 as `
-% TODO: don't print file name in list of listings
-% TODO: put title of listing above code, not below it
 % Custom macro for code listings from files
 % #1 - language e.g. ocaml
 % #2 - filename e.g. ../src/vislang.ml
@@ -70,9 +70,9 @@
 % note: filename will be pretty printed as vislang/src/*
 %       instead of ../src/*
 \newcommand{\srccode}[4]{
-    \inputminted[linenos,fontsize=\footnotesize]{#1}{#2}
-    \captionof{listing}{\label{#3}#4 File: #2}
-    \pagebreak
+    \captionof{listing}{\label{#3}#4}
+    \par
+    \inputminted[linenos,fontsize=\footnotesize,frame=single,label=#2]{#1}{#2}
 }
 
 % custom language for log files
