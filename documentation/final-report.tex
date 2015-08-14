@@ -36,6 +36,15 @@
 \usepackage{color} % for colored solution
 \usepackage{caption}
 
+% This will allow us to use file names with
+% underscores in below
+\AtBeginDocument{
+    \catcode`_=12
+    \begingroup\lccode`~=`_
+    \lowercase{\endgroup\let~}\sb
+    \mathcode`_="8000
+}
+% TODO: _ works in \inputminted but gets displayed in #2 as `
 % Custom macro for code listings from files
 % #1 - language e.g. ocaml
 % #2 - filename e.g. ../src/vislang.ml
