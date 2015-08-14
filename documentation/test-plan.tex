@@ -38,11 +38,15 @@ timestep. The timestep is purposely never updated to ensure that a repeatable te
 environment exists. The output produced by the test script is then compared against the
 associated *.out file to see if any differences exist. If the two files match, then the
 test is determined to be passing.
-\par
+
+\subsection{Test Case List}
+
 The following is a list of the test cases used to verify the VisLang compiler produces
 correct code:
 
 \begin{longtable}[c]{ |r|p{6cm}| }
+    \caption{Test Case Descriptions}
+    \label{table:testcases}
     \hline
     Test Case                   & Description \\
     \hline
@@ -79,6 +83,4 @@ correct code:
     \hline
     \listingref{test:testt}     & Shows that example (Timer block) works \\
     \hline
-    \caption{Test Case Descriptions}
-    \label{table:testcases}
 \end{longtable}

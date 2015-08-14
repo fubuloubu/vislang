@@ -1,9 +1,4 @@
-% TODO: Clean up
 \section{Language Reference Manual}
-VisLang is a block diagram language designed to allow fast and easy prototyping of programs for embedded processors.
-The language is created with a graphical editor in mind, and the core language is designed to be extensible so that any graphical editor can add additional elements or attributes for graphical display or other features.
-It is designed to produce code that can be linked into projects easily, so existing build tools and libraries can be used.
-Currently, the C language is the preferred code generation target.
 \subsection{Lexical Convention}
 VisLang uses standard XML syntax for its file specification.
 Several built-in elements, called Parts, are defined that make up the core of the language.
@@ -39,19 +34,38 @@ As described above, either syntax of closing tag for an element is accepted, how
 Attributes in vislang can only contain values matching the primative types accepted by the language.
 The scanning stage of the compiler will ignore any attributes whose values don't comply with this rule.
 This means that additional attributes to an accepted element can be defined, but VisLang will raise an error at in a later stage if a required attribute is missing.
-The list of accepted types for attribute values are as follows: 
+The list of accepted types for attribute values are as follows:
+
+% TODO: Something is messed up with the header of this table
 \begin{longtable}[c]{ |r|l|l| }
+    \caption{Accepted Attributes}
+    \label{table:attr}
+    \hline
     Type & Example & Regexp  \\
     \hline
     \hline
     name & "block\_name" & [A-Za-z][A-Za-z0-9\_]* \\
     \hline
-    file & "./path/to/file.vl" & \specialcell{("./" $|$ "../"+ $|$ "/") \\
+    ref & "./path/to/file.vl" & \specialcell{("./" $|$ "../"+ $|$ "/") \\
                                         ([A-Za-z0-9-\_.]* "/")* name ".vl"} \\
     \hline
-    reference & "$|$block$|$block$|$etc" & ("$|$" name)+ \\
+    to, from & "$|$block$|$block$|$etc" & ("$|$" name)+ \\
+    \hline
+    ic, value & -0x32Ab7f & \specialcell{true, false \\ {[+-]}? ([0-9]+ "." [0-9]* $|$ "." [0-9]+) \\
+                                                        {[+-]}? [0-9]+ \\
+                                                      {[+-]}? 0 [xX] [A-Fa-f0-9]+ \\
+                                                      {[+-]}? 0 [oO] [0-7]+ \\
+                                                  {[+-]}? 0 [bB] [0-1]+ } \\
+    \hline
+    datatype & uint32 & \specialcell{boolean \\ single \\ double \\ 
+                                    {[u]}?int(8$|$16$|$32)} \\
+    \hline
+    operation & "==" & \specialcell{$">", "<", "!="$ \\ $"==", ">=", "<="$} \\
     \hline
 \end{longtable}
+Note: value, ic accepts binary, hexidecimal, octal, and decimal coded signed and unsigned 
+integers.
+
 \subsubsection{Comments}
 Although the usage scenario for VisLang is for developers to use the language specification as a baseline for further customizations, the VisLang compiler will accept XML-style comments.
 XML style comments start with the tag "$<!--$", and end with the tag "$-->$".
@@ -69,94 +83,73 @@ As discussed previously, VisLang has built-in Parts that are natively understood
 These parts have specific attributes and special properties that for using them, including a list of inputs that must be used.
 \par
 Below is the list of standard elements supported by the language, and their required attributes:
+
+% TODO: Something is messed up with the header of this table
 \begin{longtable}[c]{ |r|l|l|l| } 
+    \caption{Accepted Elements}
+    \label{table:elem}
     \hline
-    element & input(s) & outputs & attributes \\ 
+    element & input(s) & output(s) & attributes \\ 
     \hline
     \hline
     BLOCK & as defined & as defined & name \\ 
     \hline
+    REFERENCE & as defined (external) & as defined (external) & name, ref \\ 
+    \hline
     CONNECTION & none & none & to, from \\
     \hline
-    REFERENCE & none (external) & outputs (external) & name, ref \\ 
+    INPUT & none & provides 'name' & name, datatype \\ 
+    \hline
+    OUTPUT & provides 'name' & none & name, datatype \\ 
+    \hline
+    CONSTANT & none & provides 'name' & \specialcell{name, datatype \\ value} \\ 
     \hline
     \hline
-    INPUT & none & provides 'name' & \specialcell{name, scope, \\ size, type} \\ 
+    MEM & current & 'name' & \specialcell{name, datatype \\ ic} \\
     \hline
-    OUTPUT & provides 'name' & none & \specialcell{name, scope, \\ size, type} \\ 
+    DT & none & 'name' & name \\
     \hline
-    CONSTANT & none & provides 'name' & \specialcell{name, value, \\ size, type} \\ 
+    NOT & input & 'name' & name \\
     \hline
-    SIGNAL & provides 'name' & provides 'name' & \specialcell{name, scope, \\ size, type} \\ 
+    AND & \specialcell{input\# \\ Note: \# $>$ 1} & 'name' & name \\
     \hline
+    OR & \specialcell{input\# \\ Note: \# $>$ 1} & 'name' & name \\
     \hline
-    CAST & input & output & name, type \\
+    NOR & \specialcell{input\# \\ Note: \# $>$ 1} & 'name' & name \\
     \hline
-    MEM & current & stored & name, ic \\
+    NAND & \specialcell{input\# \\ Note: \# $>$ 1} & 'name' & name \\
     \hline
-    DT & none & dt & name \\
+    XOR & \specialcell{input\# \\ Note: \# $>$ 1} & 'name' & name \\
     \hline
-    NOT & input & output & name \\
+    IF & control, true, false & 'name' & name, datatype \\
     \hline
-    AND & \specialcell{input\# \\ Note: \# $>$ 1} & output & name \\
+    COMPARE & lhs, rhs  & 'name' & \specialcell{name, datatype \\ operation} \\
     \hline
-    OR & \specialcell{input\# \\ Note: \# $>$ 1} & output & name \\
+    SUM & \specialcell{input\# \\ Note: \# $>$ 1} & 'name' & name, datatype \\
     \hline
-    NOR & \specialcell{input\# \\ Note: \# $>$ 1} & output & name \\
+    PROD & \specialcell{input\# \\ Note: \# $>$ 1} & 'name' & name, datatype \\
     \hline
-    NAND & \specialcell{input\# \\ Note: \# $>$ 1} & output & name \\
+    GAIN & input & 'name' & \specialcell{name, datatype \\ value} \\
     \hline
-    XOR & \specialcell{input\# \\ Note: \# $>$ 1} & output & name \\
-    \hline
-    BITWISE & \specialcell{input\# \\ Note: \# $>$ 1} & output & name, operation \\
-    \hline
-    IF & control, true, false & output & name \\
-    \hline
-    COMPARE & lhs, rhs  & output & name, operation \\
-    \hline
-    SUM & \specialcell{input\# \\ Note: \# $>$ 1} & output & name \\
-    \hline
-    PROD & \specialcell{input\# \\ Note: \# $>$ 1} & output & name \\
-    \hline
-    GAIN & input & output & name, value \\
-    \hline
-    INV & input & output & name \\
-    \hline
-    \hline
-    MUX & \specialcell{input\# \\ Note: \# $>$ 1} & provides 'array' & name \\
-    \hline
-    DEMUX & array & \specialcell{output\# \\ Note: \# $>$ 1} & name \\
-    \hline
-    STRUCT & none & none & name, \specialcell{member\# \\ Note: \# $>$ 0} \\
-    \hline
-    CONSTRUCT & by definition & provides 'name' & name, definition \\
-    \hline
-    \hline
-    MAP & input (array) & output (array) & name, ref \\
-    \hline
-    FILTER & input (array) & output & name, size, ref \\
-    \hline
-    REDUCE & input (array) & output & name, start, ref \\
+    INV & input & 'name' & name, datatype \\
     \hline
 \end{longtable}
 \subsubsection{Using Built-In Parts}
-% what each block does
-% recursive parts
 \subsubsection{Basic Language Elements}
 \begin{itemize}[label={}]
     \item BLOCK:
 As noted prior, a BLOCK element is a container for other Blocks and/or Parts.
 The BLOCK element only has a single attribute "name" which is the identifier for that part.
 All of the valid elements contained within the BLOCK element is considered inside that block, therefore any connections made within that block between parts/blocks can reference any of the elements inside the block as connection points. A block does not need to have Inputs and Outputs defined. However, any Inputs or Outputs found directly inside that BLOCK element will be considered an input or output of that named element for use by other blocks above the named block, or inside other files through the REFERENCE element.
+    \item REFERENCE:
+The REFERENCE element is similar to the BLOCK element, however it has an additional attribute called "ref" that is a reference to a block contained within another file.
+The block referred to by REFERENCE is then used as if it were contained within the local program in the same way as the BLOCK element would.
+The REFERENCE element will need connections to any inputs that the referenced block had, again similar to as if that block were contained inside the local program.
     \item CONNECTION:
 The CONNECTION element is special in that it does not by itself perform a function.
 The "to" and "from" attributes of this element refer to a connection between the output of one block or part and the input of another.
 CONNECTION elements must be contained inside a block or part, and the "to" attribute must reference that block or part's inputs (or name, in the case of SIGNAL element).
 The "from" attribute can reference the output of any block or part within the same level of the block that the "to" attribute refers to.
-    \item REFERENCE:
-The REFERENCE element is similar to the BLOCK element, however it has an additional attribute called "ref" that is a reference to a block contained within another file.
-The block referred to by REFERENCE is then used as if it were contained within the local program in the same way as the BLOCK element would.
-The REFERENCE element will need connections to any inputs that the referenced block had, again similar to as if that block were contained inside the local program.
     \item INPUT:
 The INPUT element is used as the input to a block element.
 It has a "name" attribute, which is an identifier that can be used in any connection at the current block level.
@@ -180,23 +173,15 @@ The CONSTANT element does not have a "scope" attribute, because it is not intend
 The OUTPUT element is very similar to the INPUT element, the two differences are that it is considered a named output of the block it is contained in and that it requires a connection to be made inside it to a block.
 All of the rules relating to the attributes of INPUT block apply here as well.
 The "type" attribute of the OUTPUT element is where the compiler first begins it's type checking, so as it traces the connections made from the OUTPUT element all the way back to some INPUT element(s), the corresponding types must match between any intermediary Parts or Block Outputs.
-    \item SIGNAL:
-The SIGNAL element is similar to the OUTPUT element with the one difference that it does not constribute to the Outputs of a Block like the OUTPUT element does.
-Instead, the SIGNAL element can be used like the INPUT element inside the block as a connection point.
-It's main purpose is as an intermediary point, and with a global scope it can be referenced externally to provide insight into the inner workings of a Block without creating a new Output of that block.
 \end{itemize}
 \subsubsection{Built-In Parts}
 Note: All Built-in Parts have a "name" attribute to use as an identifier for making connections to other parts. Unless otherwise specified, the default name for input to a signal input Part is "input" and the default name for an output is "output". All Parts are single output.
 \begin{itemize}[label={}]
-    \item CAST:
-The CAST element is a part that takes it's input and re-casts the datatype of that input into the type specified by the attribute "type" to provide to the output.
-The usage of this part is to allow recasting types of signals so they can be used in other parts without violating the type match condition required by the compiler.
-The casting process will match the casting of types to different types by the C language.
     \item MEM:
 The memory block creates a unit-delayed signal that can be reused inside the current Block, usually to solve an algebraic loop concerning the connection of a block.
 The output value of this block will be the same value of the connection into the block, but only from the previous pass of the generated code.
 The "ic" attribute describes the value that the MEM element uses for the output on the very first pass of the generated code.
-The MEM Part's output type is the same type as it's input.
+The "datatype" attribute is required so that the MEM element knows what the datatype is for it's input and output.
     \item DT:
 The DT element only provides a signal output called "dt" which can be referenced and used as the delta time between passes of the generated code.
 This value will always be dynamically updated every pass to reflect the change in time natively.
@@ -223,10 +208,6 @@ The input and output type must be "boolean".
 The OR Part is defined the same as the AND Part, with the exception that the operation is the logical xor (only one or the other) of two or more inputs.
 The recursive nauture of this definition means that the XOR gate with 3 or more inputs will set it's output true if an odd number of inputs are true.
 The input and output type must be "boolean".
-    \item BITWISE:
-The BITWISE Part only works on unsigned integers, and provides the same functionality as the above logical gate parts on a per-bit basis between the two inputs defined.
-The "operation" attribute describes the function being applied in the bitwise operation.
-The input and output type must match and be an unsigned integer type (e.g. uint8, uint16, uint32).
     \item IF:
 The IF Part has three defined inputs and performs a conditional operation to switch passing through to the output between two inputs.
 The "control" input must be a boolean type and is used to control the conditional operation.
@@ -234,7 +215,7 @@ The "true" input is passed through to the output if the "control" input is set t
     \item COMPARE:
 The COMPARE Part has two inputs "rhs" and "lhs" and an "operation" attribute that evaulates the conditional statement "lhs operation rhs" and passes the result to the output.
 "lhs" and "rhs" must match datatype and cannot be the boolean datatype, and the operation applied has the mathematical result expected.
-The exception to that is the equality operations on floating point types (everything except for greater than or less than), which is explicitly disallowed instead of being openly ambigious.
+The "datatype" attribute is required so that the COMPARE element knows what the datatype is for it's inputs. It's output is type boolean.
     \item SUM:
 The SUM Part is similar to the Gate Parts in that there are 2 or more inputs allowed and the function is defined recursively.
 However, the datatype allowed is either integer or floating point (all inputs must match type).
@@ -250,51 +231,5 @@ The GAIN Part is a unary operation that multiples the input by literal attribute
 The input and output will match datatype, and the literal expression for "value" needs to match the datatype of the input in order not to raise an error while compiling.
     \item INV:
 The INV Part is similar to the GAIN Part, except that the unary operation is inversion of the input's value e.g. division of 1 by that value.
-The INV Part requires a floating point datatype for the input, and division by zero is unhandled so care must be taken to ensure the input value is never zero.
-\end{itemize}
-\subsubsection{Array and Structure Elements}
-VisLang has support for Arrays as well as Structure types.
-The way arrays work in VisLang is through the MUX and DEMUX Parts, which create or take apart an array of a pre-defined size with the same datatype.
-Arrays can be used for parallel computations on the Built-In Parts or any user-defined Blocks as the function applied will be applied element-by-element on the array.
-This requires that the functions be applied match in size of the array elements or else and error would be raised.
-Additionally, there are Parts that can operate on Arrays on an element-by-element basis to either Map (map the input array through an operation to an output array), Filter (find a match among the elements of an array), or Reduce (combine the elements of an array) the array elements for easy calculations.
-\par
-Structures are defined using seperate blocks that define the members of the structure in an ordered syntax.
-Once created, members of the structure can be referenced by any connection parts for signals whose datatype matches that structure, but structures are not parallelisble for use in artbitrary parts.
-Sturctures can be used as inputs and outputs for blocks, so Parts are included to create and acquire the members of a structure for use inside a block.
-\begin{itemize}[label={}]
-    \item MUX:
-The MUX Part creates an array from an arbitrary number of inputs that match datatype.
-The created array can than be referenced like an INPUT or SIGNAL would be allowed, and connected to other Blocks or Parts whose inputs match in size to the size of the referenced array.
-    \item DEMUX:
-The DEMUX Part essentially reverses the operation of the MUX Part.
-DEMUX will take an array and break it apart into a number of outputs that matches it's size and datatype.
-    \item STRUCT:
-The STRUCT element is unique in that it does not actively produce any code.
-Rather, it creates a new type that can be referenced anywhere a "type" attribute occurs.
-It works by defining the STRUCT element with it's "name" attribute and contain MEMBER elements that have a "name" attribute, a "size" attribute, and a "type" attribute.
-Once a new struct type is created, it must match type through any connection made.
-However, since no Built-In Part or Array function will operate on the new struct type, it can only be passed between Blocks, or it's elements can be referenced in connections to provide those memebers as Inputs of basic datatypes to necessary Block or Part inputs.
-    \item CONSTRUCT:
-The CONSTRUCT Part very simply constructs a new named identifier using the struct type  attribute "ref" and provides it for use in the block, very similarly to the INPUT element.
-The connections made to the CONSTRUCT part must match the type and size of the members referenced by the "to" attribute of the CONNECTION element using the new struct name.
-\end{itemize}
-\subsubsection{Elements that operate on Arrays}
-\begin{itemize}[label={}]
-    \item MAP:
-The MAP element is a function that operates on an Array input using a block reference that is defined for a single element matching the array's type and returning a single element that does not have to match the array's type.
-Map follows the same rules for referencing as REFERENCE does with the above caveats to the inputs and outputs.
-The referenced block can do any functions inside it prefers as long as the single input, single output invariant is maintained.
-    \item FILTER:
-The FILTER element is similar to the MAP element in that it takes an array as an input and applies a block reference as a function to that array.
-However, what makes FILTER different is that the output of the referenced block must be a boolean value.
-What FILTER will do is use this referenced function to filter the input array elements by using the return value of true to include the element in the output array.
-This requires that the "size" attribute match the number of elements found by the operation, or else FILTER will fail to update the output array with new values, leading to a functional bug.
-The input and output datatypes must match by definition.
-    \item REDUCE:
-The REDUCE element is also similar to MAP in that it takes an array and applies a function using a block reference on that array that does not have to match the datatype of the input array.
-However, the REDUCE element is different in that it returns a single value instead of an array.
-The way REDUCE works is that the referenced block must have two inputs and one output, where the first input matches the datatype of the input array, and the second input matches the datatype of the output array.
-It is intended that the referenced block be a way of combining the elements of that array into a single value and achieves that by recursively applying referenced block to the elements of that array (from beginning to end, or input1 to inputN).
-The value returned by the referenced block is applied as the second input to the next recursion using the next element of the array, and the element will return the final output value when the recursion is completed.
+Division by zero is handled by outputing the maximum possible floating point value, so care must be taken to ensure the input value is never zero to avoid this behavior.
 \end{itemize}

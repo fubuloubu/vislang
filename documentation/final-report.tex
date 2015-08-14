@@ -36,7 +36,7 @@
 %% Tables 
 \usepackage{longtable}
 \newcommand{\specialcell}[2][l]{%
-      \begin{tabular}[#1]{@{}c@{}}#2\end{tabular}
+      \begin{tabular}[#1]{@{}l@{}}#2\end{tabular}
 }
 
 %% Figures
@@ -70,10 +70,9 @@
 % note: filename will be pretty printed as vislang/src/*
 %       instead of ../src/*
 \newcommand{\srccode}[4]{
-\clearpage
     \inputminted[linenos,fontsize=\footnotesize]{#1}{#2}
     \captionof{listing}{\label{#3}#4 File: #2}
-\pagebreak
+    \pagebreak
 }
 
 % custom language for log files
@@ -117,10 +116,8 @@
 \pagebreak
 
 \listoffigures
-\pagebreak
 
 \listoftables
-\pagebreak
 
 \listoflistings
 \pagebreak
