@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+sfdghsdf
+sfgnsfjhs
+fj
+rtsr
+thntr<Sgadfgsfg?>fsgfg<!>
+</Sfdghsdths>
+<vl:BLOCK name="buffer">
+    gibberish name fgfgavava datatype  fgdfablah
+    <vl:INPUT name="in" datatype="uint32"/>
+    <vl:OUTPUT name="out" datatype="uint32">
+        sfdgadfnagt
+        CONNECTION " blah"
+        <vl:CONNECTION to="out" from="in"/>
+        OUTPUT dfgdfger
+        more gibberish
+    </vl:OUTPUT>
+    this is all gibberish!
+</vl:BLOCK>
