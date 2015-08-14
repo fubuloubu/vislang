@@ -27,6 +27,14 @@ xml_obj:
       O_ELEM attr_list E_ELEM           { { tagname     = $1 ; 
                                             attributes  = $2 ;
                                             inner_objs  = [] } }
+    | O_ELEM attr_list C_ELEM           { if $1 <> $3
+                                          then xml_parse_error (3) 
+                                            ("Open/Close element mismatch. " ^
+                                             "Element " ^ $1 ^ " <> " ^ $3)
+                                          else
+                                          { tagname     = $1 ; 
+                                            attributes  = $2 ;
+                                            inner_objs  = [] } }
     | O_ELEM attr_list xml_list C_ELEM  { if $1 <> $4
                                           then xml_parse_error (4) 
                                             ("Open/Close element mismatch. " ^
