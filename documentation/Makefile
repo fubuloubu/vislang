@@ -5,13 +5,8 @@
 	@pdflatex -shell-escape -output-directory ~/Downloads $<
 	@pdflatex -shell-escape -output-directory ~/Downloads $<
 
-pyg-link:
-	@-cd ~/Downloads/; rm -f final-report.out.pyg; ln -s \
-		~/git-work/coms-w4115/vislang/documentation/final-report.pyg \
-		final-report.out.pyg
-
 git-log:
-	@cd ../ && git log --pretty=format:"%ad %w(68,1,12)%s" --date=short > git.log
+	@cd ../ && git log --pretty=format:"%ad %w(68,1,12)%s" --date=short > git.log		
 
 final-report.pdf: git-log
 
