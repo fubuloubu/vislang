@@ -1,149 +1,81 @@
-% TODO: Clean up
 \section{Language Tutorial}
 
-The first group of elements (INPUT, OUTPUT, CONSTANT, NAME) provide named
-memory locations for use in the application. All of these elements have a
-type attribute where the datatype of the name is specified. INPUT, OUTPUT,
-and SIGNAL have a scope attribute, which defines whether the name is local
-scope (block-wide), global scope (program wide), or device scope (only
-Inputs and Outputs can be device scope). When device scope is chosen, an
-IO address must be chosen to specify where to read or write the I/O data
-to the interface with the target hardware. The CONSTANT element describes
-a named constant, which is initialized to the value provided and will reside
-in memory and read each pass during program execution. All of these
-elements have a size attribute, which means they can refer to array quantities
-as well. A structure can be used as a datatype.
-
-The second group of elements (PROGRAM, BLOCK, CONNECTION) describes block
-constructs. This is the basis of how the program works. The PROGRAM element
-is a container for the entirety of the program. The PROGRAM element has a
-name attribute which describes what the compiled program should be
-called by the compiler. The BLOCK element is also a container, but used
-throughout the program to encapsulate functionality or define helper parts
-in referenced files. BLOCK has an optional reference property which describes
-the location of a block in a file using the "/path/to/file.vs$\vert$path$\vert$to$\vert$block"
-syntax, where the vertical bars describe the heirarchy required to discover
-the referenced block. Any referenced block will have to have connections to 
-all of the defined inputs in the referenced block. The outputs are not
-required.
-
-The CONNECTION element is how blocks and parts are connected
-together. The "to" attribute describes where the connection is headed, and
-cannot have a different CONNECTION element with a matching "to" attribute
-name. The "from" attribute describes where the connection came from, and
-does not have the same restriction. Connections can either be made to named
-signals such as INPUTS, OUTPUTS, CONSTANTS, or SIGNAL, or they can be made
-implicitly to blocks themselves using "block$\vert$input" or "block$\vert$output" syntax.
-
-The third group is the atomic parts. The Language Reference Manual will go
-into more detail here but all of these parts should form the bare minimum 
-required by the base language to compose all other required functions from.
-All of the atomic parts operate on specific types and have a specific defined
-function present in the compiler. All of the blocks have one or more inputs
-(except DT) and have exactly 1 output. All of the blocks are time invariant,
-,e.g. given the same input they produce the same output, except the DT
-and MEM blocks. The MEM block will store the value of something until the next
-pass. The DT block outputs the delta time between each pass. Since all blocks
-are simple and operate on a defined amount of inputs and outputs, they can be
-used with arrays to define parallel operations, e.g. applying the OR gate
-operation against two boolean arrays of the same size to produce a third boolean
-array of that same size. Structures will not work as inputs to these parts.
-
-All the logic gates besides the NOT gate (AND, OR, etc.) as well as the BITWISE,
-SUMMER, and PROD elements are defined as having two or more inputs (BITWISE can
-be one if a mask is set). The way this works in practice is that each successive
-input increments the number after the word "input" e.g. "input1", "input2",
-"input3", etc. when making connections to these parts.
-
-The fourth group describes array and structure utilities. MUX creates arrays from
-a group of inputs with the same type, and similarly DEMUX will deconstruct an
-array into a group of outputs of the same type. Similar to the atomic gate parts,
-these parts allow on the relevant inputs/outputs a variable amount of elements
-to be specified using the input\# syntax on the connection elements. The size of
-arrays will be static during compilation, and array size will be a quantity traced
-between blocks to verify size matching between usages.
-
-CONSTRUCT and DESCTRUCT create and decompose STRUCT elements respectively. The
-way this works is that a STRUCT element is defined seperately, with member
-attributes defining the name and type of each member of the struct. The CONSTRUCT
-element will allow a set of inputs matching the type of each of the members of a
-struct to create a new named quantity of that structure, and similarly DESTRUCT
-deconstructs a structure into signals that match each of those members. The STRUCT
-element can be defined or referenced through a file, allowing a seperate definition
-file to be reused over a project. Additionally, a STRUCT can be created from or written
-to an array of certain types, using the exact amount of memory required with buffer
-space as necessary to represent it as a chunk of memory. This will allow message
-definitions to be encoded or decoded to/from a hardware buffer. Lastly, an array
-can be composed of struct elements, as long as all elements match that structure
-definition.
-
-The last group of elements is the array functions. These functions operate on
-arrays per element of the array, and require a referenced function of a certain
-number and type of inputs/outputs to translate the input array into the output.
-MAP will apply the referenced function of a single input to a single output
-(that may or may not matches the input's type). What is important is that the input
-array's type and the type of the input to the function match, as well as the
-same criteria for the output.
-
-FILTER is similar to MAP in that it has a referenced function, however the output is
-required to be a boolean conditional. What FILTER will do is use that conditional
-output to filter the input array into an output array. Since there is a design
-decision not to allow variable array sizes, FILTER requires a size attribute for
-the output, and will not update the output if the size does not match what the
-attribute requires. This can be useful for parsing a buffer of word-based definitions,
-as we can filter the array of words to find a single UID that is a part of the word
-definition and pass that as the output to a parsing function.
-
-The REDUCE element is similar to MAP and FILTER in that it takes an array
-argument and use the function reference, however this function will take each
-element of the array and apply it to a function that takes two inputs: the first
-being the same type as each array element, and the second matching the output type
-of the function. REDUCE will start with the first element and the initial value
-for the output and recursively run through each element of the array, feeding back
-the output as the inital value input for the next iteration. When REDUCE has
-exhausted all of the elements of the array, the final output of the function
-is returned back as the output of the REDUCE element.
-
-Most attributes for elements are defined with a string. In some cases, it may be 
-preferable to use a literal definition for a value instead of creating a reference
-or using a named quantity. Every datatype in VisLang has a way of creating a literal.
-Examples of literals for all VisLang types are below:
+Any well-formed VisLang program can be constructed with the following guidance. Firstly,
+the outer-most set of tags (the top of the XML tree or Top Block) must be a BLOCK element
+and should be given a name appropiate to the intended functionality (file name and block
+name do not have to match). Next, a selection of INPUT and OUTPUT elements should be chosen
+for that block that describe how it will interface with other blocks or C source files.
+When those have been chosen and given names and datatypes, it is now time to design the
+inner logic of the block being made.
+\par
+Any collection of parts can be strung together
+from any input to any output. The first important caveat to this is that the datatype
+of each input and output must match to the corresponding connection being made. All parts
+in VisLang have an explicit or implicit datatype, and that must be matched up as suggested
+to avoid compilation errors. The second important caveat is that all calculations avoid
+referencing themselves. This means that when tracing from any output to any input, there
+is no instance of a calculation being used to define itself unless a MEM block has been
+placed to prevent an algebraic loop occurance.
+\par
+Next comes the decision if there will be any references to external blocks.
+The user can specify the location of an external block in a file using the following syntax:
+"/path/to/file.vl$\vert$path$\vert$to$\vert$block". When using external blocks, it is
+important to match the names and datatypes of the inputs/outputs to that block when
+making connections to that block. Any incorrect types or names will be flagged as an error
+at compilation time. Any BLOCK in any VisLang file can be referenced, but each file
+must be compiled separately to avoid runtime errors when attempting to compile the target
+generated C files.
+\par
+Finally, the design of the program could have grown to sufficient complexity where
+encapsulating that functionality into a separate block would be desireable. At that point,
+encapsulating all of the chosen parts into another BLOCK part would allow that part to
+be isolated from other parts in the program (different namespace), and that part can be
+referenced into another block in that program or any other.
+\par
+There are a few specific things about some of the parts VisLang provides worth noting.
+All of the logic gate elements besides the NOT gate (AND, OR, etc.) and the SUMMER and
+PROD elements are defined as having two or more inputs. The way this works in practice
+is that each successive input increments the number after the word "input" e.g. "input1",
+"input2", "input3", etc. when making connections to these parts. If a number is skipped
+or the count does not start at 1, a compilation error will be raised. These parts are
+known as "binary recursive" parts because the operation involved will be applied to every
+input to the block in a recursive fashion e.g. (input1 op (input2 op (...))).
+\par
+Most attributes for elements are defined with a string. The name attribute is common to
+every part in the VisLang language. The connection elements can reference these names
+when making connections between any two blocks. If an element is an atomic part (any
+element besides BLOCK and REFERENCE), then linking a block input to that name is as easy
+as using that block's name. This is due to the fact that all of the atomic parts in VisLang
+are defined as only having one output, so there is no ambiguity. The other attributes have
+more explicit values that must match what is specified in the LRM.
+\par
+When using the "ic" or "value" attributes, values they require are literals of the relevant
+datatype. Examples of literals for all VisLang types are below:
 \begin{longtable}[c]{ |c|c| } 
     \hline
     datatype & example literal(s) \\ 
     \hline\hline
     boolean & false, true \\
-    single, double & 1.000, 1e-6, 100 \\
+    single, double & 1.000, -100., .000 \\
     integer & 100, 0x20, 2x1011, 8x671, -120 \\ 
-    \hline
-    address & 0x1A56, 0x10A8$\vert$14 \\
-    arrays & $[1, 2, 3, 4]$ \\
-    structures & \{1, \{2, 3\}\} \\
     \hline
 \end{longtable}
 
-Booleans can only be false or true. Floating point quantities (single, double) can
+Note booleans can only be false or true. Floating point quantities (single, double) can
 be a decimal quantity (with or without significant digits after the decimal point),
-or specified using scientific notation e.g. 10e6. Floating point literals can be
-specified with a negative sign as well e.g. -1.234e-6. Integer quantities (e.g.
+or specified using a decimal point e.g. 10.600. Floating point literals can also be
+specified with a negative sign as well e.g. -1234.00. Integer quantities (e.g.
 uint8, uint16, uint32, uint64, int8, int16, int32, int64) can be specified as a
 decimal quantity (cannot have a decimal point), or using hex (e.g. 0x1A), binary
-(e.g.2x1010), or octal (e.g. 8x2462) representation. Only signed integers can have
-a negative sign in front. Additionally, for address literals, specifying a bit of
-and address can be done with the $\vert$ operator against a hex representation of
-the address (e.g. 0x1235$\vert$7). Address literals can only be in hex. Array
-literals are created with the bracket operators (e.g. $[true, true, false]$), and
-structure literals can be created using the braces operator (e.g. \{0x10, \{1, false\}\}.
-
-Any attribute that accepts a literal can also take a reference to a named value,
-in a similar way that block references are defined (e.g. "/path/to/file.vs$\vert$path$\vert$to$\vert$value").
+(e.g.2x1010), or octal (e.g. 8x2462) representation. Only signed integer datatypes can
+have a negative sign in front.
 
 \subsection{Example Program}
 
 The following program illustrates some of the major features of the language. The
-program itself takes a Digital Input on the target device, reads it, and starts a
+program itself takes an Input (presumably on the target device) and starts a
 timer when the input is enabled. When the timer counts up to the target time, it
-will set a Digital Output true and reset the timer, creating a fast-blinking light
+will set the Output true and reset the timer, creating a pulse-blinking light
 with a period of 2 seconds.
 
 \srccode{xml}{../example/timed-blinking-light.vl}{example:top}{Example Top Level}
