@@ -1,14 +1,84 @@
-% TODO
 \section{Test Plan}
 
-The generated target code for Listing \ref{example:top} and Listing \ref{example:timer}
-from the Tutorial are shown below:
+The generated target code for \autoref{example:top} and \autoref{example:timer}
+from the Tutorial are below:
 
 \srccode{C}{../example/timed-blinking-light.c}{gen:top}{Generated Code for Top Level}
 \srccode{C}{../example/timer.c}{gen:timer}{Generated Code for Referenced Block}
 
-% talk about how we want to test these files
-% python code generator for generating debug wrappers
-% list of test cases, explanation of each, links to source in appendix
-% shell script automated testing test-*, pass-*, fail-* cases
-% 
+The output program, when compiled using gcc, will be able to process the inputs provided
+by 'connecting' to that block and update it's outputs over time for every iteration of
+the program in the main loop. For programs without MEM or DT blocks, the resulting code
+has the property of being time-invariant, that is no matter how many times it is called
+or whatever the duration between calls are, it will produce the exact same result every
+time. The MEM element will remember a value between the last call and the current such
+that the resulting program loses that time invariance, but this operation allows the
+production of functionality such as states and transfer functions to be modeled using
+VisLang. The DT element is used when the amount of time between calls is important,
+but for a steady system this should never be an issue as it should stay relatively
+constant. This means programs using DT may or may not be almost time invariant, but
+that depends on the usage of the block.
+\par
+To automate testing of VisLang programs, a shell script (\autoref{test:script}) was
+borrowed from the MicroC example language. The shell script looks at all of the files
+in a directory and processes them into 1 of 3 testing groups: test, pass, fail. The pass
+and fail testing groups simply looks to verify that the source file for such a test case
+either pass compilation (pass cases) or fails compilation (fail). In this way, specific
+compiler features that have to do with processing the input file (instead of the code
+generated) can be checked without further complication. The 'test' cases first verify that
+the source file can generate the target file, but additionally a functional check is
+provided through associated *.in and *.out files that are run against the target file.
+\par
+The methodology for testing these cases involves additionally compiling the target files
+as source files for gcc, and turning the resulting object file into a shared library that
+can be interpreted through a testing script. The testing script is a python script that
+is generated using the -d option of vlcc which takes the *.in file and runs a while loop
+over each line of the file and produces what the output of the program would be for each
+timestep. The timestep is purposely never updated to ensure that a repeatable test
+environment exists. The output produced by the test script is then compared against the
+associated *.out file to see if any differences exist. If the two files match, then the
+test is determined to be passing.
+\par
+The following is a list of the test cases used to verify the VisLang compiler produces
+correct code:
+
+\begin{longtable}[c]{ |r|p{6cm}| }
+    \hline
+    Test Case                   & Description \\
+    \hline
+    \hline
+    \listingref{test:failal}    & Shows that an algebraic loop is caught \\
+    \hline
+    \listingref{test:failbc}    & Shows that a badly specified connection is caught \\
+    \hline
+    \listingref{test:failma}    & Shows that a missing attributes in a block is caught\\
+    \hline
+    \listingref{test:failub}    & Shows that an unended block is caught \\
+    \hline
+    \listingref{test:passeb}    & Shows that an empty block compiles okay \\
+    \hline
+    \listingref{test:failceb}   & Shows that multiple empty blocks inside each other are okay\\
+    \hline
+    \listingref{test:passg}     & Shows that random XML and other input is okay between tags \\
+    \hline
+    \listingref{test:testb}     & Shows proper operation of buffer block (O = I)\\
+    \hline
+    \listingref{test:testbib}   & Shows that a block within a block works \\
+    \hline
+    \listingref{test:testm}     & Shows the memory block works okay \\
+    \hline
+    \listingref{test:testc}     & Shows all the comparision operations work \\
+    \hline
+    \listingref{test:testg}     & Shows all the logical gates work \\
+    \hline
+    \listingref{test:testmc}    & Shows all math blocks work okay \\
+    \hline
+    \listingref{test:tesths}    & Shows a reference block works okay \\
+    \hline
+    \listingref{test:testsrl}   & Shows that a complex block (SR Latch) works \\
+    \hline
+    \listingref{test:testt}     & Shows that example (Timer block) works \\
+    \hline
+    \caption{Test Case Descriptions}
+    \label{table:testcases}
+\end{longtable}

@@ -18,6 +18,21 @@
 \pagestyle{plain}
 \usepackage{indentfirst}
 
+%%% For referencing items below
+% TODO: This doesn't quite look right
+% TODO: Somehow the LastPage number is highlighted
+\usepackage[hidelinks]{hyperref}
+\hypersetup{
+    colorlinks,
+    linkcolor={red!50!black},
+    citecolor={blue!50!black},
+    urlcolor={blue!80!black}
+}
+% Needed to use \autoref with listings from minted
+\providecommand*{\listingautorefname}{Listing}
+% Command for referencing listings
+\newcommand*{\listingref}[1]{\nameref*{#1} (\hyperref[{#1}]{\autoref*{#1}})}
+
 %% Tables 
 \usepackage{longtable}
 \newcommand{\specialcell}[2][l]{%
@@ -55,9 +70,10 @@
 % note: filename will be pretty printed as vislang/src/*
 %       instead of ../src/*
 \newcommand{\srccode}[4]{
+\clearpage
     \inputminted[linenos,fontsize=\footnotesize]{#1}{#2}
-    \captionof{listing}{\label{#3}#4: #2}
-    \pagebreak
+    \captionof{listing}{\label{#3}#4 File: #2}
+\pagebreak
 }
 
 % custom language for log files
