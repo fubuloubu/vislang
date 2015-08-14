@@ -7,6 +7,8 @@ test/*.c*
 test/*.py*
 test/*.o
 test/*.so
+test/i-*
+example/time*.c
 *.swp
 *.log
 *.aux
