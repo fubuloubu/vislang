@@ -11,7 +11,7 @@ pyg-link:
 		final-report.out.pyg
 
 git-log:
-	@cd ../ && git log > git.log
+	@cd ../ && git log --pretty=format:"%ad %w(68,1,12)%s" --date=short > git.log
 
 final-report.pdf: git-log
 
