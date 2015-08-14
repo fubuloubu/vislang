@@ -2,13 +2,6 @@
 \documentclass[titlepage]{article}
 \usepackage[a5paper,margin=0.5in]{geometry}
 
-%% Force using more of the margins than default
-%\setlength{\oddsidemargin}{0.1in}
-%\setlength{\evensidemargin}{0.1in}
-%\setlength{\textwidth}{6.5in}
-%\setlength{\topmargin}{0in}
-%\setlength{\textheight}{8.5in}
-
 %% Header
 \usepackage{fancyhdr,lastpage}
 \usepackage[mmddyyyy]{datetime}
@@ -41,7 +34,6 @@
 \usepackage{minted}
 \usepackage{listings}
 \usepackage{color} % for colored solution
-%\usepackage[svgnames]{xcolor}
 \usepackage{caption}
 
 % Custom macro for code listings from files
@@ -68,44 +60,6 @@
                     node distance=1.5cm
     }
 }
-
-% Custom language for XML
-\definecolor{maroon}{rgb}{0.5,0,0}
-\definecolor{darkgreen}{rgb}{0,0.5,0}
-\lstdefinelanguage{XML}
-{
-    basicstyle=\ttfamily\footnotesize,
-    morestring=[b]",
-    moredelim=[s][\bfseries\color{maroon}]{<}{\ },
-    moredelim=[s][\bfseries\color{maroon}]{</}{>},
-    moredelim=[l][\bfseries\color{maroon}]{/>},
-    moredelim=[l][\bfseries\color{maroon}]{>},
-    morecomment=[s]{<?}{?>},
-    morecomment=[s]{<!--}{-->},
-    commentstyle=\color{darkgreen},
-    stringstyle=\color{blue},
-    identifierstyle=\color{red}
-    %morekeywords={name,type,scope,address,value,to,from,
-    %              initial\_condition,reference}
-}
-\lstset
-{
-    language=XML,
-    basicstyle=\footnotesize\ttfamily,
-    tabsize=4,
-    keepspaces=false,
-    keywordstyle=\color{red},
-    identifierstyle=\color{blue},
-    commentstyle=\color{green},
-    frame=single,
-    captionpos=t%, % sets the caption-position to top
-    %morestring=[s]{"}{"},
-    %morecomment=[s]{!--}{--},
-    %morekeywords={name,type,scope,address,value,to,from,
-    %              initial\_condition,reference}
-}
-
-\newcommand{\includecode}[1]{\lstinputlisting[caption=#1]{#1}}
 
 % For title page
 \title{VisLang: A Visual Language\\Final Report}
