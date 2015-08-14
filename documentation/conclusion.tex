@@ -4,17 +4,81 @@ The VisLang compiler was moderately a success because it lays the groundwork for
 iterations of the program for use in a fully optimized environment as a replacement for
 developing embedded programs using proprietary IDEs or programming languages that are
 more difficult to understand. A variety of lessons where learned during the development
-of the program that will be detailed below.
+of the program that will be detailed below. As a result of several of the lessons learned,
+suggestions for future development are also presented.
 
 \subsection{Lessons Learned}
-% don't be too ambitious
-% test early, test often
-% get the barest possible program working first
+
+The original idea for VisLang was very ambitious: to make a general purpose embedded
+computing language in a visual format that could be used to develop programs for
+small embedded devices such as the Aruduino platform. Early on the in the project
+it was realized that this is much to ambitious of a goal because that would mean 
+essentially replicating the avr C libraries in a language that was not meant for it.
+Instead, the scope of VisLang was first pared down such that VisLang instead generated
+C code instead of assembly so that it would be easy to link with the already feature-
+complete libraries that exist for the platform. Integration with the avr libraries
+remains untested at this time, but it is easy to show how VisLang-generated code could
+be easily integrated into while loop almost any embedded device utilizes to run code.
+The thought is that the specialty code needed to interface with the device is only a
+small portion of the overall code the user is interested in running, so such a tradeoff
+would be acceptable.
+\par
+Another lesson that was learned a few weeks into development of VisLang was that testcase
+driven development would be required to move forward at an acceptable pace. Originally,
+the development philosophy was trying to implement all of the required features of the
+language at once, but even trying to get the simplest program (a buffer block, which passes
+input directly to output) was a difficult task and a philosophy change was needed. A test
+case for the buffer block was written and the compiler was made to work appropiately with
+that test case first before further test cases were developed and more functionality was
+implemented to meet those new cases. The benefits of this approach primarily are that these
+test cases are available for quick turnover later on to validate future changes to the code.
+This happened several times where a change made to satisfy one test case ultimately did,
+but broke several of the already completed test cases. Integrating test cases into
+development was one of the biggest lessons learned at first.
+\par
+Finally, the last lesson that was learned was to complete more preliminary work before
+creating a specification for a language. Knowing how much would be possible as well as
+prototyping some of the features beforehand would have helped to write a much more sound
+specification to begin with so that scope reduction and philosophy changes would be
+minimized.
 
 \subsection{Future Improvements}
-% support for arrays
-% support for structures
-% additional parts
-% built-in support for avr/arduino top level code generation
-% support for updating sample time parameter
-% graphical programming environment
+
+Several pieces of VisLang's original specification were descoped for the initial version
+of the compiler due to time constraints. Given future development time, most of these
+features would be required for VisLang to reach it's full potential as a general purpose
+prototyping and embedded controller language to match potential rivals such as Simulink
+and Modelica.
+\par
+First off, a graphical interface for manipulating VisLang code would make development of
+programs in the language much easier, since that was the original intended use-case.
+Significant development would be necessary here, but thankfully true to the original
+design goals development to VisLang and any GUI environment that might use the language
+could happen mostly in parallel. Specific attention would need to be taken to overhaul
+VisLang's front end to make it truly resilient to non-VisLang XML elements. As it stands
+right now, VisLang supports ignoring additional attributes, but using attributes of the
+same name can confuse the parser which will throw an error. Either an alternative way to
+specify VisLang attributes would need to be attempted, the VL Compiler would need to be
+hardened against those attributes by more clever design of the front end, or a better
+methodology of specifying the XML would need to be investigated to satisfy this goal.
+\par
+Arrays and Structures would be essential to truly allowing the language to prosper in
+all of its intended use cases. Originally, the Array features of VisLang would allow a
+user to create and pass around Arrays to inputs, enabling Function Language elements such
+as Filter, Reduce, and Map to be applied so duplicate functionality can be performed with
+minimal coding. This is important to larger embedded devices because they typically have
+redundant interfaces that require the exact same processing to each element. Additionally,
+digital busses can be arrays of packet structures that need the exact same processing
+where a language that operated on them in parallel would be able be more efficient in its
+operation. Structures would be used in a similar way, enabling I/O messages to be stripped
+apart and processed in a predictable way, or output messages to be created in a specified
+manner.
+\par
+Of course, a block language like VisLang can always support more parts. The original
+specification for VisLang included several parts that were deemed unnecessary for the
+initial implementation of the compiler, so identifying and adding that functionality
+would be an obvious next step for the language. Adding the ability to encapsulate or link
+to arbitrary code would also be another possible design goal for VisLang as often it is
+necessary to have a calculation drive some action that interfaces with the embedded
+processor, such as servicing the watchdog timer or managing interrupts. This would be
+important if VisLang were to be used on larger projects.
