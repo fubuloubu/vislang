@@ -655,8 +655,9 @@ class inv xml_obj = object (self)
                           (get_datatype datatype) ^ " " ^ 
                           self#name ^ " = " ^ 
                           (* Divide by zero protection *)
-                          "(abs(" ^ input ^ ") >= FLT_MIN) ?\n\t\t" ^ 
-                          "(1 / ( " ^ input ^ " )) : (0.000f);"
+                          "(abs(" ^ input ^ ") >= 0) ?\n\t\t" ^
+                          "(1 / ( " ^ input ^ " )) : " ^
+                          "((" ^ input ^" > 0) ? FLT_MAX : FLT_MIN);"
 end;;
 
 (* Compare Part: compares two inputs using operation *)
